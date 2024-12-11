@@ -87,6 +87,20 @@ spec:
               value: "TRUE"
             - name: baseURL
               value: "/session/notebook/firefly/"
+            - name: "PROPS_FIREFLY_OPTIONS"
+              value: >-
+                $'{"tap": 
+                    {"additional":
+                      {"services":[
+                        {
+                          "label": "CADC YouCAT",
+                          "value": "https://ws-uv.canfar.net/youcat",
+                          "centerWP": "62;-37;EQ_J2000",
+                          "fovDeg": 10
+                        }]
+                      }
+                    }
+                  }'
           # This provides initialDelaySeconds + periodSeconds*failureThreshold seconds, i.e. 5 + 5*5 = 30 seconds
           # for the container port to be ready before the container is considered unhealthy
           startupProbe:
