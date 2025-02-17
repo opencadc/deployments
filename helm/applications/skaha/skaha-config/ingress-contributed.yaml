@@ -2,17 +2,30 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: skaha-contributed-middleware-${skaha.sessionid}
+  ownerReferences:
+  - apiVersion: batch/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Job
+    name: "${skaha.jobname}"
+    uid: "${skaha.jobuid}"
 spec:
   replacePathRegex:
     regex: ^/session/contrib/${skaha.sessionid}(/|$)(.*)
     replacement: /$2
 
 ---
-
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: skaha-contributed-ingress-${skaha.sessionid}
+  ownerReferences:
+  - apiVersion: batch/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Job
+    name: "${skaha.jobname}"
+    uid: "${skaha.jobuid}"
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
