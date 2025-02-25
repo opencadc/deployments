@@ -17,12 +17,12 @@ skahaWorkload:
 deployment:
   hostname: myhost.example.com  # Change this!
   skaha:
-    image: images.opencadc.org/platform/skaha:0.27.5
-    imagePullPolicy: Always
+    image: images.opencadc.org/platform/skaha:0.28.0
+    imagePullPolicy: IfNotPresent
 
-    # Cron string for the image caching cron job schedule. Defaults to every minute.
+    # Cron string for the image caching cron job schedule. Defaults to every half hour.
     imageCache:
-      refreshSchedule: "*/1 * * * *"
+      refreshSchedule: "*/30 * * * *"
   
     # Set the top-level-directory name that gets mounted at the root.
     # skahaTld: "/cavern"
@@ -83,6 +83,39 @@ deployment:
       maxCount: "3"  # Max number of sessions per user.
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
+
+      # Optionally configure the Kueue system to handle large workloads.  Configurable per session type (e.g. desktop, notebook, etc.).
+      # Leaving this empty will default to submitting Jobs to the base Kubernetes system.
+      # Provide a default configuration for all session types, or omit and only configure specific session types.
+      # @see https://kueue.sigs.k8s.io/docs/
+      # @see https://github.com/opencadc/deployments/tree/main/configs/kueue
+      # Example 1:
+      #   # Configure notebook, desktop, and default session types.
+      #   queue:
+      #     notebook:
+      #       queueName: "notebook-queue"
+      #       priorityClass: "notebook-med"
+      #     desktop:
+      #       queueName: "desktop-queue"
+      #       priorityClass: "desktop-high"
+      #     default:
+      #       queueName: "default-queue"
+      #       priorityClass: "user-session-med"
+      #
+      # Example 2:
+      #    # Configure contributed session types.  All else will use the bare Kubernetes system.
+      #    queue:
+      #      contributed:
+      #        queueName: "contributed-queue"
+      #        priorityClass: "contributed-high"
+      #
+      # Example 3:
+      #    # Configure Kueue for all user session types.
+      #    queue:
+      #      default:
+      #        queueName: "all-user-sessions-local-queue"
+      #        priorityClass: "user-sessions-med"
+      queue: {}
 
       # Optionally setup a separate host for User Sessions for Skaha to redirect to.  The HTTPS scheme is assumed.  Defaults to the Skaha hostname.
       # Example:
@@ -177,7 +210,6 @@ deployment:
   #   - ip: 127.3.34.5
   #     hostname: myhost.example.org
   # extraHosts: []
-
 
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.

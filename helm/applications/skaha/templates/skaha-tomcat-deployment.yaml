@@ -72,6 +72,14 @@ spec:
         - name: skaha.headlesspriortyclass
           value: "{{ . }}"
         {{- end }}
+        {{- with .Values.deployment.skaha.sessions.queue }}
+        {{- range $queueConfigKey, $queueConfig := . }}
+        - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_NAME
+          value: "{{ $queueConfig.queueName | required (printf "Missing .Values.deployment.skaha.sessions.queue.%s.queueName" $queueConfigKey) }}"
+        - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_PRIORITY_CLASS
+          value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.deployment.skaha.sessions.queue.%s.priorityClass" $queueConfigKey) }}"
+        {{- end }}
+        {{- end }}
         - name: skaha.adminsgroup
           value: "{{ .Values.deployment.skaha.adminsGroup }}"
         - name: skaha.posixmapper.resourceid
