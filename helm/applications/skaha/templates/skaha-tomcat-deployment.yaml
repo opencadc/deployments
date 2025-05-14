@@ -48,6 +48,10 @@ spec:
           value: "{{ .Values.deployment.skaha.skahaTld }}"
         - name: GPU_ENABLED
           value: "{{ .Values.deployment.skaha.sessions.gpuEnabled | default "false" }}"
+        - name: USER_DATASETS_ROOT_PATH
+          value: "{{ .Values.deployment.skaha.sessions.userDatasetsRootPath | default "/datasets" }}"
+        - name: PREPARE_DATA_ENABLED
+          value: "{{ .Values.deployment.skaha.sessions.prepareDataEnabled | default "false" }}"
         - name: skaha.homedir
           value: "{{ .Values.deployment.skaha.skahaTld }}/home"
         - name: skaha.namespace

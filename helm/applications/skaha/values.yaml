@@ -90,6 +90,11 @@ deployment:
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
 
+      # This is where the user datasets are stored. The path to the datasets directory.
+      userDatasetsRootPath: "/datasets"
+      # Is prepare-data enabled?
+      prepareDataEnabled: "false"
+
       # Optionally configure the initContainer image for Redis.  Useful for those not able to reach docker.io
       # Defaults to redis-7.4.2-alpine3.21.
       # Example:

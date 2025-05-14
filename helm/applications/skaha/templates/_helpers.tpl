@@ -105,6 +105,19 @@ The init containers for the launch scripts.
           capabilities:
             drop:
               - ALL
+      - name: init-users-datasets-symlink
+        image: alpine:latest
+        command: ["/init-users-datasets-symlink/init-users-datasets-symlink.sh"]
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: HOME
+          value: "${SKAHA_TLD}/home/${skaha.userid}"
+        volumeMounts:
+        - mountPath: "/init-users-datasets-symlink"
+          name: init-users-datasets-symlink
+        - mountPath: "${SKAHA_TLD}"
+          name: cavern-volume
+          subPath: "cavern"
 {{- with .Values.deployment.extraHosts }}
       hostAliases:
 {{- range $extraHost := . }}
