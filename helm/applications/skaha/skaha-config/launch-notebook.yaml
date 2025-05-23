@@ -101,6 +101,7 @@ spec:
           subPath: group
         - mountPath: "/skaha-system"
           name: start-jupyterlab
+${user.runtime.volumemounts}
         {{ template "skaha.session.commonVolumeMounts" . }}
         securityContext:
           privileged: false
@@ -125,4 +126,9 @@ spec:
         configMap:
           name: init-users-groups-config
           defaultMode: 0777
+      - name: init-users-datasets-symlink
+        configMap:
+          name: init-users-datasets-symlink-config
+          defaultMode: 0777
+${user.runtime.volumes}
       {{ template "skaha.session.commonVolumes" . }}
