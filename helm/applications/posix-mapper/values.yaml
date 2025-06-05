@@ -110,13 +110,12 @@ secrets:
 # These values are preset in the catalina.properties, and this default database only exists beside this service.
 # It's usually safe to leave these as-is, but make sure they match the values in catalina.properties.
 postgresql:
-  install: true
-  image: postgres:13.20
-  maxActive: 8
+  # url: jdbc:postgresql://my-postgresql.example.com:5432/posix-mapper-db
+  # maxActive: 8
   auth:
-    username: posixmapper
-    password: posixmapperpwd
-    database: mapping
-    schema: mapping
+    # username: posixmapper
+    # password: posixmapperpwd
+    # database: mapping
+    # schema: mapping
   storage:
     spec:
