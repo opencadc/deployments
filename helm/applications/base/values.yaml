@@ -1,6 +1,11 @@
 kubernetesClusterDomain: cluster.local
+
+# The Namespace of the APIs (UIs and APIs)
 skaha:
   namespace: skaha-system
+
+# The Namespace of the User Sessions.  Optional (but recommended), defaults to the `skaha.namespace` if set to empty value, but
+# set to skaha-workload if omitted.
 skahaWorkload:
   namespace: skaha-workload
   

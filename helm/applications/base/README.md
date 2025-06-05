@@ -4,7 +4,7 @@
 
 ### Dependencies
 
-Kubernetes 1.23 and up are supported.
+Kubernetes 1.27 and up are supported.
 
 ### From source
 
