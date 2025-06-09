@@ -83,6 +83,8 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `deployment.skaha.sessions.gpuEnabled` | Enable GPU support for User Sessions.  Defaults to `false` | `false` |
 | `deployment.skaha.sessions.nodeAffinity` | Kubernetes Node affinity for the Skaha User Session Pods | `{}` |
 | `deployment.skaha.sessions.tolerations` | Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the `skaha` User Sessions | `[]` |
+| `deployment.skaha.sessions.prepareData.enabled` | Enable the Prepare Data volume mounting for the Indigo Prepare Data implementation | `false` |
+| `deployment.skaha.sessions.prepareData.userDatasetsRootPath` | Dataset path | `false` |
 | `deployment.skaha.extraEnv` | List of extra environment variables to be set in the Skaha service.  See the `values.yaml` file for examples. | `[]` |
 | `deployment.skaha.resources` | Resource requests and limits for the Skaha API | `{}` |
 | `deployment.skaha.extraPorts` | List of extra ports to expose in the Skaha service.  See the `values.yaml` file for examples. | `[]` |

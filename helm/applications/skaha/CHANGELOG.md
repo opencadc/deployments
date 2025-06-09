@@ -1,4 +1,7 @@
-# CHANGELOG for Skaha User Session API (Chart 0.11.9)
+# CHANGELOG for Skaha User Session API (Chart 0.12.0)
+
+## 2025.05.29 (0.12.0)
+- Add support for Indigo PrepareData implementation
 
 ## 2025.05.08 (0.11.9)
 - Update image version to reflect Firefly changes

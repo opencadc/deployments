@@ -105,6 +105,8 @@ The init containers for the launch scripts.
           capabilities:
             drop:
               - ALL
+{{- with $.Values.deployment.skaha.sessions.prepareData -}}
+{{- if .enabled -}}
       - name: init-users-datasets-symlink
         image: alpine:latest
         command: ["/init-users-datasets-symlink/init-users-datasets-symlink.sh"]
@@ -113,19 +115,26 @@ The init containers for the launch scripts.
         - name: HOME
           value: "${SKAHA_TLD}/home/${skaha.userid}"
         - name: USER_DATASETS_ROOT_PATH
-          value: "{{ .Values.deployment.skaha.sessions.prepareData.userDatasetsRootPath | default "/datasets" }}"
+          value: "{{ .userDatasetsRootPath | default "/datasets" }}"
         volumeMounts:
         - mountPath: "/init-users-datasets-symlink"
           name: init-users-datasets-symlink
         - mountPath: "${SKAHA_TLD}"
           name: cavern-volume
           subPath: "cavern"
-{{- with .Values.deployment.extraHosts }}
+{{- with $.Values.deployment.extraHosts }}
       hostAliases:
 {{- range $extraHost := . }}
         - ip: {{ $extraHost.ip }}
           hostnames:
             - {{ $extraHost.hostname }}
+{{- end }} # end range
+{{- end }} # end with extraHosts
+{{- end }} # end if prepareData enabled
+{{- end }} # end with prepareData
+{{- end }} # end define skaha.job.initContainers
+
+{{/*
 {{- end }}
 {{- end }}
 {{- end }}

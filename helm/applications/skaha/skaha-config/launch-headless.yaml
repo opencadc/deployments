@@ -75,6 +75,7 @@ spec:
         - mountPath: "/etc/group"
           name: etc-group
           subPath: group
+${user.runtime.volumemounts}
         {{ template "skaha.session.commonVolumeMounts" . }}
       {{- with .Values.deployment.skaha.sessions.tolerations }}
       tolerations:
@@ -89,4 +90,13 @@ spec:
         configMap:
           name: init-users-groups-config
           defaultMode: 0777
+{{- with .Values.deployment.skaha.sessions.prepareData }}
+{{- if .enabled }}
+      - name: init-users-datasets-symlink
+        configMap:
+          name: init-users-datasets-symlink-config
+          defaultMode: 0777
+{{- end }}
+{{- end }}
+${user.runtime.volumes}
       {{ template "skaha.session.commonVolumes" . }}
