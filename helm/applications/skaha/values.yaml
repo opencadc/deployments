@@ -17,21 +17,28 @@ skahaWorkload:
 deployment:
   hostname: myhost.example.com  # Change this!
   skaha:
-    image: images.opencadc.org/platform/skaha:0.28.1
+    image: images.opencadc.org/platform/skaha:0.29.0
     imagePullPolicy: IfNotPresent
 
     # Cron string for the image caching cron job schedule. Defaults to every half hour.
     imageCache:
       refreshSchedule: "*/30 * * * *"
   
-    # Set the top-level-directory name that gets mounted at the root.
-    # skahaTld: "/cavern"
+    # Required.  The VOSpace Node URI (uses vos:// scheme) for the User Home directory in Cavern.
+    # This is the VOSpace location where user home directories will be created.  Requires Cavern to be running, and the root folder's admin credentials.
+    # Example: 
+    #   userHomeURI: "vos://example.org~cavern/home"
+    #
+    # userHomeURI:
+
+    # Required.  The VOSpace Service URI (uses ivo:// scheme) for the Cavern Service.
+    # This is the VOSpace location where user home directories will be created.  Requires Cavern to be running, and the root folder's admin credentials.
+    # Example:
+    #   cavernServiceURI: "ivo://example.org/cavern"
+    # cavernServiceURI:
 
     # Used when allocating first-time users into the system.
     defaultQuotaGB: "10"
-
-    # Space delimited list of allowed Image Registry hosts.  These hosts should match the hosts in the User Session images.
-    registryHosts: "images.canfar.net"
 
     init:
       # The image to use for the init container.  Unless you have a reason to change this, leave it alone.
@@ -56,6 +63,7 @@ deployment:
     # headlessPriorityGroup: "ivo://example.org/gms?skaha-priority-headless-users"
 
     # Class name to set for priority headless jobs.
+    # See https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
     # headlessPriorityClass: uber-user-preempt-high
 
     # Array of GMS Group URIs allowed to set the logging level.  If none set, then nobody can change the log level.
@@ -85,6 +93,23 @@ deployment:
     # Settings for User Sessions.  Sensible defaults supplied, but can be overridden.
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     sessions:
+      
+      # Required.  Absolute path mount point to where the top level directory is mounted in the User Sessions.  For most, this can be set to "/cavern", and
+      # it is expected that the "/home" and the "/projects" folders will be found under this path (i.e. "/cavern/home" and "/cavern/projects").
+      # Example:
+      #   userStorageTopLevelDirectory: "/cavern"
+      #
+      userStorageTopLevelDirectory: "/cavern"
+
+      # List of Image Registry hosts to use for User Sessions.  This is used to verify images against the Image Registry.
+      # Currently only supports Harbor hosts.
+      # Example:
+      #   imageRegistryHosts:
+      #     - images.canfar.net
+      #     - my-private-registry.example.com
+      imageRegistryHosts: 
+        - images.canfar.net  # This is the default.  Change this to match your Image Registry hosts.
+
       expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
       maxCount: "3"  # Max number of sessions per user.
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
@@ -261,7 +286,7 @@ storage:
       # YAML for service mounted storage.
       # Example is the persistentVolumeClaim below.
       # persistentVolumeClaim:
-      #   claimName: skaha-pvc\
+      #   claimName: skaha-pvc
 
 # For caching images from the Image Repository and for the writing the POSIX Users and Groups to be shared with Job files
 redis:

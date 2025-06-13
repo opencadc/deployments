@@ -43,44 +43,48 @@ helm install skaha-release skaha-repo/skaha -f values.yaml
 ```
 
 ### Supported Configuration Options
-The following table lists the configurable parameters for the Skaha Helm chart:
+The following table lists the configurable parameters for the Skaha Helm chart.  The Mapped Environment Variable column indicates which environment variables, if any, are set in the Skaha API Pod:
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
+| Parameter | Description | Default | Mapped Environment Variable |
+|-----------|-------------|---------|-----------------------------|
 | `kubernetesClusterDomain` | Kubernetes cluster domain used to find internal hosts | `cluster.local` |
 | `replicaCount` | Number of Skaha replicas to deploy | `1` |
 | `tolerations` | Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the `skaha` API | `[]` |
 | `skaha.namespace` | Namespace where Skaha is deployed | `skaha-system` |
-| `skahaWorkload.namespace` | Namespace where Skaha Workload (User Sesssion space) is deployed | `skaha-workload` |
-| `deployment.hostname` | Hostname for the Skaha deployment | `""` |
+| `skahaWorkload.namespace` | Namespace where Skaha Workload (User Sesssion space) is deployed | `skaha-workload` | `SKAHA_WORKLOAD_NAMESPACE` |
+| `deployment.hostname` | Hostname for the Skaha deployment | `""` | `SKAHA_HOSTNAME` |
 | `deployment.skaha.image` | Skaha Docker image | `images.opencadc.org/platform/skaha:<current release version>` |
 | `deployment.skaha.imagePullPolicy` | Image pull policy for the Skaha container | `IfNotPresent` |
-| `deployment.skaha.imageCache.refreshSchedule` | Schedule for refreshing the Skaha image cache in `cron` format | `@daily` |
-| `deployment.skaha.skahaTld` | Top-level directory for Skaha | `/cavern` |
-| `deployment.skaha.defaultQuotaGB` | Default quota for Skaha in GB.  Used when allocating first-time users into the system. | `10` |
+| `deployment.skaha.imageCache.refreshSchedule` | Schedule for refreshing the Skaha image cache in `cron` format.  Default is every half hour. | `"*/30 * * * *"` |
+| `deployment.skaha.userHomeURI` | The VOSpace URI for the User Home directory in Cavern| `` | `SKAHA_USER_HOME_URI` |
+| `deployment.skaha.cavernServiceURI` | The VOSpace URI for the Cavern service | `""` | `SKAHA_CAVERN_SERVICE_URI` |
+| `deployment.skaha.defaultQuotaGB` | Default storage quota in Cavern in GB.  Used when allocating first-time users into the system. | `10` | `SKAHA_DEFAULT_STORAGE_QUOTA_GB` |
 | `deployment.skaha.registryHosts` | Space delimited list of Docker (Harbor) registry hosts | `images.canfar.net` |
-| `deployment.skaha.usersGroup` | GMS style Group URI for Skaha users to belong to | `""` |
-| `deployment.skaha.adminsGroup` | GMS style Group URI for Skaha admins to belong to | `""` |
-| `deployment.skaha.headlessGroup` | GMS style Group URI whose members can submit headless jobs | `""` |
-| `deployment.skaha.headlessPriorityGroup` | GMS style Group URI whose member's headless jobs can pre-empt other's.  Useful fortight deadlines in processing | `""` |
+| `deployment.skaha.usersGroup` | GMS style Group URI for Skaha users to belong to | `""` | `SKAHA_USERS_GROUP` |
+| `deployment.skaha.adminsGroup` | GMS style Group URI for Skaha admins to belong to | `""` | `SKAHA_ADMINS_GROUP` |
+| `deployment.skaha.headlessGroup` | GMS style Group URI whose members can submit headless jobs | `""` | `SKAHA_HEADLESS_GROUP` |
+| `deployment.skaha.headlessPriorityGroup` | GMS style Group URI whose member's headless jobs can pre-empt other's.  Useful for tight deadlines in processing | `""` | `SKAHA_HEADLESS_PRIORITY_GROUP` |
+| `deployment.skaha.headlessPriorityClass` | Priority Class name to set for priority headless jobs..  Useful for tight deadlines in processing | `""` | `SKAHA_HEADLESS_PRIORITY_GROUP` |
 | `deployment.skaha.loggingGroups` | List of GMS style Group URIs whose members can alter the log level.  See [cadc-log](https://github.com/opencadc/core/tree/main/cadc-log) regarding the `/logControl` endpoint. | `[]` |
-| `deployment.skaha.posixMapperResourceID` | Resource ID (URI) for the POSIX Mapper service containing the UIDs and GIDs | `""` |
+| `deployment.skaha.posixMapperResourceID` | Resource ID (URI), or URL, for the POSIX Mapper service containing the UIDs and GIDs | `""` | `SKAHA_POSIX_MAPPER_RESOURCE_ID` |
 | `deployment.skaha.oidcURI` | URI (or URL) for the OIDC service | `""` |
 | `deployment.skaha.gmsID` | Resource ID (URI) for the IVOA Group Management Service | `""` |
 | `deployment.skaha.registryURL` | URL for the IVOA registry containing service locations | `""` |
 | `deployment.skaha.nodeAffinity` | Kubernetes Node affinity for the Skaha API Pod | `{}` |
-| `deployment.skaha.sessions.expirySeconds` | Expiry time, in seconds, for interactive sessions.  Defaults to four (4) days. | `"345600"` |
-| `deployment.skaha.sessions.maxCount` | Maximum number of interactive sessions per user.  Defaults to three (3). | `"3"` |
+| `deployment.skaha.sessions.userStorageTopLevelDirectory` | Top-level directory for user storage in Skaha User Sessions.  Most will simply leave this set to "/cavern" | `/cavern` | `SKAHA_SESSIONS_TLD` |
+| `deployment.skaha.sessions.expirySeconds` | Expiry time, in seconds, for interactive sessions.  Defaults to four (4) days. | `"345600"` | `SKAHA_SESSIONS_EXPIRY_SECONDS` |
+| `deployment.skaha.sessions.maxCount` | Maximum number of interactive sessions per user.  Defaults to three (3). | `"3"` | `SKAHA_SESSIONS_MAX_COUNT` |
 | `deployment.skaha.sessions.minEphemeralStorage` | Minimum ephemeral storage, in [Kubernetes quantity](https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/quantity/), for interactive sessions.  Defaults to 20Gi. | `"20Gi"` |
 | `deployment.skaha.sessions.maxEphemeralStorage` | Maximum ephemeral storage, in [Kubernetes quantity](https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/quantity/), for interactive sessions.  Defaults to 200Gi. | `"200Gi"` |
+| `deployment.skaha.sessions.imageRegistryHosts` | List of Docker (Harbor) registry hosts for Skaha User Sessions.  Defaults to `images.canfar.net` | `images.canfar.net` | `SKAHA_SESSIONS_IMAGE_REGISTRY_HOSTS` |
 | `deployment.skaha.sessions.initContainerImage` | Init container image for Skaha User Sessions. | `redis-7.4.2-alpine3.21` |
 | `deployment.skaha.sessions.queue.default.queueName` | Name of the default `LocalQueue` instance from Kueue for all types | `""` |
 | `deployment.skaha.sessions.queue.default.priorityClass` | Name of the `priorityClass` for the all types to allow some pre-emption | `""` |
-| `deployment.skaha.sessions.queue.<typename>.queueName` | Name of the `LocalQueue` instance from Kueue for the given type | `""` |
-| `deployment.skaha.sessions.queue.<typename>.priorityClass` | Name of the `priorityClass` for the given type to allow some pre-emption | `""` |
-| `deployment.skaha.sessions.hostname` | Hostname to access user sessions on.  Defaults to `deployment.hostname` | `deployment.hostname` |
+| `deployment.skaha.sessions.queue.<typename>.queueName` | Name of the `LocalQueue` instance from Kueue for the given type | `""` | `SKAHA_QUEUE_<typename>_QUEUE_NAME` |
+| `deployment.skaha.sessions.queue.<typename>.priorityClass` | Name of the `priorityClass` for the given type to allow some pre-emption | `""` | `SKAHA_QUEUE_<typename>_PRIORITY_CLASS` |
+| `deployment.skaha.sessions.hostname` | Hostname to access user sessions on.  Defaults to `deployment.hostname` | `deployment.hostname` | `SKAHA_SESSIONS_HOSTNAME` |
 | `deployment.skaha.sessions.extraVolumes` | List of extra `volume` and `volumeMount` to be mounted in User Sessions.  See the `values.yaml` file for examples. | `[]` |
-| `deployment.skaha.sessions.gpuEnabled` | Enable GPU support for User Sessions.  Defaults to `false` | `false` |
+| `deployment.skaha.sessions.gpuEnabled` | Enable GPU support for User Sessions.  Defaults to `false` | `false` | `SKAHA_SESSIONS_GPU_ENABLED` |
 | `deployment.skaha.sessions.nodeAffinity` | Kubernetes Node affinity for the Skaha User Session Pods | `{}` |
 | `deployment.skaha.sessions.tolerations` | Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the `skaha` User Sessions | `[]` |
 | `deployment.skaha.extraEnv` | List of extra environment variables to be set in the Skaha service.  See the `values.yaml` file for examples. | `[]` |
@@ -94,6 +98,8 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `secrets` | List of secrets to be mounted in the Skaha API defined as objects (i.e `secretName: {cert.pem: xxx}`) | `[]` |
 | `storage.service.spec` | Storage class specification for the Skaha API.  Can be `persistentVolumeClaim` or a dynamic instantiation like `hostPath`.  See [Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/). | `{}` |
 | `redis` | [Redis sub-chart configuration](https://github.com/bitnami/charts/tree/main/bitnami/redis) for Skaha's caching of Harbor Docker image metadata. | See [values.yaml](https://github.com/at88mph/deployments/blob/kueue-queue-discovery/helm/applications/skaha/values.yaml#L229) default. |
+
+The `REDIS_HOST` and `REDIS_PORT` environment variables are set in the Skaha API Pod to point to the Redis service.  They default to `{{ .Release.Name }}-redis-master.{{ .Values.skaha.namespace }}.svc.{{ .Values.kubernetesClusterDomain }}` and `6379`, respectively.
 
 #### Notes on tolerations and nodeAffinity
 

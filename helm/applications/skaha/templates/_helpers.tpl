@@ -89,7 +89,7 @@ The init containers for the launch scripts.
         command: ["/init-users-groups/init-users-groups.sh"]
         env:
         - name: HOME
-          value: "${SKAHA_TLD}/home/${skaha.userid}"
+          value: "${SKAHA_SESSIONS_TLD}/home/${skaha.userid}"
         - name: REDIS_URL
           value: "redis://{{ .Release.Name }}-redis-master.{{ .Values.skaha.namespace }}.svc.{{ .Values.kubernetesClusterDomain }}:6379"
         volumeMounts:

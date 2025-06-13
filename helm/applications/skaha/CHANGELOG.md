@@ -1,4 +1,13 @@
-# CHANGELOG for Skaha User Session API (Chart 0.11.10)
+# CHANGELOG for Skaha User Session API (Chart 0.12.0)
+
+## 2025.06.10 (0.12.0)
+
+### :rotating_light: Breaking changes:
+- :stop_sign: Skaha now uses the Cavern API to allocate new users.  The new property, `deployment.skaha.userHomeURI`, is used to set the VOSpace URI for the User Home directory in Cavern.  The `deployment.skaha.skahaTld` property is no longer used.
+- :stop_sign: The `deployment.skaha.sessions.imageRegistryHosts` property is now uses to set the Image Registry hosts for User Sessions.  This replaces the `deployment.skaha.registryHosts` property.
+
+### Added
+- `deployment.skaha.sessions.userStorageTopLevelDirectory` to set the top-level directory for user storage in Cavern.  User Session Pods still use the underlying PVC storage, and this directs the mount point.
 
 ## 2025.06.10 (0.11.10)
 - Fix: Do not assume separate Namespaces for the User Sessions and Skaha API.  The Workload Namespace defaults to `skaha-workload`, but will use the same as the Skaha API if empty.

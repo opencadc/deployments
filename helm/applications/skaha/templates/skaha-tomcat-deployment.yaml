@@ -24,52 +24,40 @@ spec:
       securityContext:
         seccompProfile:
           type: RuntimeDefault
-      initContainers:
-      - name: init-skaha-service
-        image: {{ .Values.deployment.skaha.init.image | default "busybox:1.37.0" }}
-        imagePullPolicy: {{ .Values.deployment.skaha.init.imagePullPolicy | default "IfNotPresent" }}
-        command: ['sh', '-c', 'mkdir -p ${SKAHA_TLD}/home && mkdir -p ${SKAHA_TLD}/projects']  # Expected to have /arc mounted
-        volumeMounts:
-        - mountPath: "{{ .Values.deployment.skaha.skahaTld }}"
-          name: cavern-volume
-          subPath: cavern
-        env:
-        - name: SKAHA_TLD
-          value: "{{ .Values.deployment.skaha.skahaTld }}"
-        securityContext:
-          allowPrivilegeEscalation: false
       containers:
       - env: 
         - name: SKAHA_SESSIONS_HOSTNAME
           value: "{{ .Values.deployment.skaha.sessions.hostname | default .Values.deployment.hostname }}"
         - name: SKAHA_HOSTNAME
           value: "{{ .Values.deployment.hostname }}"
-        - name: SKAHA_TLD
-          value: "{{ .Values.deployment.skaha.skahaTld }}"
-        - name: GPU_ENABLED
+        - name: SKAHA_SESSIONS_TLD
+          value: "{{ .Values.deployment.skaha.sessions.userStorageTopLevelDirectory | required "Missing deployment.skaha.sessions.userStorageTopLevelDirectory for User Sessions to mount the User Storage." }}"
+        - name: SKAHA_SESSIONS_GPU_ENABLED
           value: "{{ .Values.deployment.skaha.sessions.gpuEnabled | default "false" }}"
-        - name: skaha.homedir
-          value: "{{ .Values.deployment.skaha.skahaTld }}/home"
-        - name: skaha.namespace
+        - name: SKAHA_USER_HOME_URI
+          value: "{{ .Values.deployment.skaha.userHomeURI | required "Missing deployment.skaha.userHomeURI.  This is necessary for new user allocations to be put through Cavern" }}"
+        - name: SKAHA_CAVERN_SERVICE_URI
+          value: "{{ .Values.deployment.skaha.cavernServiceURI | required "Missing deployment.skaha.cavernServiceURI.  This is necessary for new user allocations to be put through Cavern" }}"
+        - name: SKAHA_WORKLOAD_NAMESPACE
           value: "{{ .Values.skahaWorkload.namespace }}"
-        - name: skaha.maxusersessions
+        - name: SKAHA_SESSIONS_MAX_COUNT
           value: "{{ .Values.deployment.skaha.sessions.maxCount }}"
-        - name: skaha.sessionexpiry
+        - name: SKAHA_SESSIONS_EXPIRY_SECONDS
           value: "{{ .Values.deployment.skaha.sessions.expirySeconds }}"
-        - name: skaha.defaultquotagb
+        - name: SKAHA_DEFAULT_STORAGE_QUOTA_GB
           value: "{{ .Values.deployment.skaha.defaultQuotaGB }}"
-        - name: skaha.harborhosts
-          value: "{{ .Values.deployment.skaha.registryHosts }}"
-        - name: skaha.usersgroup
+        - name: SKAHA_SESSIONS_IMAGE_REGISTRY_HOSTS
+          value: "{{ .Values.deployment.skaha.sessions.imageRegistryHosts }}"
+        - name: SKAHA_USERS_GROUP
           value: "{{ .Values.deployment.skaha.usersGroup }}"
-        - name: skaha.headlessgroup
+        - name: SKAHA_HEADLESS_GROUP
           value: "{{ .Values.deployment.skaha.headlessGroup }}"
         {{- with .Values.deployment.skaha.headlessPriorityGroup }}
-        - name: skaha.headlessprioritygroup
+        - name: SKAHA_HEADLESS_PRIORITY_GROUP
           value: "{{ . }}"
         {{- end }}
         {{- with .Values.deployment.skaha.headlessPriorityClass }}
-        - name: skaha.headlesspriortyclass
+        - name: SAKAHA_HEADLESS_PRIORITY_CLASS
           value: "{{ . }}"
         {{- end }}
         {{- with .Values.deployment.skaha.sessions.queue }}
@@ -80,9 +68,9 @@ spec:
           value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.deployment.skaha.sessions.queue.%s.priorityClass" $queueConfigKey) }}"
         {{- end }}
         {{- end }}
-        - name: skaha.adminsgroup
+        - name: SKAHA_ADMINS_GROUP
           value: "{{ .Values.deployment.skaha.adminsGroup }}"
-        - name: skaha.posixmapper.resourceid
+        - name: SKAHA_POSIX_MAPPER_RESOURCE_ID
           value: "{{ .Values.deployment.skaha.posixMapperResourceID }}"
         - name: REDIS_HOST
           value: "{{ .Release.Name }}-redis-master.{{ .Values.skaha.namespace }}.svc.{{ .Values.kubernetesClusterDomain }}"
@@ -110,12 +98,6 @@ spec:
         volumeMounts:
         - mountPath: "/config"
           name: config-volume
-        - mountPath: "/add-user-config"
-          name: add-user-config
-        - mountPath: "{{ .Values.deployment.skaha.skahaTld }}"
-          name: cavern-volume
-          # This subpath needs to match the subpath in Cavern's deployment.  If that one is configurable, so must this one be!
-          subPath: cavern
         {{- with .Values.deployment.skaha.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -140,11 +122,6 @@ spec:
       - name: config-volume
         configMap:
           name: skaha-config
-      - name: add-user-config
-        configMap:
-          name: add-user-config
-      - name: cavern-volume
-        {{- toYaml .Values.storage.service.spec | nindent 8 }}
-      {{- with .Values.deployment.skaha.extraVolumes }}
+       {{- with .Values.deployment.skaha.extraVolumes }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
