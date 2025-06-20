@@ -1,0 +1,164 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "https://opencadc.org/science-platform/skaha.schema.json",
+    "title": "Skaha",
+    "properties": {
+        "clusterDomainName": {
+            "type": "string",
+            "default": "cluster.local"
+        },
+        "replicaCount": {
+            "type": "integer",
+            "default": 1
+        },
+        "image": {
+            "type": "object",
+            "properties": {
+                "repository": {
+                    "type": "string",
+                    "default": "images.opencadc.org/platform/skaha"
+                },
+                "tag": {
+                    "type": "string",
+                    "default": "0.27.8"
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "default": "IfNotPresent"
+                }
+            }
+        },
+        "imagePullSecrets": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "nameOverride": {
+            "type": "string",
+            "default": "skaha"
+        },
+        "fullnameOverride": {
+            "type": "string",
+            "default": "skaha"
+        },
+        "serviceAccount": {
+            "type": "object",
+            "properties": {
+                "create": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "name": {
+                    "type": "string",
+                    "default": ""
+                },
+                "automount": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "annotations": {
+                    "type": "object",
+                    "default": {}
+                }
+            }
+        },
+        "podAnnotations": {
+            "type": "object",
+            "default": {}
+        },
+        "podLabels": {
+            "type": "object",
+            "default": {}
+        },
+        "podSecurityContext": {
+            "type": "object",
+            "default": {}
+        },
+        "securityContext": {
+            "type": "object",
+            "default": {}
+        },
+        "service": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "default": "ClusterIP"
+                },
+                "port": {
+                    "type": "integer",
+                    "default": 8080
+                }
+            }
+        },
+        "ingress": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "className": {
+                    "type": "string",
+                    "default": ""
+                },
+                "pathType": {
+                    "type": "string",
+                    "default": "Prefix"
+                },
+                "path": {
+                    "type": "string",
+                    "default": "/"
+                },
+                "hosts": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "host": {
+                            "type": "string",
+                            "required": true
+                        },
+                        "paths": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "path": {
+                                    "type": "string",
+                                    "required": true
+                                },
+                                "pathType": {
+                                    "type": "string",
+                                    "default": "Prefix"
+                                }
+                            }
+                        }
+                    },
+                    "required": ["items"]
+                },
+                "tls": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "secretName": {
+                                "type": "string"
+                            },
+                            "hosts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "default": []
+                },
+                "annotations": {
+                    "type": "object",
+                    "default": {}
+                }
+            }
+        },
+    }
+}
