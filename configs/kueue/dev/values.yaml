@@ -1,19 +1,7 @@
 # Helm Values for K8s Kueue Dev
 
-nameOverride: ""
-fullnameOverride: ""
-
-# Enable Prometheus Metrics Endpoint
-# Recommended but you need the Prometheus Operator for this to work
-enablePrometheus: false
-
-# Enable x509 automated certificate management using cert-manager (cert-manager.io)
-enableCertManager: false
-
-# Enable API Priority and Fairness configuration for the visibility API
-# APF is API Priority and Fairness, which is a feature that allows you to configure the priority of your workloads
-#TODO: Invesitgate if APF is enabled on the cluster
-enableVisibilityAPF: false
+# Enable prometheus metrics for the kueue controller.
+enablePrometheus: true
 
 # Kueue Controller Configuration
 controllerManager:
@@ -25,11 +13,6 @@ controllerManager:
       enabled: true
   # Kueue Deployment Configuration
   manager:
-    image:
-      repository: us-central1-docker.pkg.dev/k8s-staging-images/kueue/kueue
-      # This should be set to 'IfNotPresent' for released version
-      pullPolicy: Always
-    podAnnotations: {}
     resources:
       limits:
         cpu: "2"
@@ -37,35 +20,6 @@ controllerManager:
       requests:
         cpu: "2"
         memory: 1024Mi
-    podSecurityContext:
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-    containerSecurityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-          - ALL
-  replicas: 1
-  imagePullSecrets: []
-  readinessProbe:
-    initialDelaySeconds: 5
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-  livenessProbe:
-    initialDelaySeconds: 15
-    periodSeconds: 20
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-  topologySpreadConstraints: []
-  podDisruptionBudget:
-    enabled: false
-    minAvailable: 1
-kubernetesClusterDomain: cluster.local
-
 
 # controller_manager_config.yaml. controllerManager utilizes this yaml via manager-config Configmap.
 managerConfig:
@@ -79,7 +33,7 @@ managerConfig:
     metrics:
       # Bind to for serving prometheus metrics, set to 0 to disable
       # Maps to metricsService.ClusterIP
-      bindAddress: :8080
+      bindAddress: :8443
       # Report the cluster queue resource usage and quotas metrics
       enableClusterQueueResources: true
 
@@ -107,24 +61,6 @@ managerConfig:
       # extra queries to accumulate when a client is exceeding its rate.
       burst: 128
 
-
-    # pprof is a tool for visualization and analysis of profiling data enabled by setting the bind address.
-    #pprofBindAddress: :8083
-
-    # Wait for admitted workload to reach PodsReady=true. When enabled,
-    # if  pods exceeds the timeout, it will be evicted and requeued in the same
-    # cluster queue for backoffLimitCount times
-    waitForPodsReady:
-      enable: false
-      timeout: 5m
-      blockAdmission: false
-      requeuingStrategy:
-        timestamp: Eviction
-        backoffLimitCount: null # null indicates infinite requeuing
-        backoffBaseSeconds: 60
-        backoffMaxSeconds: 3600
-
-
     # Controls whether or not Kueue reconciles jobs that don't set the annotation kueue.x-k8s.io/queue-name.
     # If set to true, then those jobs will be suspended and never started unless they are assigned a queue
     # and eventually admitted. This also applies to jobs created before starting the kueue controller.
@@ -132,78 +68,21 @@ managerConfig:
     # they will start immediately.
     manageJobsWithoutQueueName: false
 
-    #! TODO: Setyp proper internal cert management with RCS
-    # https://kueue.sigs.k8s.io/docs/reference/kueue-config.v1beta1/#InternalCertManagement
-    # internalCertManagement:
-    #   enable: false
-    #   webhookServiceName: ""
-    #   webhookSecretName: ""
+    managedJobsNamespaceSelector:
+      matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+                - skaha-workload
+                - canfar-b-workload
 
     integrations:
       # List of framewor to be integrated with Kueue.
       frameworks:
       - "batch/job"
-      # - "kubeflow.org/mpijob"
-      # - "ray.io/rayjob"
-      # - "ray.io/raycluster"
-      # - "jobset.x-k8s.io/jobset"
-      # - "kubeflow.org/mxjob"
-      # - "kubeflow.org/paddlejob"
-      # - "kubeflow.org/pytorchjob"
-      # - "kubeflow.org/tfjob"
-      # - "kubeflow.org/xgboostjob"
-      # - "pod"
-      # - "deployment"
-      # externalFrameworks:
-      # - "Foo.v1.example.com"
       labelKeysToCopy:
       - canfar-net-sessionID
       - canfar-net-sessionName
       - canfar-net-sessionType
       - canfar-net-userid
       - batch.kubernetes.io/job-name
-      # kueue controller behaviour for pod objects
-      podOptions:
-        namespaceSelector:
-          matchExpressions:
-            - key: kubernetes.io/metadata.name
-              operator: In
-              values: [ skaha-workload, canfar-b-workload ]
-
-    # FairSharing enables fair sharing for all cohorts.
-    # See https://kueue.sigs.k8s.io/docs/reference/kueue-config.v1beta1/#FairSharing
-    #fairSharing:
-    #  enable: true
-    #  preemptionStrategies: [LessThanOrEqualToFinalShare, LessThanInitialShare]
-
-    # Additional configuration options for handling the resources.
-    #resources:
-    #  excludeResourcePrefixes: []
-    # transformations:
-    # - input: nvidia.com/mig-4g.5gb
-    #   strategy: Replace | Retain
-    #   outputs:
-    #     example.com/accelerator-memory: 5Gi
-    #     example.com/accelerator-gpc: 4
-
-
-# Port definitions for metricsService and webhookService.
-metricsService:
-  ports:
-    - name: https
-      port: 8443
-      protocol: TCP
-      targetPort: https
-  type: ClusterIP
-  annotations: {}
-
-webhookService:
-  ipDualStack:
-    enabled: false
-    ipFamilies: ["IPv6", "IPv4"]
-    ipFamilyPolicy: "PreferDualStack"
-  ports:
-    - port: 443
-      protocol: TCP
-      targetPort: 9443
-  type: ClusterIP

@@ -1,4 +1,7 @@
-# CHANGELOG for Cavern User Storage (Chart 0.6.4)
+# CHANGELOG for Cavern User Storage (Chart 0.6.5)
+
+## 2025.06.17 (0.6.5)
+- Small feature to allow user allocation on behalf of another user's JWT.  This is support for the OIDC scenario.
 
 ## 2025.05.07 (0.6.4)
 - Update to `cavern` 0.8.1 image.

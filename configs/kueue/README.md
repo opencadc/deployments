@@ -12,28 +12,26 @@ In short, **kueue intercepts the workload, and releases it when the cluster is r
 
 ## Installation Guide
 
-We strongly recommend using the helm chart provided by the kubernetes-sigs/kueue project to install the system in your cluster, found [here](https://github.com/kubernetes-sigs/kueue/tree/main/charts/kueue).
+We recommend using the Helm chart published by the kubernetes-sigs/kueue project to install the system in your cluster from OCI Artifact Registry.
 
-The helm install requires a `values.yaml` file to be provided during installation with deployment specific configurations. You can find example configs provided with this codebase which are used in production and development environments at Canadian Astronomy Data Centre (CADC) by the Science Platform Team.
- -  `configs/kueue/dev/values.yaml`
- -  `configs/kueue/prod/values.yaml`
+### Install from OCI Container Registry (Recommended)
 
-### Installation Steps
-
-To install kueue in your cluster with the development configuration, follow the steps below:
+This is the simplest method that doesn't require cloning the Kueue repository:
 
 ```bash
-git clone https://github.com/kubernetes-sigs/kueue.git
-git clone https://github.com/opencadc/deployments.git
-cd kueue/charts/kueue
-helm install kueue . -f ../../../deployments/configs/kueue/dev/values.yaml -n kueue-system
+
+# Install Kueue using the OCI registry
+cd configs/kueue/dev
+helm install kueue oci://registry.k8s.io/kueue/charts/kueue:0.11.6 --values values.yaml --namespace kueue-system --create-namespace
 ```
 
-Once Kueue is installed, you need to configure the system to manage workloads in the cluster. This is done by creating `ResourceFlavors`, `ClusterQueues`, `LocalQueues`, and `WorkloadPriorityClass` objects in the cluster. Sample configurations for these objects are provided in the `configs/kueue/dev/` and `configs/kueue/prod/` directories. To install them, you can use the following commands;
+Once Kueue is installed, you need to configure the system to manage workloads in the cluster. This is done by creating `ResourceFlavors`, `ClusterQueues`, `LocalQueues`, and `WorkloadPriorityClass` objects in the cluster. Sample configurations for these objects are provided in the `configs/kueue/dev/` and `configs/kueue/prod/` directories. To install them, you can use the following commands:
 
 ```bash
 cd deployments/configs/kueue/dev/
 kubectl apply -f clusterQueue.config.yaml  #Requires Cluster Admin Access
+kubectl create namespace skaha-workload
+kubectl create namespace canfar-b-workload
 kubectl apply -f localQueue.config.yaml    #Does not require admin access
 ```
 
