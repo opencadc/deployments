@@ -101,6 +101,26 @@ deployment:
       #
       userStorageTopLevelDirectory: "/cavern"
 
+      # Required.  These are the credentials and details to connect to the Cavern service to provide Administrative access to User Storage, namely creating new allocations.
+      userStorageAdmin:
+        # The user name to use for the User Storage Admin.  This is who will be used to create new user allocations in Cavern, and, thus, who is declared as the `adminUser` in Cavern.
+        # Example:
+        #   userName: "science-platform-user-storage-admin"
+        # userName:
+
+        # It is expected that the OIDC Client is created ahead out of band and available to Skaha.
+        oidc:
+#          uri: https://iam.example.org/
+#          clientID: "science-platform-user-storage-admin"
+#          clientSecret: "science-platform-user-storage-admin-secret"
+#          existingSecretName: "kubernetes-science-platform-user-storage-admin-secret"
+
+        # Alternatively, you can specify a Kubernetes Secret that contains a PEM Client Certificate representing the User Storage Admin.
+        # If both this and the OIDC Client are specified, Helm will throw an error.
+        # Example:
+        #   certificateSecretName: "science-platform-user-storage-admin-certificate"
+        # certificateSecretName:
+
       # List of Image Registry hosts to use for User Sessions.  This is used to verify images against the Image Registry.
       # Currently only supports Harbor hosts.
       # Example:

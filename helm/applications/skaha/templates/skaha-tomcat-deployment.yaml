@@ -47,7 +47,7 @@ spec:
         - name: SKAHA_DEFAULT_STORAGE_QUOTA_GB
           value: "{{ .Values.deployment.skaha.defaultQuotaGB }}"
         - name: SKAHA_SESSIONS_IMAGE_REGISTRY_HOSTS
-          value: "{{ .Values.deployment.skaha.sessions.imageRegistryHosts }}"
+          value: "{{ join " " .Values.deployment.skaha.sessions.imageRegistryHosts }}"
         - name: SKAHA_USERS_GROUP
           value: "{{ .Values.deployment.skaha.usersGroup }}"
         - name: SKAHA_HEADLESS_GROUP
