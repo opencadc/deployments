@@ -24,38 +24,65 @@ spec:
       securityContext:
         seccompProfile:
           type: RuntimeDefault
-      initContainers:
-      - name: init-skaha-service
-        image: {{ .Values.deployment.skaha.init.image | default "busybox:1.37.0" }}
-        imagePullPolicy: {{ .Values.deployment.skaha.init.imagePullPolicy | default "IfNotPresent" }}
-        command: ['sh', '-c', 'mkdir -p ${SKAHA_TLD}/home && mkdir -p ${SKAHA_TLD}/projects']  # Expected to have /arc mounted
-        volumeMounts:
-        - mountPath: "{{ .Values.deployment.skaha.skahaTld }}"
-          name: cavern-volume
-          subPath: cavern
-        env:
-        - name: SKAHA_TLD
-          value: "{{ .Values.deployment.skaha.skahaTld }}"
-        securityContext:
-          allowPrivilegeEscalation: false
       containers:
-      - env: 
+      - env:
+      {{- with .Values.deployment.skaha.sessions.userStorage.admin | required "Missing .Values.deployment.skaha.sessions.userStorage.admin configuration" }}
+      {{- if .auth.oidc }}
+      {{- with .auth.oidc }}
+        - name: SKAHA_USER_STORAGE_ADMIN_USERNAME
+          value: "{{ .adminUsername | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.oidc.adminUsername" }}"
+        - name: SKAHA_USER_STORAGE_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .adminPasswordSecret.name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.oidc.adminPasswordSecret.name" }}
+              key: {{ .adminPasswordSecret.key | default "adminPassword" }}
+        - name: SKAHA_USER_STORAGE_ADMIN_OIDC_CLIENT_ID
+          value: "{{ .clientID | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.oidc.clientID" }}"
+        - name: SKAHA_USER_STORAGE_ADMIN_OIDC_CLIENT_SECRET
+          {{- if .existingSecret }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .existingSecret.name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.oidc.existingSecret.name" }}
+              key: {{ .existingSecret.key | default "clientSecret" }}
+          {{- else }}
+          value: "{{ .clientSecret }}"
+          {{- end }}
+        - name: SKAHA_USER_STORAGE_ADMIN_OIDC_URI
+          value: "{{ $.Values.deployment.skaha.oidcURI | required "Missing .Values.deployment.skaha.oidcURI" }}"
+      {{- end }}
+      {{- else if .auth.certificateSecret }}
+      {{- with .auth.certificateSecret -}}
+        - name: SKAHA_USER_STORAGE_ADMIN_CERTIFICATE
+          valueFrom:
+            secretKeyRef:
+              name: {{ .name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.certificateSecret.name" }}
+              key: {{ .key | default "cadcproxy.pem" }}
+      {{- end }}
+      {{- else }}
+      {{- fail "Neither .Values.deployment.skaha.sessions.userStorage.admin.oidc nor .Values.deployment.skaha.sessions.userStorage.admin.certificateSecret specified." }}
+      {{- end }}
+        - name: SKAHA_USER_STORAGE_ADMIN_SERVICE_URI
+          value: "{{ .serviceURI | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.serviceURI" }}"
+        - name: SKAHA_USER_STORAGE_ADMIN_USER_HOME_URI
+          value: "{{ template "skaha.job.userStorage.homeURI" $ }}"
+        - name: SKAHA_USER_STORAGE_HOME_BASE_DIRECTORY
+          value: "{{ template "skaha.job.userStorage.homeBaseDirectory" $ }}"
+      {{- end }}
         - name: SKAHA_SESSIONS_HOSTNAME
           value: "{{ .Values.deployment.skaha.sessions.hostname | default .Values.deployment.hostname }}"
         - name: SKAHA_HOSTNAME
-          value: "{{ .Values.deployment.hostname }}"
-        - name: SKAHA_TLD
-          value: "{{ .Values.deployment.skaha.skahaTld }}"
+          value: "{{ .Values.deployment.hostname | required "Missing .Values.deployment.hostname" }}"
         - name: GPU_ENABLED
           value: "{{ .Values.deployment.skaha.sessions.gpuEnabled | default "false" }}"
-        - name: skaha.homedir
-          value: "{{ .Values.deployment.skaha.skahaTld }}/home"
         - name: skaha.namespace
           value: "{{ .Values.skahaWorkload.namespace }}"
         - name: skaha.maxusersessions
           value: "{{ .Values.deployment.skaha.sessions.maxCount }}"
         - name: skaha.sessionexpiry
           value: "{{ .Values.deployment.skaha.sessions.expirySeconds }}"
+{{- if not (regexMatch "[0-9\\.?]+$" .Values.deployment.skaha.defaultQuotaGB) }}
+  {{- fail "Invalid format for .Values.deployment.skaha.defaultQuotaGB (should be in the format of 'number' (e.g. 10, 45.8))" }}
+{{- end }}
         - name: skaha.defaultquotagb
           value: "{{ .Values.deployment.skaha.defaultQuotaGB }}"
         - name: skaha.harborhosts
@@ -112,10 +139,6 @@ spec:
           name: config-volume
         - mountPath: "/add-user-config"
           name: add-user-config
-        - mountPath: "{{ .Values.deployment.skaha.skahaTld }}"
-          name: cavern-volume
-          # This subpath needs to match the subpath in Cavern's deployment.  If that one is configurable, so must this one be!
-          subPath: cavern
         {{- with .Values.deployment.skaha.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -143,8 +166,6 @@ spec:
       - name: add-user-config
         configMap:
           name: add-user-config
-      - name: cavern-volume
-        {{- toYaml .Values.storage.service.spec | nindent 8 }}
       {{- with .Values.deployment.skaha.extraVolumes }}
       {{- toYaml . | nindent 6 }}
       {{- end }}

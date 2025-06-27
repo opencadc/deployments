@@ -43,9 +43,9 @@ spec:
         - name: skaha_sessionid
           value: "${skaha.sessionid}"
         - name: HOME
-          value: "${SKAHA_TLD}/home/${skaha.userid}"
+          value: "{{ template "skaha.job.userStorage.homeBaseDirectory" $ }}/${skaha.userid}"
         - name: PWD
-          value: "${SKAHA_TLD}/home/${skaha.userid}"
+          value: "{{ template "skaha.job.userStorage.homeBaseDirectory" $ }}/${skaha.userid}"
         - name: JULIA_NUM_THREADS
           value: "${software.requests.cores}"
         - name: OPENBLAS_NUM_THREADS
