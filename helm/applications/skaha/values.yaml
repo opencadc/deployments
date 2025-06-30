@@ -155,12 +155,12 @@ deployment:
               # clientSecret:
               # 
               # Alternatively, you can specify an existing Secret that contains the OIDC Client Secret.
-              # The existingSecret is expected to have the key "clientSecret" by default, but you can override it.
+              # The existingClientSecret is expected to have the key "clientSecret" by default, but you can override it.
               # Example:
-              #   existingSecret:
+              #   existingClientSecret:
               #     name: "science-platform-user-storage-admin-oidc-secret"
               #     key: "clientSecret
-              # existingSecret: 
+              # existingClientSecret: 
               #   name: 
               #   key:
 

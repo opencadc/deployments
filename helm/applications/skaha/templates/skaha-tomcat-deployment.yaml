@@ -39,11 +39,11 @@ spec:
         - name: SKAHA_USER_STORAGE_ADMIN_OIDC_CLIENT_ID
           value: "{{ .clientID | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.oidc.clientID" }}"
         - name: SKAHA_USER_STORAGE_ADMIN_OIDC_CLIENT_SECRET
-          {{- if .existingSecret }}
+          {{- if .existingClientSecret }}
           valueFrom:
             secretKeyRef:
-              name: {{ .existingSecret.name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.oidc.existingSecret.name" }}
-              key: {{ .existingSecret.key | default "clientSecret" }}
+              name: {{ .existingClientSecret.name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.oidc.existingSecret.name" }}
+              key: {{ .existingClientSecret.key | default "clientSecret" }}
           {{- else }}
           value: "{{ .clientSecret }}"
           {{- end }}
