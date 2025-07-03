@@ -199,11 +199,11 @@ deployment:
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "2Gi"
+        cpu: "1000m"
       limits:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "3Gi"
+        cpu: "2000m"
 
     # Uncomment to debug.  Requires options above as well as service port exposure below.
     # extraPorts:
