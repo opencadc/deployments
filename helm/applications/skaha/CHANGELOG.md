@@ -1,4 +1,8 @@
-# CHANGELOG for Skaha User Session API (Chart 0.11.10)
+# CHANGELOG for Skaha User Session API (Chart 0.11.12)
+
+## 2025.07.09 (0.11.12)
+- Fix: Remove unnecessary missing label messager from image caching script.
+- Feature: Make `imagePullPolicy` configurable for User Sessions.
 
 ## 2025.06.10 (0.11.10)
 - Fix: Do not assume separate Namespaces for the User Sessions and Skaha API.  The Workload Namespace defaults to `skaha-workload`, but will use the same as the Skaha API if empty.

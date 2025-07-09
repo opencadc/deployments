@@ -82,7 +82,7 @@ spec:
               }
             }
         image: ${software.imageid}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           # https://docs.cloudbees.com/docs/cloudbees-ci-kb/latest/best-practices/jvm-memory-settings-best-practice
           # memory limits / requests are equal and use -XX:InitialRAMPercentage / -XX:MaxRAMPercentage

@@ -58,7 +58,7 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - /skaha-system/skaha-carta.sh {{ $.Values.deployment.skaha.sessions.userStorage.topLevelDirectory | required ".Values.deployment.skaha.sessions.userStorage.topLevelDirectory top level folder is required" }} {{ template "skaha.job.userStorage.projectsBaseDirectory" $ }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:
             memory: "${software.requests.ram}"

@@ -57,7 +57,7 @@ spec:
             drop:
               - ALL
         workingDir: "{{ template "skaha.job.userStorage.homeBaseDirectory" $ }}/${skaha.userid}"
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:
             memory: "${software.requests.ram}"

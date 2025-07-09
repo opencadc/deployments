@@ -62,7 +62,7 @@ spec:
             drop:
               - ALL
         image: ${software.imageid}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:
             memory: "1Gi"
