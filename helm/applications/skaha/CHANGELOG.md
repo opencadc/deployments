@@ -1,4 +1,8 @@
-# CHANGELOG for Skaha User Session API (Chart 0.11.13)
+# CHANGELOG for Skaha User Session API (Chart 0.11.14)
+
+## 2025.07.11 (0.11.14)
+- Feature: Set the default resource consumption request (RAM and CPU Cores) for User Sessions when none are specified.
+- Feature: Bump Skaha API image to `0.29.1`.
 
 ## 2025.07.10 (0.11.13)
 - Feature: Add support for TLS in User Sessions IngressRoute.
