@@ -59,18 +59,18 @@ spec:
         {{- with .Values.deployment.cavern.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        readinessProbe:
-          httpGet:
-            path: {{ printf "%s/%s" .Values.deployment.cavern.endpoint "availability" }}
-            port: {{ $containerPort }}
-          initialDelaySeconds: 15
-          periodSeconds: 300
-        livenessProbe:
-          httpGet:
-            path: {{ printf "%s/%s" .Values.deployment.cavern.endpoint "availability" }}
-            port: {{ $containerPort }}
-          initialDelaySeconds: 25
-          periodSeconds: 300
+        # readinessProbe:
+        #   httpGet:
+        #     path: {{ printf "%s/%s?%s" .Values.deployment.cavern.endpoint "availability" "detail=min" }}
+        #     port: {{ $containerPort }}
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 300
+        # livenessProbe:
+        #   httpGet:
+        #     path: {{ printf "%s/%s?%s" .Values.deployment.cavern.endpoint "availability" "detail=min" }}
+        #     port: {{ $containerPort }}
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 300
 {{- with .Values.deployment.extraHosts }}
       hostAliases:
 {{- range $extraHost := . }}

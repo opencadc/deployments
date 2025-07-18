@@ -45,6 +45,33 @@ deployment:
     #
     # quotaPlugin: {NoQuotaPlugin | CephFSQuotaPlug}
 
+    # User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.
+    allocations:
+      # Required.  The default size, in GB, of an allocation.  This is used in the absence of the Quota VOSpace property.  Can be a floating point number.
+      # Provided value is 10 (10 GiB) by default.
+      # Example:
+      #   defaultSizeGB: 25.5
+      defaultSizeGB: 10
+
+      # The parent folders that will be used to create new allocations.  This is a list of folders that will be created if they do not exist.
+      # It's best to keep these as /home and /projects, but you can change them if you wish.  There may be implications!
+      # Example:
+      #   parentFolders:
+      #     - "/home"
+      #     - "/projects"
+      #     - "/data"
+      parentFolders:
+        - "/home"
+        - "/projects"
+
+      # The API keys object that will be permitted to create new allocations.  These will be passed as authorization headers to the Cavern API.
+      # Format is <clientApplicationName>: <apiKeyToken>
+      # Example:
+      #   apiKeys:
+      #     skaha: "tokeen-value-that-is-hard-to-guess"
+      #     prepareData: "another-token-value"
+      # apiKeys: {}
+
     # The /home and /projects folders will be automatically created if not present.
     filesystem:
       # persistent data directory in container
