@@ -90,6 +90,58 @@ deployment:
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
 
+      # Storage setings to be passed into the User Session Kubernetes Job spec.
+      userStorage:
+        # Required.  Absolute path mount point to where the top level directory is mounted in the User Sessions.  For most, this can be set to "/cavern", and
+        # it is expected that the "/home" and the "/projects" folders will be found under this path (i.e. "/cavern/home" and "/cavern/projects").
+        # Example:
+        #   topLevelDirectory: "/cavern"
+        #
+        topLevelDirectory: "/cavern"
+
+        # Required.  RELATIVE path to the User Storage Home folder.  This is the folder where the User's home directories will be created.  Defaults to "home".
+        # Example:
+        #   homeDirectory: "home"
+        #
+        homeDirectory: "home"
+
+        # Required.  RELATIVE path to the User Storage Projects folder.  This is the folder where the Users can share data.  This is used for CARTA sessions.  Defaults to "projects".
+        # Example:
+        #   projectsDirectory: "projects"
+        #
+        projectsDirectory: "projects"
+
+        # Optional. Name of the Persistent Volume Claim to use for User Storage.  Defaults to "skaha-workload-cavern-pvc".
+        # Example:
+        #   persistentVolumeClaimName: "skaha-workload-cavern-pvc"
+        # persistentVolumeClaimName: 
+
+        # Required.  These are the credentials and details to connect to the Cavern service to provide Administrative access to User Storage, namely creating new allocations.
+        admin:
+          # Required.  The VOSpace Service URI (uses ivo:// scheme) for the Cavern Service.
+          # This is the VOSpace location where user home directories will be created.  Requires Cavern to be running.
+          # Example:
+          #   serviceURI: "ivo://example.org/cavern"
+          # serviceURI:
+
+          auth:
+            # Authenticate with an agreed API Key between Skaha and Cavern.  This is used to create new user home directories (allocations).
+            # Generate Key: 
+            #   $ openssl rand -base64 32
+            #   $ jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I=
+            # Example:
+            #   apiKey: "jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I="  # Ensure this value is also used in the Cavern deployment's apiKeys object as "skaha:jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I=".
+            # apiKey:
+
+            # Alternatively, you can specify a Kubernetes Secret that contains a PEM Client Certificate representing the User Storage Admin.
+            # If both this and the OIDC Client are specified, Helm will throw an error.
+            # Default key is "cadcproxy.pem", but you can override it.
+            # Example:
+            #   certificateSecret: 
+            #     name: "science-platform-user-storage-admin-certificate"
+            #     key: "certificate.pem"  # The key in the Secret that contains the PEM certificate
+            # certificateSecret:
+
       # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Deafults to Always.
       # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
       # Example:
@@ -215,8 +267,8 @@ deployment:
         memory: "1Gi"
         cpu: "500m"
       limits:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "1500Mi"
+        cpu: "750m"
 
     # Uncomment to debug.  Requires options above as well as service port exposure below.
     # extraPorts:

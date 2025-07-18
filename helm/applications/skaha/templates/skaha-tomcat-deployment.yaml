@@ -39,7 +39,33 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
       containers:
-      - env: 
+      - env:
+      {{ $userStorageAdmin := required "Missing .Values.deployment.skaha.sessions.userStorage.admin configuration" .Values.deployment.skaha.sessions.userStorage.admin }}
+      {{- with $userStorageAdmin }}
+      {{ $userStorageAdminAuth := required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth configuration" $userStorageAdmin.auth }}
+      {{- with $userStorageAdminAuth }}
+      {{- if .certificateSecret }}
+      {{- with .certificateSecret -}}
+        - name: SKAHA_USER_STORAGE_ADMIN_CERTIFICATE
+          valueFrom:
+            secretKeyRef:
+              name: {{ .name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret.name" }}
+              key: {{ .key | default "cadcproxy.pem" }}
+      {{- end }}
+      {{- else if .apiKey }}
+        - name: SKAHA_USER_STORAGE_ADMIN_API_KEY
+          value: "{{ .apiKey | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKey" }}"
+      {{- else }}
+      {{- fail "Neither .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKey nor .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret specified." }}
+      {{- end }}
+      {{- end }}
+        - name: SKAHA_USER_STORAGE_ADMIN_SERVICE_URI
+          value: "{{ .serviceURI | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.serviceURI" }}"
+        - name: SKAHA_USER_STORAGE_ADMIN_USER_HOME_URI
+          value: "{{ template "skaha.job.userStorage.homeURI" $ }}"
+        - name: SKAHA_USER_STORAGE_HOME_BASE_DIRECTORY
+          value: "{{ template "skaha.job.userStorage.homeBaseDirectory" $ }}"
+      {{- end }}
         - name: SKAHA_SESSIONS_HOSTNAME
           value: "{{ .Values.deployment.skaha.sessions.hostname | default .Values.deployment.hostname }}"
         - name: SKAHA_HOSTNAME
