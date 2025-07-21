@@ -124,6 +124,11 @@ deployment:
           #   serviceURI: "ivo://example.org/cavern"
           # serviceURI:
 
+          # Required.  The VOSpace Resource ID (Node URI) prefix (uses vos:// scheme) for the Cavern Service.
+          # Example:
+          #   nodeURIPrefix: "vos://skao.int~cavern"
+          # nodeURIPrefix:
+
           auth:
             # Authenticate with an agreed API Key between Skaha and Cavern.  This is used to create new user home directories (allocations).
             # Generate Key: 
