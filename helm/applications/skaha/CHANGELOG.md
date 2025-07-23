@@ -1,4 +1,7 @@
-# CHANGELOG for Skaha User Session API (Chart 0.11.14)
+# CHANGELOG for Skaha User Session API (Chart 0.11.15)
+
+## 2025.07.15 (0.11.15)
+- Feature: Set the default memory consumption to 1Gi.
 
 ## 2025.07.11 (0.11.14)
 - Feature: Set the default resource consumption request (RAM and CPU Cores) for User Sessions when none are specified.
