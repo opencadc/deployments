@@ -70,7 +70,7 @@ USER SESSION TEMPLATE DEFINITIONS
 The Home VOSpace Node URI (uses vos:// scheme) for the User Home directory in Cavern.
 */}}
 {{- define "skaha.job.userStorage.homeURI" -}}
-{{- $nodeURIPrefix := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.admin.nodeURIPrefix nodeURIPrefix is required." .Values.deployment.skaha.sessions.userStorage.admin.nodeURIPrefix) -}}
+{{- $nodeURIPrefix := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.nodeURIPrefix nodeURIPrefix is required." .Values.deployment.skaha.sessions.userStorage.nodeURIPrefix) -}}
 {{- $homeDirectoryName := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.homeDirectory home folder name is required." .Values.deployment.skaha.sessions.userStorage.homeDirectory) -}}
 {{- printf "%s/%s" $nodeURIPrefix $homeDirectoryName -}}
 {{- end -}}

@@ -116,19 +116,19 @@ deployment:
         #   persistentVolumeClaimName: "skaha-workload-cavern-pvc"
         # persistentVolumeClaimName: 
 
+        # Required.  The VOSpace Service URI (uses ivo:// scheme) for the Cavern Service.
+        # This is the VOSpace location where user home directories will be created, as well as any other user data.  Requires Cavern to be running.
+        # Example:
+        #   serviceURI: "ivo://example.org/cavern"
+        # serviceURI:
+
+        # Required.  The VOSpace Resource ID (Node URI) prefix (uses vos:// scheme) for the Cavern Service.
+        # Example:
+        #   nodeURIPrefix: "vos://skao.int~cavern"
+        # nodeURIPrefix:
+
         # Required.  These are the credentials and details to connect to the Cavern service to provide Administrative access to User Storage, namely creating new allocations.
         admin:
-          # Required.  The VOSpace Service URI (uses ivo:// scheme) for the Cavern Service.
-          # This is the VOSpace location where user home directories will be created.  Requires Cavern to be running.
-          # Example:
-          #   serviceURI: "ivo://example.org/cavern"
-          # serviceURI:
-
-          # Required.  The VOSpace Resource ID (Node URI) prefix (uses vos:// scheme) for the Cavern Service.
-          # Example:
-          #   nodeURIPrefix: "vos://skao.int~cavern"
-          # nodeURIPrefix:
-
           auth:
             # Authenticate with an agreed API Key between Skaha and Cavern.  This is used to create new user home directories (allocations).
             # Generate Key: 
