@@ -21,6 +21,16 @@ controllerManager:
         cpu: "2"
         memory: 1024Mi
 
+  readinessProbe:
+    periodSeconds: 120
+    timeoutSeconds: 60
+    failureThreshold: 10
+
+  livenessProbe:
+    periodSeconds: 120
+    timeoutSeconds: 60
+    failureThreshold: 10
+
 # controller_manager_config.yaml. controllerManager utilizes this yaml via manager-config Configmap.
 managerConfig:
   controllerManagerConfigYaml: |-
