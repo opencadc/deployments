@@ -1,4 +1,8 @@
-# CHANGELOG for Cavern User Storage (Chart 0.6.5)
+# CHANGELOG for Cavern User Storage (Chart 0.6.6)
+
+## 2025.07.29 (0.6.6)
+- Fix: `NullPointerException` in `cavern` service.
+- Feature: Add JWSK (JWT Set Key) support for OIDC authentication.
 
 ## 2025.06.17 (0.6.5)
 - Small feature to allow user allocation on behalf of another user's JWT.  This is support for the OIDC scenario.
