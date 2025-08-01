@@ -4,7 +4,5 @@ metadata:
   name: add-user-config
   namespace: {{ .Values.skaha.namespace }}
 binaryData:
-  casa-config.tar:
-    {{ .Files.Get "add-user-config/casa/casa-config.tar" | b64enc | nindent 4 }}
-data:
-  {{- (.Files.Glob "add-user-config/*").AsConfig | nindent 2 }}
+  desktop-config.tar:
+    {{ .Files.Get "add-user-config/desktop-config.tar" | b64enc | nindent 4 }}
