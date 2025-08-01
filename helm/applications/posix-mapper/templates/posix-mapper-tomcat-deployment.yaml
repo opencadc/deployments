@@ -4,7 +4,7 @@ metadata:
   labels:
     run: posix-mapper-tomcat
   name: posix-mapper-tomcat
-  namespace: {{ .Values.skaha.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ default 1 .Values.replicaCount }}
   selector:
