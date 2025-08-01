@@ -1,4 +1,7 @@
-# CHANGELOG for Skaha User Session API (Chart 0.11.15)
+# CHANGELOG for Skaha User Session API (Chart 0.11.16)
+
+## 2025.08.01 (0.11.16)
+- Fix: Connection leaks detected from repeated Redis access.  Blocked those up.
 
 ## 2025.07.15 (0.11.15)
 - Feature: Set the default memory consumption to 1Gi.
