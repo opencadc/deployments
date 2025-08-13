@@ -47,7 +47,7 @@ The following table lists the configurable parameters for the Skaha Helm chart. 
 
 | Parameter | Description | Default | Mapped Environment Variable |
 |-----------|-------------|---------|-----------------------------|
-| `kubernetesClusterDomain` | Kubernetes cluster domain used to find internal hosts | `cluster.local` |
+| `kubernetesClusterDomain` | Kubernetes cluster domain used to find internal hosts | `cluster.local` | |
 | `replicaCount` | Number of Skaha replicas to deploy | `1` |
 | `tolerations` | Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the `skaha` API | `[]` |
 | `skaha.namespace` | Namespace where Skaha is deployed | `skaha-system` |
@@ -59,7 +59,7 @@ The following table lists the configurable parameters for the Skaha Helm chart. 
 | `deployment.skaha.userHomeURI` | The VOSpace URI for the User Home directory in Cavern| `` | `SKAHA_USER_HOME_URI` |
 | `deployment.skaha.cavernServiceURI` | The VOSpace URI for the Cavern service | `""` | `SKAHA_CAVERN_SERVICE_URI` |
 | `deployment.skaha.defaultQuotaGB` | Default storage quota in Cavern in GB.  Used when allocating first-time users into the system. | `10` | `SKAHA_DEFAULT_STORAGE_QUOTA_GB` |
-| `deployment.skaha.registryHosts` | Space delimited list of Docker (Harbor) registry hosts | `images.canfar.net` |
+| `deployment.skaha.registryHosts` | Space delimited list of Docker (Harbor) registry hosts | `images.canfar.net` | `SKAHA_SESSIONS_IMAGE_REGISTRY_HOSTS` |
 | `deployment.skaha.usersGroup` | GMS style Group URI for Skaha users to belong to | `""` | `SKAHA_USERS_GROUP` |
 | `deployment.skaha.adminsGroup` | GMS style Group URI for Skaha admins to belong to | `""` | `SKAHA_ADMINS_GROUP` |
 | `deployment.skaha.headlessGroup` | GMS style Group URI whose members can submit headless jobs | `""` | `SKAHA_HEADLESS_GROUP` |
@@ -74,6 +74,7 @@ The following table lists the configurable parameters for the Skaha Helm chart. 
 | `deployment.skaha.sessions.userStorageTopLevelDirectory` | Top-level directory for user storage in Skaha User Sessions.  Most will simply leave this set to "/cavern" | `/cavern` | `SKAHA_SESSIONS_TLD` |
 | `deployment.skaha.sessions.expirySeconds` | Expiry time, in seconds, for interactive sessions.  Defaults to four (4) days. | `"345600"` | `SKAHA_SESSIONS_EXPIRY_SECONDS` |
 | `deployment.skaha.sessions.maxCount` | Maximum number of interactive sessions per user.  Defaults to three (3). | `"3"` | `SKAHA_SESSIONS_MAX_COUNT` |
+| `deployment.skaha.sessions.imagePullPolicy` | Image pull policy for all User Sessions. | `"Always"` | |
 | `deployment.skaha.sessions.minEphemeralStorage` | Minimum ephemeral storage, in [Kubernetes quantity](https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/quantity/), for interactive sessions.  Defaults to 20Gi. | `"20Gi"` |
 | `deployment.skaha.sessions.maxEphemeralStorage` | Maximum ephemeral storage, in [Kubernetes quantity](https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/quantity/), for interactive sessions.  Defaults to 200Gi. | `"200Gi"` |
 | `deployment.skaha.sessions.imageRegistryHosts` | List of Docker (Harbor) registry hosts for Skaha User Sessions.  Defaults to `images.canfar.net` | `images.canfar.net` | `SKAHA_SESSIONS_IMAGE_REGISTRY_HOSTS` |
@@ -83,6 +84,7 @@ The following table lists the configurable parameters for the Skaha Helm chart. 
 | `deployment.skaha.sessions.queue.<typename>.queueName` | Name of the `LocalQueue` instance from Kueue for the given type | `""` | `SKAHA_QUEUE_<typename>_QUEUE_NAME` |
 | `deployment.skaha.sessions.queue.<typename>.priorityClass` | Name of the `priorityClass` for the given type to allow some pre-emption | `""` | `SKAHA_QUEUE_<typename>_PRIORITY_CLASS` |
 | `deployment.skaha.sessions.hostname` | Hostname to access user sessions on.  Defaults to `deployment.hostname` | `deployment.hostname` | `SKAHA_SESSIONS_HOSTNAME` |
+| `deployment.skaha.sessions.tls` | TLS configuration for the User Sessions IngressRoute. | `{}` |  |
 | `deployment.skaha.sessions.extraVolumes` | List of extra `volume` and `volumeMount` to be mounted in User Sessions.  See the `values.yaml` file for examples. | `[]` |
 | `deployment.skaha.sessions.gpuEnabled` | Enable GPU support for User Sessions.  Defaults to `false` | `false` | `SKAHA_SESSIONS_GPU_ENABLED` |
 | `deployment.skaha.sessions.nodeAffinity` | Kubernetes Node affinity for the Skaha User Session Pods | `{}` |

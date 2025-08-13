@@ -24,7 +24,7 @@
     ]
   },
   "memoryGB": {
-    "default": 2,
+    "default": 1,
     "defaultRequest": 4,
     "defaultLimit": 192,
     "defaultHeadless": 4,

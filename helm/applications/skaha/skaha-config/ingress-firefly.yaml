@@ -10,10 +10,11 @@ metadata:
     kind: Job
     name: "${skaha.jobname}"
     uid: "${skaha.jobuid}"
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
+  tls:
+  {{- with .Values.deployment.skaha.sessions.tls }}
+    {{- toYaml . | nindent 6 }}
+  {{- end }}
   entryPoints:
     - web
     - websecure

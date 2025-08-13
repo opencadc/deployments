@@ -1,6 +1,6 @@
 # CHANGELOG for Skaha User Session API (Chart 0.12.0)
 
-## 2025.06.10 (0.12.0)
+## 2025.08.13 (0.12.0)
 
 ### :rotating_light: Breaking changes:
 - :stop_sign: Skaha now uses the Cavern API to allocate new users.  The new property, `deployment.skaha.userHomeURI`, is used to set the VOSpace URI for the User Home directory in Cavern.  The `deployment.skaha.skahaTld` property is no longer used.
@@ -8,6 +8,23 @@
 
 ### Added
 - `deployment.skaha.sessions.userStorageTopLevelDirectory` to set the top-level directory for user storage in Cavern.  User Session Pods still use the underlying PVC storage, and this directs the mount point.
+
+## 2025.08.01 (0.11.16)
+- Fix: Connection leaks detected from repeated Redis access.  Blocked those up.
+
+## 2025.07.15 (0.11.15)
+- Feature: Set the default memory consumption to 1Gi.
+
+## 2025.07.11 (0.11.14)
+- Feature: Set the default resource consumption request (RAM and CPU Cores) for User Sessions when none are specified.
+- Feature: Bump Skaha API image to `0.29.1`.
+
+## 2025.07.10 (0.11.13)
+- Feature: Add support for TLS in User Sessions IngressRoute.
+
+## 2025.07.09 (0.11.12)
+- Fix: Remove unnecessary missing label messager from image caching script.
+- Feature: Make `imagePullPolicy` configurable for User Sessions.
 
 ## 2025.06.10 (0.11.10)
 - Fix: Do not assume separate Namespaces for the User Sessions and Skaha API.  The Workload Namespace defaults to `skaha-workload`, but will use the same as the Skaha API if empty.

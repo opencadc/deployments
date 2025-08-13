@@ -22,7 +22,7 @@ skaha:
 deployment:
   hostname: example.org    # Change this!
   posixMapper:
-    image: images.opencadc.org/platform/posix-mapper:0.3.1
+    image: images.opencadc.org/platform/posix-mapper:0.3.2
     imagePullPolicy: Always
     resourceID: ivo://opencadc.org/posix-mapper
 
@@ -52,8 +52,8 @@ deployment:
         memory: "1Gi"
         cpu: "500m"
       limits:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "1500Mi"
+        cpu: "750m"
 
     minUID: 10000
     minGID: 900000

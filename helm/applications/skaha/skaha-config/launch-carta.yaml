@@ -58,7 +58,7 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - /skaha-system/skaha-carta.sh ${SKAHA_SESSIONS_TLD} ${SKAHA_SESSIONS_TLD}/projects
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:
             memory: "${software.requests.ram}"

@@ -1,4 +1,7 @@
-# CHANGELOG for POSIX Mapper (0.4.1)
+# CHANGELOG for POSIX Mapper (0.4.4)
+
+## 2025.07.16 (0.4.4)
+- Fix for default GID with new Users.  Default GID will match new User's UID.
 
 ## 2025.04.15 (0.4.1)
 - Add `tolerations` feature for `posix-mapper` API and supprting PostgreSQL deployment.

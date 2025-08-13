@@ -77,7 +77,7 @@ spec:
         command: ["/skaha-system/start-jupyterlab.sh"]
         args:
         - ${skaha.sessionid}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:
             memory: "${software.requests.ram}"

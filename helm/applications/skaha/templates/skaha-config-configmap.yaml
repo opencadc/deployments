@@ -6,7 +6,18 @@ metadata:
   namespace: {{ .Values.skaha.namespace }}
 data:
 {{ tpl ($.Files.Glob "config/*").AsConfig . | indent 2 }}
-{{ range $path, $_ :=  $.Files.Glob "skaha-config/*.yaml" }}
+
+# Treat IngressRoute configuration as a Helm Template.
+# This is allowed to be able to specify TLS specification in the IngressRoute.
+# jenkinsd 2025.07.15
+#
+{{ tpl ($.Files.Glob "skaha-config/ingress*.yaml").AsConfig . | indent 2 }}
+
+{{ range $path, $_ :=  $.Files.Glob "skaha-config/launch*.yaml" }}
+  {{ base $path }}: |
+  {{- tpl ($.Files.Get $path) $currContext | nindent 4 }}
+{{ end }}
+{{ range $path, $_ :=  $.Files.Glob "skaha-config/service*.yaml" }}
   {{ base $path }}: |
   {{- tpl ($.Files.Get $path) $currContext | nindent 4 }}
 {{ end }}

@@ -62,7 +62,7 @@ spec:
               - ALL
         image: "${software.imageid}"
         workingDir: "${SKAHA_SESSIONS_TLD}/home/${skaha.userid}"
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:
             memory: "${software.requests.ram}"

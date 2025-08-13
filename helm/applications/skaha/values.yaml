@@ -17,7 +17,7 @@ skahaWorkload:
 deployment:
   hostname: myhost.example.com  # Change this!
   skaha:
-    image: images.opencadc.org/platform/skaha:0.29.0
+    image: images.opencadc.org/platform/skaha:0.31.0
     imagePullPolicy: IfNotPresent
 
     # Cron string for the image caching cron job schedule. Defaults to every half hour.
@@ -135,6 +135,12 @@ deployment:
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
 
+      # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Deafults to Always.
+      # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+      # Example:
+      #   imagePullPolicy: IfNotPresent
+      imagePullPolicy: Always 
+
       # Optionally configure the initContainer image for Redis.  Useful for those not able to reach docker.io
       # Defaults to redis-7.4.2-alpine3.21.
       # Example:
@@ -192,6 +198,13 @@ deployment:
       #   hostname: myhost.example.org
       # hostname:
 
+      # Optionally set the TLS configiuration that contains the certificate information for the alternate hostname for User Sessions.  This will go into the Traefik IngressRoute spec.
+      # @see https://doc.traefik.io/traefik/v2.3/routing/providers/kubernetes-crd/#kind-ingressroute
+      # Example:
+      #   tls:
+      #     secretName: myhost-tls-secret
+      tls: {}
+
       # Declare extra volume mounts in User Sessions.  The "type: parameter in volume section is constant.
       # extraVolumes:
       # - name: example-pvc-name
@@ -244,11 +257,11 @@ deployment:
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "2Gi"
+        cpu: "1000m"
       limits:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "3Gi"
+        cpu: "2000m"
 
     # Uncomment to debug.  Requires options above as well as service port exposure below.
     # extraPorts:
