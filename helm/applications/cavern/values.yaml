@@ -64,15 +64,6 @@ deployment:
         - "/home"
         - "/projects"
 
-      # The API keys object that will be permitted to create new allocations.  These will be passed as authorization headers to the Cavern API.
-      # The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
-      # Format is <clientApplicationName>: <apiKeyToken>
-      # Example:
-      #   apiKeys:
-      #     skaha: "token-value"
-      #     prepareData: "another-token-value"
-      # apiKeys: {}
-
     # The /home and /projects folders will be automatically created if not present.
     filesystem:
       # persistent data directory in container
@@ -89,6 +80,15 @@ deployment:
         username: ""
         uid:
         gid:
+
+    # The API keys object that will be permitted to perform administrative tasks.  These will be passed as authorization headers to the Cavern API.
+    # The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
+    # Format is <clientApplicationName>: <apiKeyToken>
+    # Example:
+    #   adminAPIKeys:
+    #     skaha: "token-value"
+    #     prepareData: "another-token-value"
+    adminAPIKeys: {}
 
       # (optional) base directory exposed for sshfs mounts
       # sshfs:
