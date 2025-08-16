@@ -1,4 +1,8 @@
-# CHANGELOG for POSIX Mapper (0.4.4)
+# CHANGELOG for POSIX Mapper (0.5.0)
+
+## 2025.07.28 (0.5.0)
+### 🚨 Breaking Changes
+- 🛑 🔥 Removed default PostgreSQL database.  It is expected that deployers will run their own PostreSQL database with permanent storage.
 
 ## 2025.07.16 (0.4.4)
 - Fix for default GID with new Users.  Default GID will match new User's UID.
