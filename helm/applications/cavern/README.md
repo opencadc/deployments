@@ -73,9 +73,9 @@ $ curl https://myhost.example.com/cavern/availability
 | `deployment.cavern.resourceID` | Resource ID (URI) for this Cavern service | `""` |
 | `deployment.cavern.oidcURI` | URI (or URL) for the OIDC service | `""` |
 | `deployment.cavern.gmsID` | Resource ID (URI) for the IVOA Group Management Service | `""` |
+| `deployment.cavern.adminAPIKeys` | API keys for client applications that can create new allocations | `{}` |
 | `deployment.cavern.allocations.defaultSizeGB` | Default size of user allocations in GB | `10` |
 | `deployment.cavern.allocations.parentFolders` | List of parent folders to create for user allocations.  Best to leave this alone. | `["/home", "/projects"]` |
-| `deployment.cavern.allocations.apiKeys` | API keys for client applications that can create new allocations | `{}` |
 | `deployment.cavern.filesystem.dataDir` | Persistent data directory in the Cavern container | `""` |
 | `deployment.cavern.filesystem.subPath` | Relative path to the node/file content that could be mounted in other containers | `""` |
 | `deployment.cavern.filesystem.rootOwner.username` | Username of the root owner of the filesystem data (parent of allocations) directory | `""` |
@@ -111,10 +111,9 @@ Cavern typically accepts user allocation requests from the Administrative user, 
 ```yaml
 deployment:
   cavern:
-    allocations:
-      apiKeys:
-        skaha: "skahasecretkey1234567890"
-        prepareData: "preparedatasecretkey1234567890"
+    adminAPIKeys:
+      skaha: "skahasecretkey1234567890"
+      prepareData: "preparedatasecretkey1234567890"
 ```
 
 With this configuration, listed clients can request new user allocations using the `api-key` challenge type in the `Authorization` header.  This `api-key` represents a trusted client application to act on behalf of the Administrative user:

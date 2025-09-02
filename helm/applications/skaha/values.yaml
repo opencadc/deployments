@@ -92,7 +92,7 @@ deployment:
 
       # Storage setings to be passed into the User Session Kubernetes Job spec.
       userStorage:
-        # Required.  Absolute path mount point to where the top level directory is mounted in the User Sessions.  For most, this can be set to "/cavern", and
+        # Required.  ABSOLUTE path mount point to where the top level directory is mounted in the User Sessions.  For most, this can be set to "/cavern", and
         # it is expected that the "/home" and the "/projects" folders will be found under this path (i.e. "/cavern/home" and "/cavern/projects").
         # Example:
         #   topLevelDirectory: "/cavern"
@@ -111,7 +111,7 @@ deployment:
         #
         projectsDirectory: "projects"
 
-        # Optional. Name of the Persistent Volume Claim to use for User Storage.  Defaults to "skaha-workload-cavern-pvc".
+        # Optional. Name of the Persistent Volume Claim to use for User Storage when mounted into sessions.  Defaults to "skaha-workload-cavern-pvc".
         # Example:
         #   persistentVolumeClaimName: "skaha-workload-cavern-pvc"
         # persistentVolumeClaimName: 
