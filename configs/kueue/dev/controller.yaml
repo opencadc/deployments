@@ -59,4 +59,6 @@ integrations:
   - canfar-net-sessionName
   - canfar-net-sessionType
   - canfar-net-userid
+  - opencadc.org/canfar-job-fixed
+  - opencadc.org/canfar-job-flexible
   - batch.kubernetes.io/job-name

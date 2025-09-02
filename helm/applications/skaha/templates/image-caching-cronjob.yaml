@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   namespace: {{ .Values.skaha.namespace }}
-  name: image-caching-cronjob
+  name: {{ .Release.Name }}-image-caching-cronjob
 spec:
   schedule: {{ .Values.deployment.skaha.imageCache.refreshSchedule | toString | quote }}
   jobTemplate:
@@ -42,13 +42,13 @@ spec:
           volumes:
           - name: config-volume
             configMap:
-              name: skaha-config
+              name: {{ .Release.Name }}-skaha-config
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
   namespace: {{ .Values.skaha.namespace }}
-  name: image-caching-job
+  name: {{ .Release.Name }}-image-caching-job
 spec:
   template:
     spec:
@@ -85,4 +85,4 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: skaha-config
+          name: {{ .Release.Name }}-skaha-config

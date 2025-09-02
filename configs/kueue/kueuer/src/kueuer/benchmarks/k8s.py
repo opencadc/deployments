@@ -210,7 +210,7 @@ def run(
         "--vm",
         "1",
         "--vm-bytes",
-        f"{ram_mb*0.8}M",
+        f"{ram_mb * 0.8}M",
         "--temp-path",
         "/tmp",
         "--timeout",

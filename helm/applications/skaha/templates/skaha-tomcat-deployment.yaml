@@ -2,19 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    run: skaha-tomcat
-  name: skaha-tomcat
+    run: {{ .Release.Name }}-skaha-tomcat
+  name: {{ .Release.Name }}-skaha-tomcat
   namespace: {{ .Values.skaha.namespace }}
 spec:
   replicas: {{ default 1 .Values.replicaCount }}
   selector:
     matchLabels:
-      run: skaha-tomcat
+      run: {{ .Release.Name }}-skaha-tomcat
   template:
     metadata:
       creationTimestamp: null
       labels:
-        run: skaha-tomcat
+        run: {{ .Release.Name }}-skaha-tomcat
     spec:
 {{- with .Values.deployment.skaha.nodeAffinity }}
       affinity:
@@ -114,7 +114,7 @@ spec:
         {{- end }}
         image: {{ .Values.deployment.skaha.image }}
         imagePullPolicy: {{ .Values.deployment.skaha.imagePullPolicy }}
-        name: skaha-tomcat
+        name: {{ .Release.Name }}-skaha-tomcat
         resources:
           requests:
             memory: {{ .Values.deployment.skaha.resources.requests.memory }}
@@ -159,10 +159,10 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: skaha-config
+          name: {{ .Release.Name }}-skaha-config
       - name: add-user-config
         configMap:
-          name: add-user-config
+          name: {{ .Release.Name }}-add-user-config
       - name: cavern-volume
         {{- toYaml .Values.storage.service.spec | nindent 8 }}
       {{- with .Values.deployment.skaha.extraVolumes }}

@@ -1,4 +1,7 @@
-# CHANGELOG for Science Portal UI (Chart 0.7.0)
+# CHANGELOG for Science Portal UI (Chart 0.7.1)
+
+## 2025.08.21 (0.7.1)
+- Fix: New documentation links
 
 ## 2025.06.20 (0.7.0)
 - Small fix to enable experimental features in the `values.yaml` file.

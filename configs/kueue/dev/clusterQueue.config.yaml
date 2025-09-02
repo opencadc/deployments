@@ -34,17 +34,17 @@ spec:
           # borrowing / lending = size * 40%
           resources:
             - name: "cpu"
-              nominalQuota:   "32"
-              borrowingLimit: "12"
-              lendingLimit:   "12"
+              nominalQuota:   "28.8"
+              borrowingLimit: "6"
+              lendingLimit:   "6"
             - name: "memory"
-              nominalQuota:   "118Gi"
-              borrowingLimit: "47Gi"
-              lendingLimit:   "47Gi"
+              nominalQuota:   "94Gi"
+              borrowingLimit: "32Gi"
+              lendingLimit:   "32Gi"
             - name: "ephemeral-storage"
-              nominalQuota:   "1000Gi"
-              borrowingLimit: "400Gi"
-              lendingLimit:   "400Gi"
+              nominalQuota:   "700Gi"
+              borrowingLimit: "200Gi"
+              lendingLimit:   "200Gi"
   preemption:
     reclaimWithinCohort: LowerPriority
     borrowWithinCohort:

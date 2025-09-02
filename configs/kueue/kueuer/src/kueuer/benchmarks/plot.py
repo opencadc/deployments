@@ -118,7 +118,7 @@ def plot_completion_times(df: pd.DataFrame) -> None:
         style="use_kueue",
     )
     sns.regplot(
-        data=df[df["use_kueue"] == False],
+        data=df[df["use_kueue"] is False],
         x="completion_time_seconds",
         y="job_count",
         scatter=False,
@@ -126,7 +126,7 @@ def plot_completion_times(df: pd.DataFrame) -> None:
         label="Trendline (No Kueue)",
     )
     sns.regplot(
-        data=df[df["use_kueue"] == True],
+        data=df[df["use_kueue"] is True],
         x="completion_time_seconds",
         y="job_count",
         scatter=False,

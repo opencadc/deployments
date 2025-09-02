@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: add-user-config
+  name: {{ .Release.Name }}-add-user-config
   namespace: {{ .Values.skaha.namespace }}
 binaryData:
   desktop-config.tar:

@@ -33,25 +33,25 @@ spec:
           # GPU Nodes A: 3 x [8 cores, 40Gi memory, 140Gi ephemeral-storage, GRID-V100D-16C]
           # GPU Nodes B: 6 x [4 cores, 20Gi memory, 80Gi ephemeral-storage, GRID-V100D-8C]
           # nominalQuota = count * size - 2% overhead
-          # borrowing / lending = size * 40%
+          # borrowing / lending = size * 25%
           resources:
             - name: "cpu"
-              nominalQuota:   "2555"
-              borrowingLimit: "1022"
-              lendingLimit:   "1022"
+              nominalQuota:   "1680"
+              borrowingLimit: "420"
+              lendingLimit:   "420"
             - name: "memory"
-              nominalQuota:   "9682Gi"
-              borrowingLimit: "3873Gi"
-              lendingLimit:   "3873Gi"
+              nominalQuota:   "6562Gi"
+              borrowingLimit: "1640Gi"
+              lendingLimit:   "1640Gi"
               # 40 nodes * 2048Gi = 81920Gi
             - name: "ephemeral-storage"
-              nominalQuota:   "81164Gi"
-              borrowingLimit: "32465Gi"
-              lendingLimit:   "32465Gi"
+              nominalQuota:   "52636Gi"
+              borrowingLimit: "13159Gi"
+              lendingLimit:   "13159Gi"
             - name: "nvidia.com/gpu"
-              nominalQuota: "9"
-              borrowingLimit: "3"
-              lendingLimit: "3"
+              nominalQuota: "18"
+              borrowingLimit: "0"
+              lendingLimit: "0"
   preemption:
     reclaimWithinCohort: LowerPriority
     borrowWithinCohort:

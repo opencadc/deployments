@@ -1,4 +1,13 @@
-# CHANGELOG for Skaha User Session API (Chart 0.11.16)
+# CHANGELOG for Skaha User Session API (Chart 0.11.23)
+
+## 2025.08.19 (0.11.23)
+- Feature: API version configurable (Revert Ingress)
+
+## 2025.08.19 (0.11.21)
+- Feature: Add release name to make unique object names
+
+## 2025.08.19 (0.11.17)
+- Feature: Add support for configuring API versioning.
 
 ## 2025.08.01 (0.11.16)
 - Fix: Connection leaks detected from repeated Redis access.  Blocked those up.

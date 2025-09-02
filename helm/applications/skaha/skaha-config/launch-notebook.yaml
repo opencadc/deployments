@@ -119,10 +119,10 @@ spec:
         emptyDir: { }
       - name: start-jupyterlab
         configMap:
-          name: launch-scripts
+          name: {{ .Release.Name }}-launch-scripts
           defaultMode: 0777
       - name: init-users-groups
         configMap:
-          name: init-users-groups-config
+          name: {{ .Release.Name }}-init-users-groups-config
           defaultMode: 0777
       {{ template "skaha.session.commonVolumes" . }}

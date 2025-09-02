@@ -60,9 +60,7 @@ async def system(  # noqa: C901
     ram_mb = int(ram * 1024)
     ram_to_use: str = f"{ram_mb * 0.75}M"
     logfire.info(f"Using {ram_to_use}M of RAM.")
-    args: str = (
-        f"--cpu {cores} --cpu-method matrixprod --vm 1 --vm-bytes {ram_to_use} --timeout {duration} --metrics-brief"  # noqa: E501
-    )
+    args: str = f"--cpu {cores} --cpu-method matrixprod --vm 1 --vm-bytes {ram_to_use} --timeout {duration} --metrics-brief"  # noqa: E501
     ids: List[str] = []
     ids = await session.create(
         name="kueue-stress",

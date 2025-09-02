@@ -269,11 +269,11 @@ deployment:
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "2Gi"
+        cpu: "1000m"
       limits:
-        memory: "1500Mi"
-        cpu: "750m"
+        memory: "3Gi"
+        cpu: "2000m"
 
     # Uncomment to debug.  Requires options above as well as service port exposure below.
     # extraPorts:
@@ -298,6 +298,12 @@ deployment:
     #   secret:
     #     defaultMode: 420
     #     secretName: skaha-cacert-secret
+
+    # API version that is currently in use for this deployment.  Leave this alone unless you know what you're doing.
+    # This the version that will show up in the path for the request (e.g. '/skaha/v0/session').
+    # Example:
+    #   apiVersion: 'v0'
+    apiVersion: 'v0'
 
   # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
   # deployment object, not the skaha one.

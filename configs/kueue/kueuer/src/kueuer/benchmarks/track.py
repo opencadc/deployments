@@ -121,17 +121,17 @@ def evictions(
                 ]:
                     workloads[uid]["preemptors"].append(details)
                     logfire.info(
-                        f"{workloads.get(uid,{}).get('name')} evicted by {preemptor}"
+                        f"{workloads.get(uid, {}).get('name')} evicted by {preemptor}"
                     )
 
             elif condition["type"] == "Finished" and condition["status"] == "True":
                 workloads[uid]["finished_at"] = datetime.now()
                 completed += 1
-                logfire.info(f"{workloads.get(uid,{}).get('name')} succeeded.")
+                logfire.info(f"{workloads.get(uid, {}).get('name')} succeeded.")
 
             elif condition["type"] == "Requeued" and condition["status"] == "True":
                 workloads[uid]["requeues"] += 1
-                logfire.info(f"{workloads.get(uid,{}).get('name')} requeued.")
+                logfire.info(f"{workloads.get(uid, {}).get('name')} requeued.")
 
         if workloads and completed == len(workloads):
             logfire.info("All workloads finished.")
