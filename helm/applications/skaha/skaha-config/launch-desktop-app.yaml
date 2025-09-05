@@ -43,7 +43,7 @@ spec:
         - name: skaha_sessionid
           value: "${skaha.sessionid}"
         - name: HOME
-          value: "${SKAHA_TLD}/home/${skaha.userid}"
+          value: "${SKAHA_USER_HOME_DIR}"
         - name: DISPLAY
           value: "${software.targetip}"
         - name: GDK_SYNCHRONIZE
@@ -51,7 +51,7 @@ spec:
         - name: SHELL
           value: "/bin/bash"
         - name: PWD
-          value: "${SKAHA_TLD}/home/${skaha.userid}"
+          value: "${SKAHA_USER_HOME_DIR}"
         - name: OMP_NUM_THREADS
           value: "${software.requests.cores}"
         securityContext:
@@ -61,7 +61,7 @@ spec:
             drop:
               - ALL
         image: "${software.imageid}"
-        workingDir: "${SKAHA_TLD}/home/${skaha.userid}"
+        workingDir: "${SKAHA_USER_HOME_DIR}"
         imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:
