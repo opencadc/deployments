@@ -110,7 +110,7 @@ deployment:
       # @see https://github.com/opencadc/deployments/tree/main/configs/kueue
       # Example 1:
       #   # Configure notebook, desktop, and default session types.
-      #   queue:
+      #   kueue:
       #     notebook:
       #       queueName: "notebook-queue"
       #       priorityClass: "medium"
@@ -123,18 +123,18 @@ deployment:
       #
       # Example 2:
       #    # Configure contributed session types.  All else will use the bare Kubernetes system.
-      #    queue:
+      #    kueue:
       #      contributed:
       #        queueName: "contributed-queue"
       #        priorityClass: "high"
       #
       # Example 3:
       #    # Configure Kueue for all user session types.
-      #    queue:
+      #    kueue:
       #      default:
       #        queueName: "all-user-sessions-local-queue"
       #        priorityClass: "medium"
-      queue: {}
+      kueue: {}
 
       # This is a list of tolerations that will be added to the Pod spec of the User Sessions.
       # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -315,118 +315,3 @@ redis:
         type: RuntimeDefault
       capabilities:
         drop: ["ALL"]
-
-# Kueue configuration.  This will not install Kueue by default, due to its complexity many deployers may wish to install their own.
-kueue:
-  install: false
-  
-  # Set this here to ensure the created secret for the webhook certificates has a predictable name, rather than the Release.Name from the parent Chart (skaha).
-  fullnameOverride: "kueue"
-
-  # Enable prometheus metrics for the kueue controller.
-  enablePrometheus: true
-
-  enableCertManager: false
-
-  clusterQueueResources:
-    - name: "cpu"
-      nominalQuota:   "1680"
-      borrowingLimit: "420"
-      lendingLimit:   "420"
-    - name: "memory"
-      nominalQuota:   "6562Gi"
-      borrowingLimit: "1640Gi"
-      lendingLimit:   "1640Gi"
-      # 40 nodes * 2048Gi = 81920Gi
-    - name: "ephemeral-storage"
-      nominalQuota:   "52636Gi"
-      borrowingLimit: "13159Gi"
-      lendingLimit:   "13159Gi"
-    - name: "nvidia.com/gpu"
-      nominalQuota: "18"
-      borrowingLimit: "0"
-      lendingLimit: "0"
-
-  # Kueue Controller Configuration
-  controllerManager:
-    # Kueue Feature Gates, deprecated features excluded
-    # Based on v0.10.0 retrieved on 2025-01-01
-    # Source: https://kueue.sigs.k8s.io/docs/installation/
-    featureGates:
-      - name: LocalQueueMetrics
-        enabled: true
-    # Kueue Deployment Configuration
-    manager:
-      resources:
-        limits:
-          cpu: "2"
-          memory: 1536Mi
-        requests:
-          cpu: "1"
-          memory: 512Mi
-
-  # controller_manager_config.yaml. controllerManager utilizes this yaml via manager-config Configmap.
-  managerConfig:
-    controllerManagerConfigYaml: |-
-      apiVersion: config.kueue.x-k8s.io/v1beta1
-      kind: Configuration
-
-      health:
-        healthProbeBindAddress: :8081
-
-      metrics:
-        # Bind to for serving prometheus metrics, set to 0 to disable
-        # Maps to metricsService.ClusterIP
-        bindAddress: :8443
-        # Report the cluster queue resource usage and quotas metrics
-        enableClusterQueueResources: true
-
-      webhook:
-        port: 9443
-
-      leaderElection:
-        leaderElect: true
-        resourceName: c1f6bfd2.kueue.x-k8s.io
-
-      controller:
-        # Number of concurrent reconciliation allowed for a controller.
-        groupKindConcurrency:
-          Job.batch: 256
-          Pod: 4
-          Workload.kueue.x-k8s.io: 256
-          LocalQueue.kueue.x-k8s.io: 256
-          ClusterQueue.kueue.x-k8s.io: 256
-          ResourceFlavor.kueue.x-k8s.io: 4
-
-      # Client connection details for the k8s_apiserver
-      clientConnection:
-        # queries/second allowed for k8s_apiserver
-        qps: 64
-        # extra queries to accumulate when a client is exceeding its rate.
-        burst: 128
-
-      # Controls whether or not Kueue reconciles jobs that don't set the annotation kueue.x-k8s.io/queue-name.
-      # If set to true, then those jobs will be suspended and never started unless they are assigned a queue
-      # and eventually admitted. This also applies to jobs created before starting the kueue controller.
-      # Defaults to false; therefore, those jobs are not managed and if they are created unsuspended,
-      # they will start immediately.
-      manageJobsWithoutQueueName: false
-
-      managedJobsNamespaceSelector:
-        matchExpressions:
-              - key: kubernetes.io/metadata.name
-                operator: In
-                values:
-                  - skaha-workload
-
-      integrations:
-        # List of framewor to be integrated with Kueue.
-        frameworks:
-        - "batch/job"
-        labelKeysToCopy:
-        - canfar-net-sessionID
-        - canfar-net-appID
-        - canfar-net-sessionName
-        - canfar-net-sessionType
-        - canfar-net-userid
-        - batch.kubernetes.io/job-name

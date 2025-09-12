@@ -8,29 +8,26 @@ Namespace: {{ .Release.Namespace }}
 Skaha workload namespace: {{ .Values.skahaWorkload.namespace | default "skaha-workload" }}
 
 Kueue:
-{{- if .Values.kueue.install }}
-- Installed by this release: yes (chart {{ "kueue" }})
-- ClusterQueue: {{ .Release.Name }}-cluster-queue
-- LocalQueues (in {{ .Values.skahaWorkload.namespace }}):
-{{- $queues := (default dict .Values.deployment.skaha.sessions.queue) }}
+{{- if .Values.deployment.skaha.sessions.kueue }}
+  - It's expected that the Kueue CRDs and controllers to be present if you set session queues.
+{{- $queues := (default dict .Values.deployment.skaha.sessions.kueue) }}
 {{- if $queues }}
 {{- range $type, $cfg := $queues }}
   - {{ $cfg.queueName | default (printf "%s-%s" $.Release.Name $type) }} (type: {{ $type }})
 {{- end }}
 {{- else }}
-  - none configured; Jobs will run without Kueue unless annotated by Skaha.
+  - none configured; Jobs will NOT run with Kueue unless annotated by Skaha.
 {{- end }}
 {{- else }}
-- Installed by this release: no
-- Expect Kueue CRDs and controllers to be present if you set session queues.
+  - Not configured
 {{- end }}
 
 Quick checks:
-- kubectl get deployment {{ .Release.Name }}-skaha-tomcat -n {{ .Release.Namespace }}
-- kubectl get clusterqueue {{ .Release.Name }}-cluster-queue 2>/dev/null || true
-- kubectl get localqueue -n {{ .Values.skahaWorkload.namespace }} 2>/dev/null || true
+  - kubectl get deployment {{ .Release.Name }}-skaha-tomcat -n {{ .Release.Namespace }}
+  - kubectl get clusterqueues 2>/dev/null || true
+  - kubectl get localqueues -n {{ .Values.skahaWorkload.namespace }} 2>/dev/null || true
 
 If user Jobs remain Pending:
-- Ensure LocalQueue exists in {{ .Values.skahaWorkload.namespace }} and references ClusterQueue {{ .Release.Name }}-cluster-queue.
-- Verify ClusterQueue quotas (Values.kueue.clusterQueueResources) are sufficient.
+- Ensure LocalQueue exists in {{ .Values.skahaWorkload.namespace }} and references your configured ClusterQueue.
+- Verify ClusterQueue quotas are sufficient.
 - Confirm priority classes referenced by sessions exist or are created.

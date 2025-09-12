@@ -69,15 +69,15 @@ spec:
           value: "{{ . }}"
         {{- end }}
         {{- with .Values.deployment.skaha.headlessPriorityClass }}
-        - name: skaha.headlesspriortyclass
+        - name: SKAHA_HEADLESS_PRIORITY_CLASS
           value: "{{ . }}"
         {{- end }}
-        {{- with .Values.deployment.skaha.sessions.queue }}
+        {{- with .Values.deployment.skaha.sessions.kueue }}
         {{- range $queueConfigKey, $queueConfig := . }}
         - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_NAME
-          value: "{{ $queueConfig.queueName | required (printf "Missing .Values.deployment.skaha.sessions.queue.%s.queueName" $queueConfigKey) }}"
+          value: "{{ $queueConfig.queueName | required (printf "Missing .Values.deployment.skaha.sessions.kueue.%s.queueName" $queueConfigKey) }}"
         - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_PRIORITY_CLASS
-          value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.deployment.skaha.sessions.queue.%s.priorityClass" $queueConfigKey) }}"
+          value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.deployment.skaha.sessions.kueue.%s.priorityClass" $queueConfigKey) }}"
         {{- end }}
         {{- end }}
         - name: skaha.adminsgroup
