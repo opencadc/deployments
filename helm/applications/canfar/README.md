@@ -294,9 +294,6 @@ deployment:
     # - containerPort: 5555
     #   protocol: TCP
 
-    # Set the top-level-directory name that gets mounted at the root.
-    # skahaTld: "/cavern"
-
     defaultQuotaGB: "10"
 
     # Space delimited list of allowed Image Registry hosts.  These hosts should match the hosts in the User Session images.

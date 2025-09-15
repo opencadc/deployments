@@ -56,7 +56,6 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `deployment.skaha.image` | Skaha Docker image | `images.opencadc.org/platform/skaha:<current release version>` |
 | `deployment.skaha.imagePullPolicy` | Image pull policy for the Skaha container | `IfNotPresent` |
 | `deployment.skaha.imageCache.refreshSchedule` | Schedule for refreshing the Skaha image cache in `cron` format | `@daily` |
-| `deployment.skaha.skahaTld` | Top-level directory for Skaha | `/cavern` |
 | `deployment.skaha.defaultQuotaGB` | Default quota for Skaha in GB.  Used when allocating first-time users into the system. | `10` |
 | `deployment.skaha.registryHosts` | Space delimited list of Docker (Harbor) registry hosts | `images.canfar.net` |
 | `deployment.skaha.usersGroup` | GMS style Group URI for Skaha users to belong to | `""` |
