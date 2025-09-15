@@ -67,6 +67,33 @@ USER SESSION TEMPLATE DEFINITIONS
 */}}
 
 {{/*
+The Home VOSpace Node URI (uses vos:// scheme) for the User Home directory in Cavern.
+*/}}
+{{- define "skaha.job.userStorage.homeURI" -}}
+{{- $nodeURIPrefix := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.nodeURIPrefix nodeURIPrefix is required." .Values.deployment.skaha.sessions.userStorage.nodeURIPrefix) -}}
+{{- $homeDirectoryName := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.homeDirectory home folder name is required." .Values.deployment.skaha.sessions.userStorage.homeDirectory) -}}
+{{- printf "%s/%s" $nodeURIPrefix $homeDirectoryName -}}
+{{- end -}}
+
+{{/*
+The Home Directory base absolute path.
+*/}}
+{{- define "skaha.job.userStorage.homeBaseDirectory" -}}
+{{- $topLevelDirectory := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.topLevelDirectory topLevelDirectory is required." .Values.deployment.skaha.sessions.userStorage.topLevelDirectory) -}}
+{{- $homeDirectoryName := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.homeDirectory home folder name is required." .Values.deployment.skaha.sessions.userStorage.homeDirectory) -}}
+{{- printf "/%s/%s" $topLevelDirectory $homeDirectoryName -}}
+{{- end -}}
+
+{{/*
+The Projects Directory base absolute path.
+*/}}
+{{- define "skaha.job.userStorage.projectsBaseDirectory" -}}
+{{- $topLevelDirectory := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.topLevelDirectory topLevelDirectory is required." .Values.deployment.skaha.sessions.userStorage.topLevelDirectory) -}}
+{{- $projectsDirectoryName := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.projectsDirectory projects folder name is required." .Values.deployment.skaha.sessions.userStorage.projectsDirectory) -}}
+{{- printf "/%s/%s" $topLevelDirectory $projectsDirectoryName -}}
+{{- end -}}
+
+{{/*
 The init containers for the launch scripts.
 */}}
 {{- define "skaha.job.initContainers" -}}
@@ -85,11 +112,11 @@ The init containers for the launch scripts.
             drop:
               - ALL
       - name: init-users-groups
-        image: {{ $.Values.deployment.skaha.sessions.initContainerImage | default "redis:7.4.2-alpine3.21" }}
+        image: {{ .Values.deployment.skaha.sessions.initContainerImage | default "redis:7.4.2-alpine3.21" }}
         command: ["/init-users-groups/init-users-groups.sh"]
         env:
         - name: HOME
-          value: "${SKAHA_TLD}/home/${skaha.userid}"
+          value: "{{ template "skaha.job.userStorage.homeBaseDirectory" . }}/${skaha.userid}"
         - name: REDIS_URL
           value: "redis://{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesClusterDomain }}:6379"
         volumeMounts:

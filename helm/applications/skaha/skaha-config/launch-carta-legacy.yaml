@@ -36,16 +36,16 @@ spec:
       containers:
       - name: "${skaha.jobname}"
         env:
-        - name: skaha_hostname
+        - name: skaha_hostnameSKAHA_TOP_LEVEL_DIR
           value: "${skaha.hostname}"
         - name: skaha_username
           value: "${skaha.userid}"
         - name: skaha_sessionid
           value: "${skaha.sessionid}"
         - name: HOME
-          value: "${SKAHA_TLD}/home/${skaha.userid}"
+          value: "${SKAHA_TOP_LEVEL_DIR}/home/${skaha.userid}"
         - name: PWD
-          value: "${SKAHA_TLD}/home/${skaha.userid}"
+          value: "${SKAHA_TOP_LEVEL_DIR}/home/${skaha.userid}"
         - name: OMP_NUM_THREADS
           value: "${software.requests.cores}"
         securityContext:
@@ -57,7 +57,7 @@ spec:
         image: ${software.imageid}
         command: ["/bin/sh", "-c"]
         args:
-        - /skaha-system/skaha-carta-legacy.sh ${SKAHA_TLD} ${SKAHA_TLD}/projects
+        - /skaha-system/skaha-carta-legacy.sh ${SKAHA_TOP_LEVEL_DIR} ${SKAHA_PROJECTS_DIR}
         imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:

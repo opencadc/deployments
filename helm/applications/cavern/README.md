@@ -128,8 +128,8 @@ $ curl -Lv --header "Authorization: admin-api-key prepareData:preparedatasecretk
 Where the upload XML file would look like this:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<vos:node xmlns:vos="http://www.ivoa.net/xml/VOSpace/v2.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<vos:node xmlns:vos="http://www.ivoa.net/xml/VOSpace/v2.0" 
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
           uri="vos://exmaple.org~cavern/home/new-user" xsi:type="vos:ContainerNode">
   <vos:properties>
     <vos:property uri="ivo://opencadc.org/vospace/core#creatorJWT">JWT_TOKEN_REPLACE_ME</vos:property> <!-- JWT token of the new user -->

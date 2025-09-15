@@ -95,6 +95,14 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `deployment.skaha.sessions.gpuEnabled` | Enable GPU support for User Sessions.  Defaults to `false` | `false` |
 | `deployment.skaha.sessions.nodeAffinity` | Kubernetes Node affinity for the Skaha User Session Pods | `{}` |
 | `deployment.skaha.sessions.tolerations` | Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the `skaha` User Sessions | `[]` |
+| `deployment.skaha.sessions.userStorage.topLevelDirectory` | Top-level ABSOLUTE path for user storage in Skaha User Sessions | `"/cavern"` |
+| `deployment.skaha.sessions.userStorage.homeDirectory` | Home directory (RELATIVE) for user storage in Skaha User Sessions, relative to the `deployment.skaha.sessions.userStorage.topLevelDirectory` property | `"home"` |
+| `deployment.skaha.sessions.userStorage.projectsDirectory` | Projects directory (RELATIVE) for user storage in Skaha User Sessions, relative to the `deployment.skaha.sessions.userStorage.topLevelDirectory` property | `"projects"` |
+| `deployment.skaha.sessions.userStorage.persistentVolumeClaimName` | PVC name for user storage in Skaha User Sessions | `"skaha-workload-cavern-pvc"` |
+| `deployment.skaha.sessions.userStorage.serviceURI` | Required URI to locate the Cavern service | `""` |
+| `deployment.skaha.sessions.userStorage.nodeURIPrefix` | Required Node URI prefix for the Cavern service when creating User Allocations | `""` |
+| `deployment.skaha.sessions.userStorage.admin.auth.apiKey` | Optional API key for user storage admin authentication (Cavern) for creating user allocations | `""` |
+| `deployment.skaha.sessions.userStorage.admin.auth.certificateSecret` | Secret details for user storage admin authentication to Cavern using a X509 certificate | `{}` |
 | `secrets` | List of secrets to be mounted in the Skaha API defined as objects (i.e `secretName: {cert.pem: xxx}`) | `[]` |
 | `storage.service.spec` | Storage class specification for the Skaha API.  Can be `persistentVolumeClaim` or a dynamic instantiation like `hostPath`.  See [Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/). | `{}` |
 | `redis` | [Redis sub-chart configuration](https://github.com/bitnami/charts/tree/main/bitnami/redis) for Skaha's caching of Harbor Docker image metadata. | See [`values.yaml`](https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml) for available configuration values. |
@@ -138,6 +146,9 @@ uv run kr cluster resources -f allocatable -s 0.6
 # 80% of cluster resources
 uv run kr cluster resources -f allocatable -s 0.8
 ```
+
+### New users to the Science Platform
+New users wishing to start a session will require storage allocation in the Cavern service.  There are two ways to configure
 
 ## Uninstallation
 To remove the Skaha application from your cluster:
