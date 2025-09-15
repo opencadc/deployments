@@ -36,7 +36,7 @@ spec:
       containers:
       - name: "${skaha.jobname}"
         env:
-        - name: skaha_hostnameSKAHA_TOP_LEVEL_DIR
+        - name: skaha_hostname
           value: "${skaha.hostname}"
         - name: skaha_username
           value: "${skaha.userid}"
