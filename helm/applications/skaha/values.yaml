@@ -10,6 +10,25 @@ replicaCount: 1
 # It's best to keep this set as such, unless you're willing to change these in several places.
 skahaWorkload:
   namespace: skaha-workload
+
+# @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
+# securityContext: {}
+#
+# Example:
+# securityContext:
+#   seccompProfile:
+#     type: RuntimeDefault
+securityContext: {}
+
+# @param podSecurityContext - Optional pod security context for the deployment.
+# podSecurityContext: {}
+#
+# Example:
+# podSecurityContext:
+#   fsGroup: 1000
+#   runAsUser: 1000
+#   allowPrivilegeEscalation: false
+podSecurityContext: {}
  
 # Skaha web service deployment
 deployment:

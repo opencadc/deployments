@@ -21,13 +21,10 @@ spec:
         nodeAffinity:
 {{ . | toYaml | indent 10 }}
 {{- end }}
+      {{- with .Values.securityContext }}
       securityContext:
-        runAsUser: 8675309
-        runAsGroup: 8675309
-        # fsGroup: 8675309
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - env:
       {{ $userStorage := required "Missing .Values.deployment.skaha.sessions.userStorage configuration" .Values.deployment.skaha.sessions.userStorage }}
@@ -128,6 +125,10 @@ spec:
         {{- with .Values.deployment.skaha.extraPorts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- with .Values.podSecurityContext }}
+        securityContext:
+        {{- toYaml . | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - mountPath: "/config"
           name: config-volume
@@ -136,12 +137,6 @@ spec:
         {{- with .Values.deployment.skaha.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        securityContext:
-          privileged: false
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
 {{- with .Values.deployment.extraHosts }}
       hostAliases:
 {{- range $extraHost := . }}
