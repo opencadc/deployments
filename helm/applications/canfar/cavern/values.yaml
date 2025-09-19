@@ -1,0 +1,328 @@
+# Default values for cavern.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: images.opencadc.org/platform/cavern
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "0.9.0"
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+# Cavern configuration settings.
+
+# How cavern identifies itself.
+# This should be a valid IVOA identifier.
+# Example: 
+#   resourceID: "ivo://example.org/cavern"
+resourceID: ""
+
+# Set the Registry URL pointing to the desired registry containing IVOA compliant services to lookup.
+# Example:
+#   registryURL: https://example.org/reg
+registryURL: ""
+
+# The Resource ID, or full URL, of the Service that contains the Posix Mapping information.
+# Example:
+#   posixMapperResourceID: "ivo://example.org/posix-mapper"
+#   posixMapperResourceID: "https://example.org/posix-mapper"
+posixMapperResourceID: ""
+
+# URI or URL of the OIDC (IAM) server.  Used to validate incoming tokens.  Required if using OIDC authentication.
+# This should be a valid HTTPS URL that matches the Identity Provider's issuer URL.
+# Example:
+#   oidcURI: "https://ska-iam.stfc.ac.uk/"
+oidcURI: ""
+
+# ID (URI) of the GMS Service.  URLs are not supported.  Required for accessing GMS user information.
+# Example:
+#   gmsID: "ivo://skao.int/gms"
+gmsID: ""
+
+# Array of groups allowed to set the logging level.  If none set, then nobody can change the log level.
+# Example:
+#   loggingGroups:
+#     - "admin"
+#     - "/roles/prod/ops"
+loggingGroups: []
+
+# Simple Class name of the QuotaPlugin to use.  This is used to request quota and folder size information
+# from the underlying storage system.  Optional, defaults to NoQuotaPlugin to use no quota.
+# Example:
+#   quotaPlugin: "CephFSQuotaPlugin"  # For CephFS deployments
+quotaPlugin: "NoQuotaPlugin"
+
+# User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.
+allocations:
+  # The default size, in GB, of an allocation.  This is used in the absence of the Quota VOSpace property.  Can be a floating point number.
+  # Example:
+  #   defaultSizeGB: 25.5
+  defaultSizeGB: ""
+
+  # The parent folders that will be used to create new allocations.  This is a list of folders that will be created if they do not exist.
+  # It's best to keep these as /home and /projects, but you can change them if you wish.  There may be implications!
+  # Example:
+  #   parentFolders:
+  #     - "/home"
+  #     - "/projects"
+  #     - "/shared"
+  parentFolders:
+    - "/home"
+    - "/projects"
+
+# File system specific settings.
+filesystem:
+  # Persistent data directory in container.  This should be an absolute path.
+  # Example:
+  #   dataDir: "/data"
+  dataDir: ""
+
+  # RELATIVE path to the node/file content that could be mounted in other containers
+  # This will be used in a `dataDir`/`subPath` manner to remove shared data from the root folder.
+  # Example:
+  #   subPath: "cavern"
+  subPath: ""
+
+  # The adminUsername is required to be set whomever has admin access over the
+  # filesystem.dataDir above.
+  rootOwner:
+    # adminUsername: "root"
+    username: ""
+    uid:
+    gid:
+
+  # Required storage specification.  This is used to mount Cavern's data directory at the dataDir configured above.
+  # This is a standard Kubernetes volume specification.  See https://kubernetes.io/docs/concepts/storage/volumes/
+  # for more information.
+  # Example:
+  #   spec:
+  #     persistentVolumeClaim:
+  #       claimName: cavern-pvc
+  #
+  #   spec:
+  #     hostPath:
+  #       path: /mnt/data/cavern
+  #
+  #   spec:
+  #     cephfs:
+  #       monitors: ...
+  spec: {}
+
+# The API keys object that will be permitted to perform administrative tasks.  These will be passed as authorization headers to the Cavern API.
+# The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
+# Format is <clientApplicationName>: <apiKeyToken>
+# Example:
+#   adminAPIKeys:
+#     skaha: "token-value"
+#     prepareData: "another-token-value"
+adminAPIKeys: {}
+
+# The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
+# Example:
+#   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+
+# Optional rename of the application from the default "cavern".
+# Update the ingress path if you change this!
+# Example:
+#   applicationName: "mycavern"
+applicationName: ""
+
+# UWS Database configuration.  This is required.
+uwsDatabase:
+  # Whether to deploy a local PostgreSQL database.  Set to false to use your own.
+  install: false
+
+  # URL where an existing PostgreSQL database can be found.  If not set, a URL will be constructed to point to the local PostgreSQL database deployed alongside Cavern.
+  # Only applies if install is false.
+  # Example:
+  #   url: "jdbc:postgresql://<host>:<port>/<database>"
+  url: ""
+
+  # Username and password used to connect to the database.
+  # These are required.
+  # Example:
+  #   username: "uwsuser"
+  #   password: "uwspwd"
+  username: ""
+  password: ""
+
+  # Sensible default for the connection pool.  The more load you expect, the higher this should be.
+  # Example:
+  #   maxActive: 4
+  maxActive: 2
+
+  #
+  # Everything past here in this section is ignored if install is set to false.
+  #
+
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    repository: postgres
+    # This sets the pull policy for images.
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "15"
+
+  # Pod Security for the PostgreSQL database pod.  Only applies if the install option is true.
+  podSecurityContext: {}
+  database: "uws"  # if install: true, otherwise it's ignored
+
+# End Cavern configuration settings.
+
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 8080
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /cavern
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# -- Expose the service via gateway-api HTTPRoute
+# Requires Gateway API resources and suitable controller installed within the cluster
+# (see: https://gateway-api.sigs.k8s.io/guides/)
+httpRoute:
+  # HTTPRoute enabled.
+  enabled: false
+  # HTTPRoute annotations.
+  annotations: {}
+  # Which Gateways this Route is attached to.
+  parentRefs:
+  - name: gateway
+    sectionName: http
+    # namespace: default
+  # Hostnames matching HTTP header.
+  hostnames:
+  - chart-example.local
+  # List of rules and filters applied.
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /headers
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       set:
+  #       - name: My-Overwrite-Header
+  #         value: this-is-the-only-value
+  #       remove:
+  #       - User-Agent
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /echo
+  #     headers:
+  #     - name: version
+  #       value: v2
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# Example:
+#   livenessProbe:
+#     httpGet:
+#       path: /cavern/availability
+#       port: http
+livenessProbe: {}
+
+# Example:
+#   readinessProbe:
+#     httpGet:
+#       path: /cavern/availability
+#       port: http
+readinessProbe: {}
+
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

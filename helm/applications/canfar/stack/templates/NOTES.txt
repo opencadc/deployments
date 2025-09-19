@@ -1,0 +1,43 @@
+CANFAR Science Platform successfully installed!
+
+Service Details:
+{{- range $serviceName, $service := .Values.services }}
+{{$data := dict "serviceName" $serviceName "Values" $service "Chart" $.Chart "Release" $.Release }}
+
+- $serviceName:
+{{- if $service.httpRoute.enabled }}
+{{- if $service.httpRoute.hostnames }}
+    export APP_HOSTNAME={{ $service.httpRoute.hostnames | first }}
+{{- else }}
+    export APP_HOSTNAME=$(kubectl get --namespace {{(first $service.httpRoute.parentRefs).namespace | default $.Release.Namespace }} gateway/{{ (first $service.httpRoute.parentRefs).name }} -o jsonpath="{.spec.listeners[0].hostname}")
+  {{- end }}
+{{- if and $service.httpRoute.rules (first $service.httpRoute.rules).matches (first (first $service.httpRoute.rules).matches).path.value }}
+    echo "Visit http://$APP_HOSTNAME{{ (first (first $service.httpRoute.rules).matches).path.value }} to use the '$serviceName' service"
+
+    NOTE: Your HTTPRoute depends on the listener configuration of your gateway and your HTTPRoute rules.
+    The rules can be set for path, method, header and query parameters.
+    You can check the gateway configuration with 'kubectl get --namespace {{(first $service.httpRoute.parentRefs).namespace | default $.Release.Namespace }} gateway/{{ (first $service.httpRoute.parentRefs).name }} -o yaml'
+{{- end }}
+{{- else if $service.ingress.enabled }}
+{{- range $host := $service.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $service.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" $service.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ $.Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "canfar.fullname" $data }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ $.Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" $service.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch its status by running 'kubectl get --namespace {{ $.Release.Namespace }} svc -w {{ include "canfar.fullname" $data }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ $.Release.Namespace }} {{ include "canfar.fullname" $data }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ $service.service.port }}
+{{- else if contains "ClusterIP" $service.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ $.Release.Namespace }} -l "app.kubernetes.io/name={{ include "canfar.name" $data }},app.kubernetes.io/instance={{ $.Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ $.Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ $.Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+
+{{- end }}
+{{- end }}

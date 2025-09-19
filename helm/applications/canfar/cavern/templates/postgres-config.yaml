@@ -1,0 +1,28 @@
+{{ $releaseName := .Release.Name }}
+{{- with required "UWS Database configuration is required." .Values.uwsDatabase }}
+{{- if eq .install true }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $releaseName }}-uws-postgres-config
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ $releaseName }}-uws-postgres
+data:
+  POSTGRES_DB: {{ .database }}
+  POSTGRES_USER: {{ .username }}
+  POSTGRES_PASSWORD: {{ .password }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $releaseName }}-uws-postgres-init
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ $releaseName }}-uws-postgres
+data:
+  init_schema.sql: |
+      create schema if not exists uws;
+{{- end }}
+{{- end }}

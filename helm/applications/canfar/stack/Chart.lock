@@ -1,0 +1,9 @@
+dependencies:
+- name: posix-mapper
+  repository: file://../posix-mapper
+  version: 1.0.0
+- name: cavern
+  repository: file://../cavern
+  version: 1.0.0
+digest: sha256:a593b06e75387e1652815a2631031768f0abfc6237d0730bb891c36ac31d1414
+generated: "2025-09-19T14:52:40.851033-07:00"

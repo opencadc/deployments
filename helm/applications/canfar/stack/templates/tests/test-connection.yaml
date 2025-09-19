@@ -1,0 +1,19 @@
+{{- range $serviceName, $service := .Values.services }}
+{{$data := dict "serviceName" $serviceName "Values" $service "Chart" $.Chart "Release" $.Release }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "canfar.fullname" $data }}-test-connection"
+  labels:
+    {{- include "canfar.labels" $data | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "canfar.fullname" $data }}:{{ $service.service.port }}']
+  restartPolicy: Never
+{{- end }}
