@@ -5,5 +5,14 @@ dependencies:
 - name: cavern
   repository: file://../cavern
   version: 1.0.0
-digest: sha256:a593b06e75387e1652815a2631031768f0abfc6237d0730bb891c36ac31d1414
-generated: "2025-09-19T14:52:40.851033-07:00"
+- name: skaha
+  repository: file://../skaha
+  version: 2.0.0
+- name: science-portal
+  repository: file://../science-portal
+  version: 2.0.0
+- name: storage-ui
+  repository: file://../storage-ui
+  version: 1.0.0
+digest: sha256:8c0ef3922c294f11ca90c3d8ebc282bbb8515f4310d714e513f6b3e9e61d06b7
+generated: "2025-09-19T15:12:49.74149-07:00"

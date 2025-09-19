@@ -1,4 +1,4 @@
-# Default values for cavern.
+# Default values for skaha.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -7,16 +7,16 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: images.opencadc.org/platform/cavern
+  repository: images.opencadc.org/platform/skaha
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.9.0"
+  tag: "1.0.3"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 
-# Cavern configuration settings.
+# Skaha configuration settings.
 
 # How cavern identifies itself.
 # This should be a valid IVOA identifier.
@@ -53,129 +53,153 @@ gmsID: ""
 #     - "/roles/prod/ops"
 loggingGroups: []
 
-# Simple Class name of the QuotaPlugin to use.  This is used to request quota and folder size information
-# from the underlying storage system.  Optional, defaults to NoQuotaPlugin to use no quota.
-# Example:
-#   quotaPlugin: "CephFSQuotaPlugin"  # For CephFS deployments
-quotaPlugin: "NoQuotaPlugin"
-
 # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
 # Example:
 #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
 identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
 
-# User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.
-allocations:
-  # The default size, in GB, of an allocation.  This is used in the absence of the Quota VOSpace property.  Can be a floating point number.
-  # Example:
-  #   defaultSizeGB: 25.5
-  defaultSizeGB: ""
-
-  # The parent folders that will be used to create new allocations.  This is a list of folders that will be created if they do not exist.
-  # It's best to keep these as /home and /projects, but you can change them if you wish.  There may be implications!
-  # Example:
-  #   parentFolders:
-  #     - "/home"
-  #     - "/projects"
-  #     - "/shared"
-  parentFolders:
-    - "/home"
-    - "/projects"
-
-# File system specific settings.
-filesystem:
-  # Persistent data directory in container.  This should be an absolute path.
-  # Example:
-  #   dataDir: "/data"
-  dataDir: ""
-
-  # RELATIVE path to the node/file content that could be mounted in other containers
-  # This will be used in a `dataDir`/`subPath` manner to remove shared data from the root folder.
-  # Example:
-  #   subPath: "cavern"
-  subPath: ""
-
-  # The adminUsername is required to be set whomever has admin access over the
-  # filesystem.dataDir above.
-  rootOwner:
-    # adminUsername: "root"
-    username: ""
-    uid:
-    gid:
-
-  # Required storage specification.  This is used to mount Cavern's data directory at the dataDir configured above.
-  # This is a standard Kubernetes volume specification.  See https://kubernetes.io/docs/concepts/storage/volumes/
-  # for more information.
-  # Example:
-  #   spec:
-  #     persistentVolumeClaim:
-  #       claimName: cavern-pvc
-  #
-  #   spec:
-  #     hostPath:
-  #       path: /mnt/data/cavern
-  #
-  #   spec:
-  #     cephfs:
-  #       monitors: ...
-  spec: {}
-
-# The API keys object that will be permitted to perform administrative tasks.  These will be passed as authorization headers to the Cavern API.
-# The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
-# Format is <clientApplicationName>: <apiKeyToken>
-# Example:
-#   adminAPIKeys:
-#     skaha: "token-value"
-#     prepareData: "another-token-value"
-adminAPIKeys: {}
-
-# Optional rename of the application from the default "cavern".
+# Optional rename of the application from the default "skaha".
 # Update the ingress path if you change this!
 # Example:
-#   applicationName: "mycavern"
+#   applicationName: "my-skaha"
 applicationName: ""
 
-# UWS Database configuration.  This is required.
-uwsDatabase:
-  # Whether to deploy a local PostgreSQL database.  Set to false to use your own.
-  install: false
+# Cron string for the image caching cron job schedule. Defaults to every half hour.
+imageCache:
+  refreshSchedule: "*/30 * * * *"
+  
+# Set the top-level-directory name that gets mounted at the root.
+# skahaTld: "/cavern"
 
-  # URL where an existing PostgreSQL database can be found.  If not set, a URL will be constructed to point to the local PostgreSQL database deployed alongside Cavern.
-  # Only applies if install is false.
+# Used when allocating first-time users into the system.
+defaultQuotaGB: "10"
+
+# API version that is currently in use for this deployment.  Leave this alone unless you know what you're doing.
+# This the version that will show up in the path for the request (e.g. '/skaha/v1/session').
+# Example:
+#   apiVersion: 'v0'
+apiVersion: 'v1'
+
+# Configuration for User Session launching and management.
+sessions:
+  # List of allowed Image Repository hosts.  These hosts should match the hosts in the User Session images.
+  repositoryHosts:
+    - "images.canfar.net"
+
+  expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
+  maxCount: "3"  # Max number of sessions per user.
+  minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
+  maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
+
+  persistentVolumeClaimName: "skaha-workload-cavern-pvc"  # The PVC that is mounted into User Sessions at /home and /projects.
+
+  # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Deafults to Always.
+  # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
   # Example:
-  #   url: "jdbc:postgresql://<host>:<port>/<database>"
-  url: ""
+  #   imagePullPolicy: IfNotPresent
+  imagePullPolicy: Always
 
-  # Username and password used to connect to the database.
-  # These are required.
-  # Example:
-  #   username: "uwsuser"
-  #   password: "uwspwd"
-  username: ""
-  password: ""
-
-  # Sensible default for the connection pool.  The more load you expect, the higher this should be.
-  # Example:
-  #   maxActive: 4
-  maxActive: 2
-
+  # Optionally configure the Kueue system to handle large workloads.  Configurable per session type (e.g. desktop, notebook, etc.).
+  # Leaving this empty will default to submitting Jobs to the base Kubernetes system.
+  # Provide a default configuration for all session types, or omit and only configure specific session types.
+  # Provided PriorityClass names are "high", "medium", and "low".
+  # @see https://kueue.sigs.k8s.io/docs/
+  # @see https://github.com/opencadc/deployments/tree/main/configs/kueue
+  # Example 1:
+  #   # Configure notebook, desktop, and default session types.
+  #   kueue:
+  #     notebook:
+  #       queueName: "notebook-queue"
+  #       priorityClass: "medium"
+  #     desktop:
+  #       queueName: "desktop-queue"
+  #       priorityClass: "low"
+  #     default:
+  #       queueName: "default-queue"
+  #       priorityClass: "medium"
   #
-  # Everything past here in this section is ignored if install is set to false.
+  # Example 2:
+  #    # Configure contributed session types.  All else will use the bare Kubernetes system.
+  #    kueue:
+  #      contributed:
+  #        queueName: "contributed-queue"
+  #        priorityClass: "high"
   #
+  # Example 3:
+  #    # Configure Kueue for all user session types.
+  #    kueue:
+  #      default:
+  #        queueName: "all-user-sessions-local-queue"
+  #        priorityClass: "medium"
+  kueue: {}
 
-  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
-  image:
-    repository: postgres
-    # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: "15"
+  # This is a list of tolerations that will be added to the Pod spec of the User Sessions.
+  # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  # @see ./README.md#notes-on-tolerations-and-nodeaffinity
+  # 
+  # Example:
+  # tolerations:
+  # - key: "key1"
+  #   operator: "Equal"
+  #   value: "value1"
+  #   effect: "NoSchedule"
+  # 
+  tolerations: []
 
-  # Pod Security for the PostgreSQL database pod.  Only applies if the install option is true.
-  podSecurityContext: {}
-  database: "uws"  # if install: true, otherwise it's ignored
+  # Optionally setup a separate host for User Sessions for Skaha to redirect to.  The HTTPS scheme is assumed.  Defaults to the Skaha hostname.
+  # Example:
+  #   hostname: myhost.example.org
+  # hostname:
 
-# End Cavern configuration settings.
+  # Optionally set the TLS configiuration that contains the certificate information for the alternate hostname for User Sessions.  This will go into the Traefik IngressRoute spec.
+  # @see https://doc.traefik.io/traefik/v2.3/routing/providers/kubernetes-crd/#kind-ingressroute
+  # Example:
+  #   tls:
+  #     secretName: myhost-tls-secret
+  tls: {}
+
+  # Declare extra volume mounts in User Sessions.  The "type: parameter in volume section is constant.
+  # extraVolumes:
+  # - name: example-pvc-name
+  #   volume:
+  #     type: PVC           # PVC is for Persistant volume claim
+  #     name: pvc-name
+  #   volumeMount:
+  #     mountPath: "/pvc-volume-mount"
+  #     subPath: "pvc"
+  # - name: example-hostpath-name
+  #   volume:
+  #     type: HOST_PATH     # HOST_PATH is for host path
+  #     hostPath: "/host-path"
+  #     hostPathType: Directory
+  #   volumeMount:
+  #     mountPath: "/host-path"
+  #     readOnly: true
+  #     mountPropagation: HostToContainer
+  # - name: config-map-volume
+  #   volume:
+  #     type: CONFIG_MAP    # CONFIG_MAP is for config map
+  #     name: example-config-map-name
+  #     defaultMode: "0777"
+  #   volumeMount:
+  #     mountPath: "/cmp"
+  # - name: secret-volume
+  #   volume:
+  #     type: SECRET        # SECRET is for secrets
+  #     name: example-secret-name
+  #     defaultMode: "0777"
+  #   volumeMount:
+  #     mountPath: "/scrt"
+
+  # When set to 'true' this flag will enable GPU node scheduling.  Don't forget to declare any related GPU configurations, if appropriate, in the nodeAffinity below!
+  # gpuEnabled: false
+
+  # Set the YAML that will go into the "affinity.nodeAffinity" stanza for Pod Spec in User Sessions.  This can be used to enable GPU scheduling, for example, 
+  # or to control how and where User Session Pods are scheduled.  This can be potentially dangerous unless you know what you are doing.
+  # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity
+  # nodeAffinity: {}
+
+# End Skaha configuration settings.
 
 # This is to override the chart name.
 nameOverride: ""
@@ -228,8 +252,8 @@ ingress:
   hosts:
     - host: chart-example.local
       paths:
-        - path: /cavern
-          pathType: Prefix
+        - path: /
+          pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -326,3 +350,22 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# For caching images from the Image Repository and for the writing the POSIX Users and Groups to be shared with Job files
+redis:
+  architecture: 'standalone'
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false
+    containerSecurityContext:
+      runAsUser: 1001
+      runAsGroup: 1001
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop: ["ALL"]
