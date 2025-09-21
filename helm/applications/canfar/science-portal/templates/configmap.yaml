@@ -1,0 +1,79 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+    cadc-log.properties: |
+{{- range $val := .Values.loggingGroups }}
+        group = {{ $val }}
+{{- end }}
+    cadc-registry.properties: |
+        ivo://ivoa.net/std/GMS#search-1.0 = {{ .Values.gmsID | required "The GMS locator (gmsID) is required" }}
+        ivo://ivoa.net/std/GMS#users-1.0 = {{ .Values.gmsID }}
+        ivo://ivoa.net/std/UMS#users-1.0 = {{ .Values.gmsID }}
+        ivo://ivoa.net/sso#OAuth = {{ .Values.oidcURI }}
+        ivo://ivoa.net/sso#OpenID = {{ .Values.oidcURI }}
+
+        # Ignore this, it's only here to satisfy the availability check.
+        ivo://ivoa.net/std/CDP#proxy-1.0 = ivo://cadc.nrc.ca/cred
+
+        http://www.opencadc.org/std/posix#group-mapping-0.1 = {{ .Values.posixMapperResourceID | required "The locator for the POSIX Mapper service (posixMapperResourceID) is required" }}
+        http://www.opencadc.org/std/posix#user-mapping-0.1 = {{ .Values.posixMapperResourceID }}
+
+        ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ .Values.registryURL | required "A registryURL is required" }}
+
+    catalina.properties: |
+        tomcat.connector.scheme=https
+        tomcat.connector.proxyName={{ .Values.hostname }}
+        tomcat.connector.proxyPort=443
+        ca.nrc.cadc.auth.PrincipalExtractor.enableClientCertHeader=true
+        ca.nrc.cadc.util.Log4jInit.messageOnly=true
+        ca.nrc.cadc.auth.IdentityManager={{ .Values.identityManagerClass }}
+        org.opencadc.skaha.posixCache.url=redis://{{ $.Release.Name }}-redis-master:6379
+
+    war-rename.conf: |
+        {{- if .Values.applicationName }}
+        mv skaha.war {{ .Values.applicationName }}.war
+        {{- end }}
+
+    org.opencadc.science-portal.properties: |
+        org.opencadc.science-portal.sessions.resourceID = {{ .Values.skahaResourceID }}
+        org.opencadc.science-portal.sessions.standard = vos://cadc.nrc.ca~vospace/CADC/std/Proc#sessions-1.0
+        org.opencadc.science-portal.logoURL = {{ .Values.logoURL }}
+        org.opencadc.science-portal.themeName = {{ .Values.themeName | required "Please set the themeName to either src or canfar" }}
+
+        {{- if empty .Values.tabLabels }}
+        {{ required ".Values.tabLabels is missing or empty" .Values.tabLabels }}
+        {{- else }}
+        org.opencadc.science-portal.tabLabels = {{ .Values.tabLabels | join "," }}
+        {{- end }}
+
+        {{- with .Values.oidc }}
+        org.opencadc.science-portal.oidc.clientID = {{ .clientID }}
+
+        {{ if .existingSecretName -}}
+        {{- $existingSecretName := .existingSecretName -}}
+        {{- $namespace := $.Release.Namespace -}}
+        {{- $clientSecret := include "getSecretKeyValue" (list $existingSecretName "clientSecret" $namespace) -}}
+        org.opencadc.science-portal.oidc.clientSecret = {{ $clientSecret }}
+        {{- else -}}
+        org.opencadc.science-portal.oidc.clientSecret = {{ .clientSecret }}
+        {{- end }}
+
+        org.opencadc.science-portal.oidc.callbackURI = {{ .callbackURI }}
+        org.opencadc.science-portal.oidc.redirectURI = {{ .redirectURI }}
+        org.opencadc.science-portal.oidc.scope = {{ .scope }}
+        {{- end }}
+
+        org.opencadc.science-portal.tokenCache.url = redis://{{ $.Release.Name }}-redis-master.{{ $.Release.Namespace }}.svc.{{ $.Values.kubernetesClusterDomain }}:6379
+
+        {{ with .Values.experimentalFeatures }}
+        {{- with .storageHomePanel }}
+        {{- if .enabled }}
+        org.opencadc.science-portal.storageXmlInfoUrl = {{ .url }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+

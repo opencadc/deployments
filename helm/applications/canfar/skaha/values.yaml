@@ -4,7 +4,7 @@
 
 global:
   # The global hostname for the Skaha deployment.  This is used in various places, including the generation of links.
-  hostname: "skaha.canfar.net"
+  hostname: ""
   
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -49,6 +49,12 @@ oidcURI: ""
 # Example:
 #   gmsID: "ivo://skao.int/gms"
 gmsID: ""
+
+# The Resource ID of the Service that contains the URL of the Skaha service in the IVOA Registry
+# Example:
+#   skahaResourceID: ivo://example.org/skaha
+skahaResourceID:
+
 
 # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
 # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2

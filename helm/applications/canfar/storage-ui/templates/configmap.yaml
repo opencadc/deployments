@@ -1,0 +1,95 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+    cadc-log.properties: |
+{{- range $val := .Values.loggingGroups }}
+        group = {{ $val }}
+{{- end }}
+    cadc-registry.properties: |
+        ivo://ivoa.net/std/GMS#search-1.0 = {{ .Values.gmsID | required "The GMS locator (gmsID) is required" }}
+        ivo://ivoa.net/std/GMS#users-1.0 = {{ .Values.gmsID }}
+        ivo://ivoa.net/std/UMS#users-1.0 = {{ .Values.gmsID }}
+        ivo://ivoa.net/sso#OAuth = {{ .Values.oidcURI }}
+        ivo://ivoa.net/sso#OpenID = {{ .Values.oidcURI }}
+
+        # Ignore this, it's only here to satisfy the availability check.
+        ivo://ivoa.net/std/CDP#proxy-1.0 = ivo://cadc.nrc.ca/cred
+
+        http://www.opencadc.org/std/posix#group-mapping-0.1 = {{ .Values.posixMapperResourceID | required "The locator for the POSIX Mapper service (posixMapperResourceID) is required" }}
+        http://www.opencadc.org/std/posix#user-mapping-0.1 = {{ .Values.posixMapperResourceID }}
+
+        ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ .Values.registryURL | required "A registryURL is required" }}
+
+    catalina.properties: |
+        tomcat.connector.scheme=https
+        tomcat.connector.proxyName={{ .Values.hostname }}
+        tomcat.connector.proxyPort=443
+        ca.nrc.cadc.auth.PrincipalExtractor.enableClientCertHeader=true
+        ca.nrc.cadc.util.Log4jInit.messageOnly=true
+        ca.nrc.cadc.auth.IdentityManager={{ .Values.identityManagerClass }}
+        org.opencadc.skaha.posixCache.url=redis://{{ $.Release.Name }}-redis-master:6379
+
+    war-rename.conf: |
+        {{- if .Values.applicationName }}
+        mv skaha.war {{ .Values.applicationName }}.war
+        {{- end }}
+
+    org.opencadc.vosui.properties: |
+        # Properties required for interacting with a VOSpace web service
+        # Default vospace service
+        org.opencadc.vosui.service.default = {{ required "The backend.defaultService string is required." .Values.backend.defaultService }}
+
+        {{ range $name, $nameConfig := .Values.backend.services }}
+        # Begin {{ $name }}-related values
+        org.opencadc.vosui.service.name = {{ $name }}
+        # The resource id of the VOSpace web service to use
+        org.opencadc.vosui.{{ $name }}.service.resourceid = {{ $nameConfig.resourceID }}
+        # Base URI to use as node identifier
+        org.opencadc.vosui.{{ $name }}.node.resourceid = {{ $nameConfig.nodeURIPrefix }}
+        # User home directory root
+        org.opencadc.vosui.{{ $name }}.user.home = {{ $nameConfig.userHomeDir }}
+        # Link URI to manage groups
+        org.opencadc.vosui.{{ $name }}.service.groupManagementURI = {{ $nameConfig.groupManagementURI | default "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/groups" }}
+        # End {{ $name }}-related values
+
+        # Features for this service.
+        # batchDownload: true/false - Whether the batch downloadManager service is available for batch downloads.
+        # batchUpload: true/false - Whether the batch downloadManager service is available for batch downloads.
+        # externalLinks: true/false - Whether this service supports creating hyperlinks (external to the system), such as http(s) links or ftp links.  File systems do not support this.
+        # paging: true/false - Whether this VOSpace service supports the limit=<int> and startURI=<uri> features.
+        # directDownload: true/false - Optional as to whether downloads directly from the VOSpace backend are supported to optimize a redirect from the browser, rather than proxying it.  Default is false.
+        {{- with $nameConfig.features }}
+        org.opencadc.vosui.{{ $name }}.service.features.batchDownload = {{ required "The service.features.batchDownload flag is required." .batchDownload }}
+        org.opencadc.vosui.{{ $name }}.service.features.batchUpload = {{ required "The service.features.batchUpload flag is required." .batchUpload }}
+        org.opencadc.vosui.{{ $name }}.service.features.externalLinks = {{ required "The service.features.externalLinks flag is required." .externalLinks }}
+        org.opencadc.vosui.{{ $name }}.service.features.paging = {{ required "The service.features.paging flag is required." .paging }}
+        org.opencadc.vosui.{{ $name }}.service.features.directDownload = {{ default false .directDownload }}
+        {{- end }}
+        {{ end }}
+
+        org.opencadc.vosui.gms.service_id = {{ required "The storageUI.gmsID string is required." .Values.gmsID }}
+        org.opencadc.vosui.theme.name = {{ required "The storageUI.themeName string is required (valid values are src or canfar)." .Values.themeName }}
+
+        {{- with .Values.oidc }}
+
+        {{ if .existingSecretName }}
+        {{ $existingSecretName := .existingSecretName }}
+        {{ $namespace := .Release.Namespace }}
+        {{ $clientSecret := include "getSecretKeyValue" (list $existingSecretName "clientSecret" $namespace) }}
+        org.opencadc.vosui.oidc.clientSecret = {{ $clientSecret }}
+        {{- else -}}
+        org.opencadc.vosui.oidc.clientSecret = {{ .clientSecret }}
+        {{- end }}
+
+        org.opencadc.vosui.oidc.clientID = {{ required "To enable OpenID Connect, a valid oidc.clientID is required." .clientID }}
+        org.opencadc.vosui.oidc.callbackURI = {{ .callbackURI }}
+        org.opencadc.vosui.oidc.redirectURI = {{ .redirectURI }}
+        org.opencadc.vosui.oidc.scope = {{ .scope }}
+        org.opencadc.vosui.tokenCache.url = redis://{{ $.Release.Name }}-redis-master.{{ $.Release.Namespace }}.svc.{{ $.Values.kubernetesClusterDomain }}:6379
+        {{- end }}
+
+

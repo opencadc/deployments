@@ -1,4 +1,6 @@
-1. Get the application URL by running these commands:
+Skaha ({{ .Values.applicationName| default "skaha" }}) successfully installed!
+
+Get the application URL by running these commands:
 {{- if .Values.httpRoute.enabled }}
 {{- if .Values.httpRoute.hostnames }}
     export APP_HOSTNAME={{ .Values.httpRoute.hostnames | first }}
