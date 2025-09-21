@@ -3,7 +3,53 @@
 # Declare variables to be passed into your templates.
 
 global:
-  hostname:
+  # Hostname to use for all ingress routes (if not set, each service will use its own hostname setting)
+  hostname: ""
+
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+
+  # Set the Registry URL pointing to the desired registry containing IVOA compliant services.
+  # Default is to use the registry specific to each dependent Chart's service.
+  # Example:
+  #   registryURL: https://example.org/reg
+  registryURL: ""
+
+  # ID (URI) of the GMS Service.  URLs are not supported.  Required for accessing GMS user information.
+  # Example:
+  #   gmsID: "ivo://skao.int/gms"
+  gmsID: ""
+
+  # Array of groups allowed to set the logging level.  If none set, then nobody can change the log level.
+  # Example:
+  #   loggingGroups:
+  #     - "admin"
+  #     - "/roles/prod/ops"
+  loggingGroups: []
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
+  # Example:
+  #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+  identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -18,10 +64,10 @@ image:
 
 # Science Portal application specific values.
 
-# Set the Registry URL pointing to the desired registry containing IVOA compliant services to lookup.
+# The Resource ID of the Service that contains the URL of the Skaha service in the IVOA Registry
 # Example:
-#   registryURL: https://example.org/reg
-registryURL: ""
+#   skahaResourceID: ivo://example.org/skaha
+skahaResourceID:
 
 # The Resource ID, or full URL, of the Service that contains the Posix Mapping information.
 # Example:
@@ -34,18 +80,6 @@ posixMapperResourceID: ""
 # Example:
 #   oidcURI: "https://ska-iam.stfc.ac.uk/"
 oidcURI: ""
-
-# ID (URI) of the GMS Service.  URLs are not supported.  Required for accessing GMS user information.
-# Example:
-#   gmsID: "ivo://skao.int/gms"
-gmsID: ""
-
-# Array of groups allowed to set the logging level.  If none set, then nobody can change the log level.
-# Example:
-#   loggingGroups:
-#     - "admin"
-#     - "/roles/prod/ops"
-loggingGroups: []
 
 # OIDC (IAM) server configuration.  All values are required if using OIDC authentication.
 # oidc:
@@ -64,9 +98,6 @@ loggingGroups: []
   # callbackURI: 
   # The standard OpenID scopes for token requests.  This is required.
   # scope: "openid profile offline_access"
-
-# The IdentityManager class handling authentication.  This should generally be left alone
-identityManagerClass: org.opencadc.auth.StandardIdentityManager
 
 # The two tabs to show in the UI.  The first tab contains general public images, and the second tab provides a means
 # to launch a User Session using proprietary images.  These are the default lables, but they can be changed here.

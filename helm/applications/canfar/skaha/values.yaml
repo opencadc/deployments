@@ -45,17 +45,6 @@ posixMapperResourceID: ""
 #   oidcURI: "https://ska-iam.stfc.ac.uk/"
 oidcURI: ""
 
-# ID (URI) of the GMS Service.  URLs are not supported.  Required for accessing GMS user information.
-# Example:
-#   gmsID: "ivo://skao.int/gms"
-gmsID: ""
-
-# The Resource ID of the Service that contains the URL of the Skaha service in the IVOA Registry
-# Example:
-#   skahaResourceID: ivo://example.org/skaha
-skahaResourceID:
-
-
 # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
 # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
 # usersGroup: "ivo://example.org/gms?prototyping-groups/mini-src/platform-users"
@@ -74,18 +63,6 @@ skahaResourceID:
 
 # Class name to set for priority headless jobs.
 # headlessPriorityClass: uber-user-preempt-high
-
-# Array of groups allowed to set the logging level.  If none set, then nobody can change the log level.
-# Example:
-#   loggingGroups:
-#     - "admin"
-#     - "/roles/prod/ops"
-loggingGroups: []
-
-# The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
-# Example:
-#   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
-identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
 
 # Optional rename of the application from the default "skaha".
 # Update the ingress path if you change this!

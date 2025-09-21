@@ -2,6 +2,45 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  # Hostname to use for all ingress routes (if not set, each service will use its own hostname setting)
+  hostname: ""
+
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+
+  # Set the Registry URL pointing to the desired registry containing IVOA compliant services.
+  # Default is to use the registry specific to each dependent Chart's service.
+  # Example:
+  #   registryURL: https://example.org/reg
+  registryURL: ""
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
+  # Example:
+  #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+  identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
@@ -24,11 +63,6 @@ imagePullSecrets: []
 #   resourceID: "ivo://example.org/cavern"
 resourceID: ""
 
-# Set the Registry URL pointing to the desired registry containing IVOA compliant services to lookup.
-# Example:
-#   registryURL: https://example.org/reg
-registryURL: ""
-
 # The Resource ID, or full URL, of the Service that contains the Posix Mapping information.
 # Example:
 #   posixMapperResourceID: "ivo://example.org/posix-mapper"
@@ -41,28 +75,11 @@ posixMapperResourceID: ""
 #   oidcURI: "https://ska-iam.stfc.ac.uk/"
 oidcURI: ""
 
-# ID (URI) of the GMS Service.  URLs are not supported.  Required for accessing GMS user information.
-# Example:
-#   gmsID: "ivo://skao.int/gms"
-gmsID: ""
-
-# Array of groups allowed to set the logging level.  If none set, then nobody can change the log level.
-# Example:
-#   loggingGroups:
-#     - "admin"
-#     - "/roles/prod/ops"
-loggingGroups: []
-
 # Simple Class name of the QuotaPlugin to use.  This is used to request quota and folder size information
 # from the underlying storage system.  Optional, defaults to NoQuotaPlugin to use no quota.
 # Example:
 #   quotaPlugin: "CephFSQuotaPlugin"  # For CephFS deployments
 quotaPlugin: "NoQuotaPlugin"
-
-# The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
-# Example:
-#   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
-identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
 
 # User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.
 allocations:

@@ -7,9 +7,8 @@ global:
   hostname: ""
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-  replicaCount: 1
   imagePullSecrets: []
-  imagePullPolixy: IfNotPresent
+  imagePullPolicy: IfNotPresent
 
   # Set the Registry URL pointing to the desired registry containing IVOA compliant services.
   # Default is to use the registry specific to each dependent Chart's service.
@@ -19,11 +18,15 @@ global:
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: {}
+  podAnnotations: {
+    
+  }
   
   # This is for setting Kubernetes Labels to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-  podLabels: {}
+  podLabels: {
+    "opencadc.org": "canfar-science-platform"
+  }
 
   podSecurityContext: {}
     # fsGroup: 2000
@@ -35,6 +38,11 @@ global:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
+
+  # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
+  # Example:
+  #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+  identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
 
 #
 # Services that make up the CANFAR Science Platform
