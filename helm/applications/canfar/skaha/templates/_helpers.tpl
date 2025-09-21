@@ -60,3 +60,34 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+USER SESSION TEMPLATE DEFINITIONS
+*/}}
+
+{{/*
+The Home VOSpace Node URI (uses vos:// scheme) for the User Home directory in Cavern.
+*/}}
+{{- define "skaha.job.userStorage.homeURI" -}}
+{{- $nodeURIPrefix := trimAll "/" (required ".Values.sessions.userStorage.nodeURIPrefix nodeURIPrefix is required." .Values.sessions.userStorage.nodeURIPrefix) -}}
+{{- $homeDirectoryName := trimAll "/" (required ".Values.sessions.userStorage.homeDirectory home folder name is required." .Values.sessions.userStorage.homeDirectory) -}}
+{{- printf "%s/%s" $nodeURIPrefix $homeDirectoryName -}}
+{{- end -}}
+
+{{/*
+The Home Directory base absolute path.
+*/}}
+{{- define "skaha.job.userStorage.homeBaseDirectory" -}}
+{{- $topLevelDirectory := trimAll "/" (required ".Values.sessions.userStorage.topLevelDirectory topLevelDirectory is required." .Values.sessions.userStorage.topLevelDirectory) -}}
+{{- $homeDirectoryName := trimAll "/" (required ".Values.sessions.userStorage.homeDirectory home folder name is required." .Values.sessions.userStorage.homeDirectory) -}}
+{{- printf "/%s/%s" $topLevelDirectory $homeDirectoryName -}}
+{{- end -}}
+
+{{/*
+The Projects Directory base absolute path.
+*/}}
+{{- define "skaha.job.userStorage.projectsBaseDirectory" -}}
+{{- $topLevelDirectory := trimAll "/" (required ".Values.sessions.userStorage.topLevelDirectory topLevelDirectory is required." .Values.sessions.userStorage.topLevelDirectory) -}}
+{{- $projectsDirectoryName := trimAll "/" (required ".Values.sessions.userStorage.projectsDirectory projects folder name is required." .Values.sessions.userStorage.projectsDirectory) -}}
+{{- printf "/%s/%s" $topLevelDirectory $projectsDirectoryName -}}
+{{- end -}}

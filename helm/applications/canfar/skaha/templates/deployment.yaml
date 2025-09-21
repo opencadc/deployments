@@ -60,6 +60,87 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          env:
+          {{ $userStorage := required "Missing .Values.sessions.userStorage configuration" .Values.sessions.userStorage }}
+          {{- with $userStorage }}
+          {{ $userStorageAdmin := required "Missing .Values.sessions.userStorage.admin configuration" .admin }}
+          {{- with $userStorageAdmin }}
+          {{ $userStorageAdminAuth := required "Missing .Values.sessions.userStorage.admin.auth configuration" .auth }}
+          {{- with $userStorageAdminAuth }}
+          {{- if .certificateSecret }}
+          {{- with .certificateSecret -}}
+            - name: SKAHA_USER_STORAGE_ADMIN_CERTIFICATE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name | required "Missing .Values.sessions.userStorage.admin.auth.certificateSecret.name" }}
+                  key: {{ .key | default "cadcproxy.pem" }}
+          {{- end }}
+          {{- else if .apiKey }}
+            - name: SKAHA_USER_STORAGE_ADMIN_API_KEY
+              value: "{{ .apiKey }}"
+          {{- else }}
+          {{- fail "Neither .Values.sessions.userStorage.admin.auth.apiKey nor .Values.sessions.userStorage.admin.auth.certificateSecret specified." }}
+          {{- end }}  # End if - certificateSecret or apiKey
+          {{- end }}  # End with - userStorageAdmin.auth
+          {{- end }}  # End with - userStorageAdmin
+            - name: SKAHA_USER_STORAGE_SERVICE_URI
+              value: "{{ required "Missing .Values.sessions.userStorage.serviceURI" .serviceURI }}"
+            - name: SKAHA_USER_STORAGE_USER_HOME_URI
+              value: "{{ template "skaha.job.userStorage.homeURI" $ }}"
+            - name: SKAHA_USER_STORAGE_TOP_LEVEL_DIRECTORY
+              value: "{{ required ".Values.sessions.userStorage.topLevelDirectory topLevelDirectory is required." .topLevelDirectory }}"
+            - name: SKAHA_USER_STORAGE_HOME_BASE_DIRECTORY
+              value: "{{ template "skaha.job.userStorage.homeBaseDirectory" $ }}"
+            - name: SKAHA_USER_STORAGE_PROJECTS_BASE_DIRECTORY
+              value: "{{ template "skaha.job.userStorage.projectsBaseDirectory" $ }}"
+          {{- end }}  # End with - userStorage
+            - name: SKAHA_SESSIONS_HOSTNAME
+              value: "{{ .Values.sessions.hostname | default .Values.global.hostname }}"
+            - name: SKAHA_HOSTNAME
+              value: "{{ .Values.global.hostname }}"
+            - name: GPU_ENABLED
+              value: "{{ .Values.sessions.gpuEnabled | default "false" }}"
+            - name: SKAHA_SESSIONS_NAMESPACE
+              value: "{{ .Values.sessions.namespace }}"
+            - name: SKAHA_SESSIONS_MAX_INTERACTIVE_COUNT
+              value: "{{ .Values.sessions.maxInteractiveCount }}"
+            - name: SKAHA_SESSIONS_EXPIRY_SECONDS
+              value: "{{ .Values.sessions.expirySeconds }}"
+            - name: SKAHA_SESSIONS_DEFAULT_QUOTA_GB
+              value: "{{ .Values.defaultQuotaGB }}"
+            - name: SKAHA_SESSIONS_REGISTRY_HOSTS
+              value: "{{ join "," .Values.registryHosts }}"
+            - name: SKAHA_USERS_GROUP
+              value: "{{ .Values.usersGroup }}"
+            - name: SKAHA_HEADLESS_GROUP
+              value: "{{ .Values.headlessGroup }}"
+            {{- with .Values.headlessPriorityGroup }}
+            - name: SKAHA_HEADLESS_PRIORITY_GROUP
+              value: "{{ . }}"
+            {{- end }}
+            {{- with .Values.headlessPriorityClass }}
+            - name: SKAHA_HEADLESS_PRIORITY_CLASS
+              value: "{{ . }}"
+            {{- end }}
+            {{- with .Values.sessions.kueue }}
+            {{- range $queueConfigKey, $queueConfig := . }}
+            - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_NAME
+              value: "{{ $queueConfig.queueName | required (printf "Missing .Values.sessions.kueue.%s.queueName" $queueConfigKey) }}"
+            - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_PRIORITY_CLASS
+              value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.sessions.kueue.%s.priorityClass" $queueConfigKey) }}"
+            {{- end }}
+            {{- end }}
+            - name: SKAHA_ADMINS_GROUP
+              value: "{{ .Values.adminsGroup }}"
+            - name: SKAHA_POSIX_MAPPER_RESOURCE_ID
+              value: "{{ .Values.posixMapperResourceID }}"
+            - name: REDIS_HOST
+              value: "{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesClusterDomain }}"
+            - name: REDIS_PORT
+              value: "6379"
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 8 }}
+            {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
