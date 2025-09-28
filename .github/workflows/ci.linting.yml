@@ -19,7 +19,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.18.0
+          version: v3.19.0
 
       - name: Lint all charts
         run: |
@@ -44,10 +44,10 @@ jobs:
 #       - name: Set up Helm
 #         uses: azure/setup-helm@v4
 #         with:
-#           version: v3.18.0
+#           version: v3.19.0
 
-#       - name: Set up Kind cluster
-#         uses: helm/kind-action@v1.10.0
+#       - name: Set up KinD cluster
+#         uses: helm/kind-action@v1.12.0
 
 #       - name: Install Helm Charts
 #         run: |
@@ -73,7 +73,7 @@ jobs:
 #       - name: Set up Helm
 #         uses: azure/setup-helm@v4
 #         with:
-#           version: v3.18.0
+#           version: v3.19.0
 
 #       - name: Package Helm Charts
 #         run: |
