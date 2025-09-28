@@ -3,12 +3,10 @@ name: Helm Chart Workflow
 on:
   push:
     branches: [ main, the-one-chart ]
-    paths:
-      - 'helm/applications/canfar/**'
   pull_request:
     branches: [ main, the-one-chart ]
-    paths:
-      - 'helm/applications/canfar/**'
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight
 
 jobs:
   lint:
@@ -27,6 +25,9 @@ jobs:
         run: |
           for chart in helm/applications/canfar/*; do
             if [ -d "$chart" ]; then
+              echo "Updating dependencies for $chart"
+              helm dependency update "$chart"
+              echo "Updating dependencies for $chart: done"
               echo "Linting $chart"
               helm lint "$chart"
             fi
