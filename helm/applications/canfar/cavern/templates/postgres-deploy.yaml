@@ -39,7 +39,7 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
       # Maintain the same tolerations as the "parent" Cavern API.
-      {{- with $.Values.tolerations }}
+      {{- with $.Values.global.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
