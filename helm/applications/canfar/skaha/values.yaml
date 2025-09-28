@@ -3,8 +3,82 @@
 # Declare variables to be passed into your templates.
 
 global:
-  # The global hostname for the Skaha deployment.  This is used in various places, including the generation of links.
+  # Hostname to use for all ingress routes (if not set, each service will use its own hostname setting)
   hostname: ""
+
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 1
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+
+  # Set the Registry URL pointing to the desired registry containing IVOA compliant services to lookup.
+  # Example:
+  #   registryURL: https://example.org/reg
+  registryURL: ""
+
+  # URI or URL of the OIDC (IAM) server.  Used to validate incoming tokens.
+  # Example:
+  #   oidcURI: https://iam.example.org
+  oidcURI:
+
+  # ID (URI) of the GMS Service.
+  # Example:
+  #   gmsID: ivo://example.org/gms
+  gmsID:
+
+  # Array of groups allowed to set the logging level.  If none set, then nobody can change the log level.
+  # Example:
+  #   loggingGroups:
+  #     - "admin"
+  #     - "/roles/prod/ops"
+  loggingGroups: []
+
+  # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
+  # Example:
+  #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+  identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+
+  # This is for setting Kubernetes Annotations to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+  
+  # This is for setting Kubernetes Labels to a Pod.
+  # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
+  # Example:
+  #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+  identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+
+  # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Automatically mount a ServiceAccount's API credentials?
+    automount: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
   
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -17,9 +91,6 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "1.0.3"
 
-# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-imagePullSecrets: []
-
 # Skaha configuration settings.
 
 # How cavern identifies itself.
@@ -28,22 +99,11 @@ imagePullSecrets: []
 #   resourceID: "ivo://example.org/cavern"
 resourceID: ""
 
-# Set the Registry URL pointing to the desired registry containing IVOA compliant services to lookup.
-# Example:
-#   registryURL: https://example.org/reg
-registryURL: ""
-
 # The Resource ID, or full URL, of the Service that contains the Posix Mapping information.
 # Example:
 #   posixMapperResourceID: "ivo://example.org/posix-mapper"
 #   posixMapperResourceID: "https://example.org/posix-mapper"
 posixMapperResourceID: ""
-
-# URI or URL of the OIDC (IAM) server.  Used to validate incoming tokens.  Required if using OIDC authentication.
-# This should be a valid HTTPS URL that matches the Identity Provider's issuer URL.
-# Example:
-#   oidcURI: "https://ska-iam.stfc.ac.uk/"
-oidcURI: ""
 
 # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
 # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
@@ -270,36 +330,6 @@ sessions:
 nameOverride: ""
 fullnameOverride: ""
 
-# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-# This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
-# This is for setting Kubernetes Labels to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-podLabels: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
@@ -409,12 +439,6 @@ volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
 
 # For caching images from the Image Repository and for the writing the POSIX Users and Groups to be shared with Job files
 redis:

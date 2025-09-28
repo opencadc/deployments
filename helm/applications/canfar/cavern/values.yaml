@@ -11,11 +11,32 @@ global:
   imagePullSecrets: []
   imagePullPolicy: IfNotPresent
 
-  # Set the Registry URL pointing to the desired registry containing IVOA compliant services.
-  # Default is to use the registry specific to each dependent Chart's service.
+  # Set the Registry URL pointing to the desired registry containing IVOA compliant services to lookup.
   # Example:
   #   registryURL: https://example.org/reg
   registryURL: ""
+
+  # URI or URL of the OIDC (IAM) server.  Used to validate incoming tokens.
+  # Example:
+  #   oidcURI: https://iam.example.org
+  oidcURI:
+
+  # ID (URI) of the GMS Service.
+  # Example:
+  #   gmsID: ivo://example.org/gms
+  gmsID:
+
+  # Array of groups allowed to set the logging level.  If none set, then nobody can change the log level.
+  # Example:
+  #   loggingGroups:
+  #     - "admin"
+  #     - "/roles/prod/ops"
+  loggingGroups: []
+
+  # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
+  # Example:
+  #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+  identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
 
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -40,6 +61,24 @@ global:
   # Example:
   #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
+
+  # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Automatically mount a ServiceAccount's API credentials?
+    automount: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -198,36 +237,6 @@ uwsDatabase:
 nameOverride: ""
 fullnameOverride: ""
 
-# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-# This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
-# This is for setting Kubernetes Labels to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-podLabels: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
@@ -337,9 +346,3 @@ volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
