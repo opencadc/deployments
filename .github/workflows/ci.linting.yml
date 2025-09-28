@@ -2,11 +2,11 @@ name: Helm Chart Workflow
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, the-one-chart ]
     paths:
       - 'helm/applications/canfar/**'
   pull_request:
-    branches: [ main ]
+    branches: [ main, the-one-chart ]
     paths:
       - 'helm/applications/canfar/**'
 
