@@ -1,0 +1,110 @@
+name: Helm Chart Workflow
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'helm/applications/canfar/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'helm/applications/canfar/**'
+
+jobs:
+  lint:
+    name: Lint Helm Charts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.18.0
+
+      - name: Lint all charts
+        run: |
+          for chart in helm/applications/canfar/*; do
+            if [ -d "$chart" ]; then
+              echo "Linting $chart"
+              helm lint "$chart"
+            fi
+          done
+
+#   test:
+#     name: Install Helm Chart on Kind
+#     runs-on: ubuntu-latest
+#     needs: lint
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Set up Helm
+#         uses: azure/setup-helm@v4
+#         with:
+#           version: v3.18.0
+
+#       - name: Set up Kind cluster
+#         uses: helm/kind-action@v1.10.0
+
+#       - name: Install Helm Charts
+#         run: |
+#           for chart in charts/*; do
+#             if [ -d "$chart" ]; then
+#               release=$(basename "$chart")
+#               echo "Installing $chart as release $release"
+#               helm install "$release" "$chart"
+#               helm test "$release" || true
+#               helm uninstall "$release"
+#             fi
+#           done
+
+#   package:
+#     name: Package Charts
+#     runs-on: ubuntu-latest
+#     needs: test
+#     if: github.ref == 'refs/heads/main'
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Set up Helm
+#         uses: azure/setup-helm@v4
+#         with:
+#           version: v3.18.0
+
+#       - name: Package Helm Charts
+#         run: |
+#           mkdir -p packaged
+#           for chart in charts/*; do
+#             if [ -d "$chart" ]; then
+#               echo "Packaging $chart"
+#               helm package "$chart" -d packaged/
+#             fi
+#           done
+
+#       - name: Upload packaged charts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: helm-packages
+#           path: packaged/
+
+#       - name: Log in to Harbor registry
+#         env:
+#           HARBOR_USER: ${{ secrets.HARBOR_USER }}
+#           HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+#           HARBOR_URL: ${{ secrets.HARBOR_URL }}
+#         run: |
+#           echo "$HARBOR_PASSWORD" | helm registry login -u "$HARBOR_USER" --password-stdin "$HARBOR_URL"
+
+#       - name: Push Helm Charts to Harbor
+#         env:
+#           HARBOR_URL: ${{ secrets.HARBOR_URL }}
+#           HARBOR_PROJECT: ${{ secrets.HARBOR_PROJECT }}
+#         run: |
+#           for chart in packaged/*.tgz; do
+#             name=$(basename "$chart")
+#             echo "Pushing $chart to Harbor"
+#             helm push "$chart" oci://$HARBOR_URL/$HARBOR_PROJECT
+#           done
