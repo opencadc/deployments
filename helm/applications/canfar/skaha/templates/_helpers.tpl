@@ -91,3 +91,121 @@ The Projects Directory base absolute path.
 {{- $projectsDirectoryName := trimAll "/" (required ".Values.sessions.userStorage.projectsDirectory projects folder name is required." .Values.sessions.userStorage.projectsDirectory) -}}
 {{- printf "/%s/%s" $topLevelDirectory $projectsDirectoryName -}}
 {{- end -}}
+
+{{/*
+USER SESSION TEMPLATE DEFINITIONS
+*/}}
+
+{{/*
+The init containers for the launch scripts.
+*/}}
+{{- define "skaha.session.initContainers" -}}
+      - name: backup-original-passwd-groups
+        image: ${software.imageid}
+        command: ["/bin/sh", "-c", "cp /etc/passwd /etc-passwd/passwd-orig && cp /etc/group /etc-group/group-orig"]
+        volumeMounts:
+        - mountPath: "/etc-passwd"
+          name: etc-passwd
+        - mountPath: "/etc-group"
+          name: etc-group
+        securityContext:
+          privileged: false
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+      - name: init-users-groups
+        image: {{ $.Values.deployment.skaha.sessions.initContainerImage | default "redis:7.4.2-alpine3.21" }}
+        command: ["/init-users-groups/init-users-groups.sh"]
+        env:
+        - name: HOME
+          value: "${SKAHA_TLD}/home/${skaha.userid}"
+        - name: REDIS_URL
+          value: "redis://{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesClusterDomain }}:6379"
+        volumeMounts:
+        - mountPath: "/etc-passwd"
+          name: etc-passwd
+        - mountPath: "/etc-group"
+          name: etc-group
+        - mountPath: "/init-users-groups"
+          name: init-users-groups
+        securityContext:
+          privileged: false
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+{{- with .Values.deployment.extraHosts }}
+      hostAliases:
+{{- range $extraHost := . }}
+        - ip: {{ $extraHost.ip }}
+          hostnames:
+            - {{ $extraHost.hostname }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+The affinity for Jobs.  This will import the YAML as defined by the user in the deployment.skaha.sessions.nodeAffinity stanza.
+*/}}
+{{- define "skaha.session.nodeAffinity" -}}
+{{- with .Values.deployment.skaha.sessions.nodeAffinity }}
+      affinity:
+        nodeAffinity:
+{{ . | toYaml | indent 10 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Common security context settings for User Session Jobs
+*/}}
+{{- define "skaha.session.securityContext" -}}
+        runAsUser: ${skaha.posixid} 
+        runAsGroup: ${skaha.posixid}
+        fsGroup: ${skaha.posixid}
+        supplementalGroups: [${skaha.supgroups}]
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+{{- end }}
+
+
+{/**
+TODO: This is likely more complicated than it needs to be, and is technical debt for now.  Deployers
+TODO: could simply declare the appropriate YAML that Kubernetes expects that can simply be inserted here, 
+TODO: rather than mapping it to a separate model and injecting specific values.
+TODO: jenkinsd 2024.09.20
+*/}}
+{{- define "skaha.session.commonVolumes" -}}
+      {{- with .Values.sessions.extraVolumes }}
+      {{- range . }}
+      - name: {{ .name }}
+        {{- if eq .volume.type "PVC" }}
+        persistentVolumeClaim:
+          claimName: {{ .volume.name }}
+        {{- else if eq .volume.type "HOST_PATH" }}
+        hostPath:
+          path: {{ .volume.hostPath }}
+          type: {{ .volume.hostPathType }}
+        {{- else if eq .volume.type "CONFIG_MAP" }}
+        configMap:
+          name: {{ .volume.name }}
+          {{- if .volumeMount.defaultMode }}
+          defaultMode: {{ .volume.defaultMode }}
+          {{- end }}
+        {{- else if eq .volume.type "SECRET" }}
+        secret:
+          secretName: {{ .volume.name }}
+          {{- if .volumeMount.defaultMode }}
+          defaultMode: {{ .volume.defaultMode }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+      - name: cavern-volume
+        persistentVolumeClaim:
+          claimName: {{ .Values.sessions.storageSpec | required "The storage spec for skaha sessions (.sessions.storageSpec) must be set."  }}
+      - name: scratch-dir
+        emptyDir: {}
+{{- end }}
+
