@@ -1,4 +1,4 @@
-# CANFAR Science Platform Stack
+# CANFAR Science Platform Stack Helm Chart
 
 Installs core components of the [CANFAR Science Platform](https://github.com/opencadc/science-platform.git), a collection of web services and browser-based user interfaces for accessing and processing large astronomical datasets.
 
@@ -18,7 +18,7 @@ A Kubernetes Cluster and Helm 3.
 The following Kubernetes versions are supported and work as we test against these versions in their respective branches. But note that other versions might work!
 
 > [!NOTE]
-> In CI we will be testing only last two releases and main branch on a regular basis.
+> In CI we will be testing only last release and main branch on a regular basis.
 
 | CANFAR stack                                                                      | Kubernetes 1.29 | Kubernetes 1.30 | Kubernetes 1.31 | Kubernetes 1.32 | Kubernetes 1.33 | Kubernetes 1.34 |
 |--------------------------------------------------------------------------------------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|
@@ -31,7 +31,7 @@ This Chart is meant to be used as a Production ready deployment of the CANFAR Sc
 ### Add the Helm repository
 
 ```bash
-helm repo add canfar https://images.opencadc.org/chartrepo/platform
+helm repo add science-platform https://images.opencadc.org/chartrepo/platform
 helm repo update
 ```
 

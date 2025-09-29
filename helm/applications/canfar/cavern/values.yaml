@@ -6,8 +6,6 @@ global:
   # Hostname to use for all ingress routes (if not set, each service will use its own hostname setting)
   hostname: ""
 
-  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-  replicaCount: 1
   imagePullSecrets: []
   imagePullPolicy: IfNotPresent
 
@@ -56,11 +54,6 @@ global:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
-
-  # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
-  # Example:
-  #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
-  identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
 
   # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
   serviceAccount:
