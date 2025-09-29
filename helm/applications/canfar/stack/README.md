@@ -99,3 +99,36 @@ cavern:
 ```bash
 helm install -n canfar upgrade --install --create-namespace canfar science-platform/canfar
 ```
+
+## Values Reference
+
+The following table summarizes the configurable options available in
+[`values.yaml`](./values.yaml):
+
+| Key | Description | Defaults |
+|---|---|---|
+| `global.hostname` | Hostname to access all services on the Science Platform. | `hostname`, `serviceAccount` |
+| `global.replicaCount` | Number of replicas for each service. | 1 |
+| `global.imagePullSecrets` | Image pull secrets for private registries. | `[]` |
+| `global.imagePullPolicy` | Image pull policy for containers. | `IfNotPresent` |
+| `global.registryURL` | Container registry URL. |  |
+| `global.oidcURI` | OIDC provider URL. |  |
+| `global.gmsID` | GMS ID for the service. |  |
+| `global.loggingGroups` | Logging groups for the service. | `[]` |
+| `global.identityManagerClass` | Identity manager class for the service. | `org.opencadc.auth.StandardIdentityManager` |
+| `global.serviceAccount.create` | Whether to create a service account. | `true` |
+| `global.serviceAccount.automount` | Whether to automount the service account token. | `true` |
+| `global.serviceAccount.name` | Name of the service account. |  |
+| `global.tolerations` | Tolerations for the service. | `[]` |
+| `posix-mapper` | Configuration for the POSIX Mapper service. See [`posix-mapper` values.yaml](../posix-mapper/values.yaml) | `{ enabled: true }` |
+| `cavern` | Configuration for the Cavern service. See [`cavern` values.yaml](../cavern/values.yaml) | `{ enabled: true }` |
+| `skaha` | Configuration for the Skaha service. See [`skaha` values.yaml](../skaha/values.yaml) | `{ enabled: true }` |
+| `science-portal` | Configuration for the Science Portal service. See [`science-portal` values.yaml](../science-portal/values.yaml) | `{ enabled: true }` |
+| `storage-ui` | Configuration for the Storage UI service. See [`storage-ui` values.yaml](../storage-ui/values.yaml) | `{ enabled: true }` |
+
+For the full schema and default values, see each Chart's `values.yaml` file:
+- [`posix-mapper` values.yaml](../posix-mapper/values.yaml)
+- [`cavern` values.yaml](../cavern/values.yaml)
+- [`skaha` values.yaml](../skaha/values.yaml)
+- [`science-portal` values.yaml](../science-portal/values.yaml)
+- [`storage-ui` values.yaml](../storage-ui/values.yaml)
