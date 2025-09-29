@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "id": "kueuer",
+      "image": "images.canfar.net/tools/kueuer",
+      "context": "configs/kueue/kueuer",
+      "dockerfile": "Dockerfile",
+      "platforms": ["linux/amd64"],
+      "static_tags": ["latest"]
+    }
+  ]
+}
