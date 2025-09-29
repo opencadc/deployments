@@ -159,7 +159,24 @@ sessions:
   minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
   maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
 
-  persistentVolumeClaimName: "skaha-workload-cavern-pvc"  # The PVC that is mounted into User Sessions at /home and /projects.
+  # The storage spec that gets mounted into User Sessions that provides /home and /projects.
+  # Deaftults to a PVC named skaha-workload-cavern-pvc.
+  # This must be a storage spec that Kubernetes understands.  See https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
+  # Example:
+  #   storageSpec:
+  #     hostPath:
+  #       path: /path/to/host/dir
+  #       type: Directory
+  #    
+  #   storageSpec:
+  #     emptyDir: {}
+  # 
+  #   storageSpec:
+  #     persistentVolumeClaim:
+  #       claimName: my-pvc-name
+  storageSpec:
+    persistentVolumeClaim:   # The storage spec that gets mounted into User Sessions at /home and /projects.
+      claimName: skaha-workload-cavern-pvc
 
   # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Deafults to Always.
   # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy

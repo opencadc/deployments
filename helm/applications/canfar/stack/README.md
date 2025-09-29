@@ -41,12 +41,59 @@ Some services require persistent storage or a running PostgreSQL database.
 
 For persistence, it is recommended to configure a `StorageClass` and set the appropriate values in the `values.yaml` file or via the `--set` flag during installation.
 
-| Service        | Dependency | Description                              |
+| Service        | Dependency | Description                                          |
 |----------------|------------------------|------------------------------------------|
 | `posix-mapper` | `PostgreSQL` >= 15 (required)    | Persistent storage for UID and GID information.  See the [`posix-mapper` values.yaml file](../posix-mapper/values.yaml#L131) |
 | `cavern`       | Storage Specification | PVC or some Kubernetes storage spec.  See the `filesystem.spec` in the [`cavern` values.yaml file](../cavern/values.yaml#L174) |
 | `cavern`       | `PostgreSQL` >= 15 (optional) | Persistent storage for UWS metadata. See the [`cavern` values.yaml file](../cavern/values.yaml#L195) |
+| `skaha`        | Storage Specification | PVC or some Kubernetes storage spec.  See the `session.storageSpec` in the [`skaha` values.yaml file](../skaha/values.yaml#L177) |
 
+### Configuration
+The following table lists the configurable parameters of the CANFAR stack and their default values. See the individual component's `values.yaml` files for more configuration options.
+
+```yaml
+# Global settings
+global:
+  hostname: canfar.example.org
+
+  # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Automatically mount a ServiceAccount's API credentials?
+    automount: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: "canfar"
+```
+
+Each service can be configured separately.  Override `global` values in each service's configuration section.
+
+```yaml
+# Configuration for the POSIX Mapper service
+posix-mapper:
+  enabled: true
+  global:
+    hostname: posix-mapper.canfar.example.org
+    serviceAccount:
+      name: "canfar-posix-mapper"
+      create: false
+
+# Configuration for the POSIX Mapper service
+cavern:
+  enabled: true
+  global:
+    hostname: cavern-ivoa.example.org
+    serviceAccount:
+    name: "canfar-cavern"
+      create: true
+      annotations: {
+        "exmple.org/annotation": "example-value"
+      }
+```
+      
 ### Install the Chart
 
 ```bash

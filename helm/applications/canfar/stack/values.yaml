@@ -83,22 +83,28 @@ global:
 #
 # Services that make up the CANFAR Science Platform
 #
-# Configuration for the Cavern service
-cavern:
-  enabled: true
 
 # Configuration for the POSIX Mapper service
+# @see helm/applications/canfar/posix-mapper/values.yaml for available configuration options
 posix-mapper:
   enabled: true
 
+# Configuration for the Cavern service
+# @see helm/applications/canfar/cavern/values.yaml for available configuration options
+cavern:
+  enabled: true
+
 # Configuration for the Skaha service
+# @see helm/applications/canfar/skaha/values.yaml for available configuration options
 skaha:
   enabled: true
 
 # Configuration for the Science Portal service
+# @see helm/applications/canfar/science-portal/values.yaml for available configuration options
 science-portal:
   enabled: true
 
 # Configuration for the Storage UI service
+# @see helm/applications/canfar/storage-ui/values.yaml for available configuration options
 storage-ui:
   enabled: true
