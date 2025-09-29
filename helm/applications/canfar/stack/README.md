@@ -81,7 +81,7 @@ posix-mapper:
       name: "canfar-posix-mapper"
       create: false
 
-# Configuration for the POSIX Mapper service
+# Configuration for the Cavern service
 cavern:
   enabled: true
   global:
@@ -127,8 +127,10 @@ The following table summarizes the configurable options available in
 | `storage-ui` | Configuration for the Storage UI service. See [`storage-ui` values.yaml](../storage-ui/values.yaml) | `{ enabled: true }` |
 
 For the full schema and default values, see each Chart's `values.yaml` file:
-- [`posix-mapper` values.yaml](../posix-mapper/values.yaml)
-- [`cavern` values.yaml](../cavern/values.yaml)
-- [`skaha` values.yaml](../skaha/values.yaml)
-- [`science-portal` values.yaml](../science-portal/values.yaml)
-- [`storage-ui` values.yaml](../storage-ui/values.yaml)
+| Service | Documentation | Values File |
+|---|---|---|
+| `posix-mapper` | [../posix-mapper/](../posix-mapper/) | [values.yaml](../posix-mapper/values.yaml) |
+| `cavern` | [../cavern/](../cavern/) | [values.yaml](../cavern/values.yaml) |
+| `skaha` | [../skaha/](../skaha/) | [values.yaml](../skaha/values.yaml) |
+| `science-portal` | [../science-portal/](../science-portal/) | [values.yaml](../science-portal/values.yaml) |
+| `storage-ui` | [../storage-ui/](../storage-ui/) | [values.yaml](../storage-ui/values.yaml) |
