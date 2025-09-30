@@ -183,7 +183,7 @@ applicationName: ""
 
 # UWS Database configuration.  This is required.
 # This information can be completely volatile as it is only used for asynchronous job tracking.
-# If you want to use a persistent database, set install to false and provide your own URL
+# If you want to use a persistent database, set install to false and provide your own URL.
 # @see the Universal Worker Service (UWS) standard: http://www.ivoa.net/documents/UWS/
 uwsDatabase:
   # Whether to deploy a local PostgreSQL database.  Set to false to use your own.

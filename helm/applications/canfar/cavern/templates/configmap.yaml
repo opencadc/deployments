@@ -40,8 +40,8 @@ data:
         org.opencadc.cavern.uws.maxActive={{ .maxActive }}
         org.opencadc.cavern.uws.username={{ .username }}
         org.opencadc.cavern.uws.password={{ .password }}
-        {{- if .url }}
-        org.opencadc.cavern.uws.url={{ .url }}
+        {{- if eq .install false }}
+        org.opencadc.cavern.uws.url={{ .url | required "Database URL is required when uwsDatabase.install is false." }}
         {{- else }}
         org.opencadc.cavern.uws.url=jdbc:postgresql://{{ $.Release.Name }}-uws-postgres.{{ $.Release.Namespace }}:5432/{{ .database }}
         {{- end }}

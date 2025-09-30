@@ -17,7 +17,7 @@ The following Kubernetes versions are supported and work as we test against thes
 |------------------------------------------------------------------------------------|------|-------|-------|-------|-------|-------|
 | [`main` branch](https://github.com/opencadc/deployments/tree/main/helm/applications/canfar/cavern)                 | ✔               | ✔               | x               | x               | x               | x               |
 
-## Quickstart
+## Installing the Chart
 
 This Chart is meant to be used as a Production ready deployment of the Cavern VOSpace API. It is recommended to read through the configuration options and set them according to your needs.
 
@@ -30,7 +30,7 @@ helm repo update
 
 ### External Dependencies
 
-Some services require persistent storage or a running PostgreSQL database. 
+Cavern requires persistent storage and a PostgreSQL database.  The PostgreSQL database is used to store UWS job metadata.  Cavern can be configured to use an external PostgreSQL database, or the Chart can optionally install a PostgreSQL database as a Deployment with the `uwsDatabase.install=true` property set in the `values.yaml`.
 
 For persistence, it is recommended to configure a `StorageClass`, create a PVC to use it, and set the appropriate values in the `values.yaml` file or via the `--set` flag during installation.
 
@@ -39,3 +39,4 @@ For persistence, it is recommended to configure a `StorageClass`, create a PVC t
 | Storage Specification         | Kubernetes storage YAML specification, such as a PVC declaration.  See the `filesystem.spec` in the [values.yaml file](../cavern/values.yaml#L167) |
 | `PostgreSQL` >= 15 (optional) | Persistent storage for UWS metadata. See the [values.yaml file](../cavern/values.yaml#L188) |
 
+### Configuration
