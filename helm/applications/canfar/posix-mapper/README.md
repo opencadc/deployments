@@ -1,10 +1,10 @@
-# Cavern Storage API Helm Chart
+# POSIX Mapper API Helm Chart
 
-Installs the `cavern` service, a RESTful storage API (IVOA VOSpace 2.1 compliant), for the CANFAR Science Platform.  This Chart can also optionally install a PostgreSQL database to use as a UWS backend for Cavern.
+Installs the `posix-mapper` service, a RESTful API for mapping UIDs and GIDs to POSIX user and group names.
 
 ## Prerequisites
 
-A Kubernetes Cluster and Helm 3.
+A Kubernetes Cluster, Helm 3, and a PostgreSQL database.
 
 ## Kubernetes Compatibility
 
@@ -13,13 +13,13 @@ The following Kubernetes versions are supported and work as we test against thes
 > [!NOTE]
 > In CI we will be testing only last release and main branch on a regular basis.
 
-| Cavern Release                                                                     | 1.29 |  1.30 |  1.31 |  1.32 |  1.33 |  1.34 |
+| POSIX Mapper Release                                                                     | 1.29 |  1.30 |  1.31 |  1.32 |  1.33 |  1.34 |
 |------------------------------------------------------------------------------------|------|-------|-------|-------|-------|-------|
 | [`main` branch](https://github.com/opencadc/deployments/tree/main/helm/applications/canfar/cavern)                 | ✔               | ✔               | x               | x               | x               | x               |
 
 ## Installing the Chart
 
-This Chart is meant to be used as a Production ready deployment of the Cavern VOSpace API. It is recommended to read through the configuration options and set them according to your needs.
+This Chart is meant to be used as a Production ready deployment. It is recommended to read through the configuration options and set them according to your needs.
 
 ### Add the Helm repository
 
@@ -30,18 +30,15 @@ helm repo update
 
 ### External Dependencies
 
-Cavern requires persistent storage and a PostgreSQL database.  The PostgreSQL database is used to store UWS job metadata.  Cavern can be configured to use an external PostgreSQL database, or the Chart can optionally install a PostgreSQL database as a Deployment with the `uwsDatabase.install=true` property set in the `values.yaml`.
-
-For persistence, it is recommended to configure a `StorageClass`, create a PVC to use it, and set the appropriate values in the `values.yaml` file or via the `--set` flag during installation.
+POSIX Mapper requires a persistent PostgreSQL database used to store UIDs and GIDs with their mapped names.  This can be installed in Kubernetes with persistent storage, or an external PostgreSQL database can be used.  The information stored in the database must be persistent across restarts of the POSIX Mapper service as the UIDs and GIDs are used in Cavern's POSIX storage **must not change**.
 
 | Dependency                    | Description                                          |
 |-------------------------------|------------------------------------------------------|
-| Storage Specification         | Kubernetes storage YAML specification, such as a PVC declaration.  See the `filesystem.spec` in the [values.yaml file](../cavern/values.yaml#L167) |
-| `PostgreSQL` >= 15 (optional) | Persistent storage for UWS metadata. See the [values.yaml file](../cavern/values.yaml#L188) |
+| `PostgreSQL` >= 15            | Persistent storage for UIDs and GIDs. See the [values.yaml file](../posix-mapper/values.yaml#L131) |
 
 ### Configuration
 
-The following table lists the configurable parameters of the Cavern Chart and their default values.  See the [values.yaml file](./values.yaml) for all configuration options.
+The following table lists the configurable parameters of the POSIX Mapper Chart and their default values.  See the [values.yaml file](./values.yaml) for all configuration options.
 
 | Parameter                       | Description                                          | Default Value                       |
 |---------------------------------|------------------------------------------------------|-------------------------------------|
@@ -66,26 +63,21 @@ The following table lists the configurable parameters of the Cavern Chart and th
 | `image.pullPolicy`             | Container image pull policy                           | IfNotPresent                        |
 | `image.tag`                    | Container image tag                                  | "0.9.0"                             |
 | `resourceID`                   | Resource ID (IVOA identifier)                         | ""                                  |
-| `posixMapperResourceID`        | Posix Mapper Resource ID (URI or URL)                | ""                                  |
-| `quotaPlugin`                  | Quota plugin class name                              | "NoQuotaPlugin"                     |
-| `allocations.defaultSizeGB`    | Default allocation size (GB)                         | ""                                  |
-| `allocations.parentFolders`    | Parent folders for new allocations                   | ["/home", "/projects"]              |
-| `filesystem.dataDir`           | Persistent data directory in container               | ""                                  |
-| `filesystem.subPath`           | Relative path to node/file content                   | ""                                  |
-| `filesystem.rootOwner`         | Root owner settings                                  | {}                                  |
-| `filesystem.spec`              | Storage specification                                | {}                                  |
-| `adminAPIKeys`                 | API keys for administrative tasks                    | {}                                  |
 | `applicationName`              | Application name                                     | ""                                  |
-| `uwsDatabase.install`          | Whether to deploy a local PostgreSQL database       | false                               |
-| `uwsDatabase.username`         | PostgreSQL username                                  | "cavern"                            |
-| `uwsDatabase.password`         | PostgreSQL password                                  | Randomly generated if not set     |
-| `uwsDatabase.database`         | PostgreSQL database name                             | "cavern"                            |
-| `uwsDatabase.url`              | PostgreSQL connection URL (if not installing)        | ""                                  |
-| `service.type`                 | Kubernetes service type                              | | ClusterIP                           |
+| `minUID`                       | Minimum UID to assign                                | 10000                              |
+| `maxGID`                       | Maximum GID to assign                                | 900000                              |
+| `postgresql.auth.username`     | PostgreSQL username                                  | ""                            |
+| `postgresql.auth.password`     | PostgreSQL password                                  | ""                                  |
+| `postgresql.maxActive`         | Maximum active connections to PostgreSQL              | ""                                 |
+| `postgresql.url`               | PostgreSQL connection URL (if not installing)        | ""                                  |
+| `postgresql.schema`            | PostgreSQL schema name                               | ""                            |
+| `service.type`                 | Kubernetes service type                              | ClusterIP                           |
 | `service.port`                 | Service port                                        | 8080                                |
+| `nameOverride`                | Override the name of the Chart                        | ""                                  |
+| `fullnameOverride`            | Override the full name of the Chart                   | ""                                  |
 | `ingress.enabled`              | Whether to create an Ingress resource                | false                               |
 | `ingress.className`            | Ingress class name                                   | ""                                  |
-| `ingress.annotations`          | Annotations to add to the Ingress resource           | | {}                                  |
+| `ingress.annotations`          | Annotations to add to the Ingress resource           | {}                                  |
 | `ingress.hosts`                | Ingress hostnames                                   | []                                  |
 | `ingress.tls`                  | Ingress TLS configuration                            | []                                  |
 | `httpRoute.enabled`            | Use HTTP route Gateway API                            | false                             |
@@ -107,6 +99,5 @@ The following table lists the configurable parameters of the Cavern Chart and th
 Create a `values.yaml` file to set the configuration options as needed (see above).  Then install the Chart with:
 
 ```bash
-# Assumes the `canfar` namespace already exists
-helm -n canfar upgrade --install --values values.yaml my-cavern science-platform/cavern
+helm -n canfar upgrade --install --create-namespace --values values.yaml posix-mapper science-platform/posix-mapper
 ```

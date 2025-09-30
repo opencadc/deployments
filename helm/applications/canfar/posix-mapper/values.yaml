@@ -57,11 +57,6 @@ global:
     # runAsNonRoot: true
     # runAsUser: 1000
 
-  # The IdentityManager class handling authentication.  This should generally be left alone unless deployed internally for the CADC.  Required.
-  # Example:
-  #   identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
-  identityManagerClass: "org.opencadc.auth.StandardIdentityManager"
-
   # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
   serviceAccount:
     # Specifies whether a service account should be created
@@ -150,11 +145,16 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+
+  # Used to create an Ingress record.
+  # Example:
+  #   hosts:
+  #     - host: cavern.example.org
+  #       paths:
+  #         - path: /cavern
+  #           pathType: Prefix
+  hosts: []
+
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
