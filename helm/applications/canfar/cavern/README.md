@@ -40,3 +40,73 @@ For persistence, it is recommended to configure a `StorageClass`, create a PVC t
 | `PostgreSQL` >= 15 (optional) | Persistent storage for UWS metadata. See the [values.yaml file](../cavern/values.yaml#L188) |
 
 ### Configuration
+
+The following table lists the configurable parameters of the Cavern Chart and their default values.  See the [values.yaml file](./values.yaml) for all configuration options.
+
+| Parameter                       | Description                                          | Default Value                       |
+|---------------------------------|------------------------------------------------------|-------------------------------------|
+| `global.hostname`               | Hostname to use for all ingress routes               | ""                                  |
+| `global.imagePullSecrets`      | Image pull secrets to use for all containers         | []                                  |
+| `global.imagePullPolicy`       | Image pull policy to use for all containers          | IfNotPresent                        |
+| `global.registryURL`           | Registry URL for IVOA compliant services             | ""                                  |
+| `global.oidcURI`               | OIDC (IAM) server URI for token validation           | ""                                  |
+| `global.gmsID`                 | GMS Service ID (URI)                                 | ""                                  |
+| `global.loggingGroups`         | Array of groups allowed to set logging level         | []                                  |
+| `global.identityManagerClass`  | IdentityManager class for authentication              | "org.opencadc.auth.StandardIdentityManager" |
+| `global.podAnnotations`        | Annotations to add to the pod                         | {}                                  |
+| `global.podLabels`             | Labels to add to the pod                              | {}                                  |
+| `global.podSecurityContext`    | Pod security context settings                         | {}                                  |
+| `global.securityContext`       | Container security context settings                   | {}                                  |
+| `global.serviceAccount`        | Service account settings                              | {}                                  |
+| `global.nodeSelector`          | Node selector settings                                | {}                                  |
+| `global.tolerations`           | Tolerations settings                                 | []                                  |
+| `global.affinity`              | Affinity settings                                    | {}                                  |
+| `replicaCount`                 | Number of replicas to create                          | 1                                   |
+| `image.repository`             | Container image repository                            | "images.opencadc.org/platform/cavern" |
+| `image.pullPolicy`             | Container image pull policy                           | IfNotPresent                        |
+| `image.tag`                    | Container image tag                                  | "0.9.0"                             |
+| `resourceID`                   | Resource ID (IVOA identifier)                         | ""                                  |
+| `posixMapperResourceID`        | Posix Mapper Resource ID (URI or URL)                | ""                                  |
+| `quotaPlugin`                  | Quota plugin class name                              | "NoQuotaPlugin"                     |
+| `allocations.defaultSizeGB`    | Default allocation size (GB)                         | ""                                  |
+| `allocations.parentFolders`    | Parent folders for new allocations                   | ["/home", "/projects"]              |
+| `filesystem.dataDir`           | Persistent data directory in container               | ""                                  |
+| `filesystem.subPath`           | Relative path to node/file content                   | ""                                  |
+| `filesystem.rootOwner`         | Root owner settings                                  | {}                                  |
+| `filesystem.spec`              | Storage specification                                | {}                                  |
+| `adminAPIKeys`                 | API keys for administrative tasks                    | {}                                  |
+| `applicationName`              | Application name                                     | ""                                  |
+| `uwsDatabase.install`          | Whether to deploy a local PostgreSQL database       | false                               |
+| `uwsDatabase.username`         | PostgreSQL username                                  | "cavern"                            |
+| `uwsDatabase.password`         | PostgreSQL password                                  | Randomly generated if not set     |
+| `uwsDatabase.database`         | PostgreSQL database name                             | "cavern"                            |
+| `uwsDatabase.url`              | PostgreSQL connection URL (if not installing)        | ""                                  |
+| `service.type`                 | Kubernetes service type                              | | ClusterIP                           |
+| `service.port`                 | Service port                                        | 8080                                |
+| `ingress.enabled`              | Whether to create an Ingress resource                | false                               |
+| `ingress.className`            | Ingress class name                                   | ""                                  |
+| `ingress.annotations`          | Annotations to add to the Ingress resource           | | {}                                  |
+| `ingress.hosts`                | Ingress hostnames                                   | []                                  |
+| `ingress.tls`                  | Ingress TLS configuration                            | []                                  |
+| `httpRoute.enabled`            | Use HTTP route Gateway API                            | false                             |
+| `httpRoute.annotations`        | Annotations to add to the HTTPRoute resource         | {}                                  |
+| `httpRoute.hostnames`          | HTTPRoute hostnames                                 | []                                  |
+| `httpRoute.rules`              | HTTPRoute rules                                     | []                                  |
+| `httpRoute.parentRefs`         | HTTPRoute parent references                          | []                                  |
+| `resources`                    | Resource requests and limits                        | {}                                  |
+| `livenessProbe`                | Liveness probe configuration                         | {}                                  |
+| `readinessProbe`               | Readiness probe configuration                        | {}                                  |
+| `autoscaling.enabled`          | Whether to enable Horizontal Pod Autoscaling         | false                               |
+| `autoscaling.minReplicas`      | Minimum number of replicas for autoscaling           | 1                                   |
+| `autoscaling.maxReplicas`      | Maximum number of replicas for autoscaling           | 10                                  |
+| `autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for autoscaling | 80                                  |
+| `volumes`                      | Additional volumes to mount in the container         | []                                  |
+| `volumeMounts`                 | Additional volume mounts for the container           | []                                  |
+
+### Deploy
+Create a `values.yaml` file to set the configuration options as needed (see above).  Then install the Chart with:
+
+```bash
+# Assumes the `canfar` namespace already exists
+helm -n canfar upgrade --install -f values.yaml my-cavern science-platform/cavern
+```
