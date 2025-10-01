@@ -1,0 +1,86 @@
+name: pre-commit
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      UV_CACHE_DIR: ~/.cache/uv
+      PRE_COMMIT_HOME: ~/.cache/pre-commit
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+          python-version: 3.13
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PRE_COMMIT_HOME }}
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pre-commit-
+
+      - name: Run pre-commit checks
+        id: precommit
+        continue-on-error: true
+        run: uv run pre-commit run -a
+
+      - name: Verify latest commit message format
+        id: commitizen
+        if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
+        run: |
+          latest="$(git log -1 --pretty=%B)"
+          printf 'Checking latest commit message:\n%s\n' "$latest"
+          uv run cz check --message "$latest"
+
+      - name: Share pre-commit guidance
+        if: ${{ github.event_name == 'pull_request' && (steps.precommit.outcome == 'failure' || steps.commitizen.outcome == 'failure') }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            ### ⚠️ Pre-commit checks failed
+
+            ${{ steps.precommit.outcome == 'failure' && '- Run `uv run pre-commit run -a` locally to reproduce the issues.' || '' }}
+            ${{ steps.commitizen.outcome == 'failure' && '- Ensure your latest commit message follows the Commitizen format (e.g. `feat: add awesome thing`).' || '' }}
+            ${{ steps.commitizen.outcome == 'failure' && '  Validate it locally with `uv run cz check --message "<type>: <description>"`.' || '' }}
+
+            Fix the issues locally with:
+
+            ```bash
+            uv sync
+            uv run pre-commit run -a
+            ```
+
+            Need help? Run `uv run pre-commit install` once to enable these checks before every commit.
+
+      - name: Celebrate spotless PR
+        if: ${{ github.event_name == 'pull_request' && steps.precommit.outcome == 'success' && steps.commitizen.outcome == 'success' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            ### ✅ All pre-commit checks passed
+
+            Thanks for keeping the repo tidy! ✨
+
+      - name: Fail if checks failed
+        if: ${{ steps.precommit.outcome == 'failure' || steps.commitizen.outcome == 'failure' }}
+        run: exit 1
