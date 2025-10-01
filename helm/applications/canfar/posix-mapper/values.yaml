@@ -101,15 +101,13 @@ resourceID: ""
 applicationName: ""
 
 # Required minimum UID that can be assigned.  Used to avoid conflicts with existing system UIDs.  Defaults to 10000.
-# Example:
-#   minUID: 10000
 minUID: 10000
 
 # Required minimum GID that can be assigned.  Used to avoid conflicts with existing system GIDs.  Defaults to 900000.
 minGID: 900000
 
 # Required.  Database connection information to contain the UID/GID mappings.
-# @param postgresql.maxActive - Maximum number of active connections.  Defaults to 8.
+# @param postgresql.maxActive - Maximum number of active connections.
 # @param postgresql.url - JDBC URL of the PostgreSQL database.  Required.
 # @param postgresql.schema - Database schema to use. Required.
 # @param postgresql.auth.username - Database username.  Required.

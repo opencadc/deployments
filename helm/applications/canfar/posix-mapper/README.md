@@ -30,7 +30,8 @@ helm repo update
 
 ### External Dependencies
 
-POSIX Mapper requires a persistent PostgreSQL database used to store UIDs and GIDs with their mapped names.  This can be installed in Kubernetes with persistent storage, or an external PostgreSQL database can be used.  The information stored in the database must be persistent across restarts of the POSIX Mapper service as the UIDs and GIDs are used in Cavern's POSIX storage **must not change**.
+POSIX Mapper requires a persistent PostgreSQL database used to store UIDs and GIDs with their mapped names.  This can be installed in Kubernetes with persistent storage, or an external PostgreSQL database can be used.  
+The information stored in the database must be persistent across restarts of the POSIX Mapper service as the UIDs and GIDs are used in Cavern's POSIX storage **must not change**.
 
 | Dependency                    | Description                                          |
 |-------------------------------|------------------------------------------------------|
@@ -73,8 +74,8 @@ The following table lists the configurable parameters of the POSIX Mapper Chart 
 | `postgresql.schema`            | PostgreSQL schema name                               | ""                            |
 | `service.type`                 | Kubernetes service type                              | ClusterIP                           |
 | `service.port`                 | Service port                                        | 8080                                |
-| `nameOverride`                | Override the name of the Chart                        | ""                                  |
-| `fullnameOverride`            | Override the full name of the Chart                   | ""                                  |
+| `nameOverride`                 | Override the name of the Chart                        | ""                                  |
+| `fullnameOverride`             | Override the full name of the Chart                   | ""                                  |
 | `ingress.enabled`              | Whether to create an Ingress resource                | false                               |
 | `ingress.className`            | Ingress class name                                   | ""                                  |
 | `ingress.annotations`          | Annotations to add to the Ingress resource           | {}                                  |
