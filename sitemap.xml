@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://www.opencadc.org/deployments/</loc>
+         <lastmod>2025-10-08</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/operations/</loc>
+         <lastmod>2025-10-08</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/operations/ci-cd/</loc>
+         <lastmod>2025-10-08</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/operations/release-process/</loc>
+         <lastmod>2025-10-08</lastmod>
+    </url>
+</urlset>
