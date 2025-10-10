@@ -1,0 +1,22 @@
+[project]
+name = "deployments"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Shiny Brar", email = "shiny.brar@nrc-cnrc.gc.ca" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "commitizen>=4.9.1",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
+    "mkdocs-material>=9.6.20",
+    "pre-commit>=4.3.0",
+]
+
+[project.scripts]
+deployments = "deployments:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

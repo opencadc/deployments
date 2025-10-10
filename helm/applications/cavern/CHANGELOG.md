@@ -1,4 +1,7 @@
-# CHANGELOG for Cavern User Storage (Chart 0.7.0)
+# CHANGELOG for Cavern User Storage (Chart 0.7.1)
+
+## 2025.09.22 (0.7.1)
+- Make liveness and readiness probes configurable.
 
 ## 2025.09.09 (0.7.0)
 - Feature: Support `admin-api-key` (`.deployment.cavern.adminAPIKeys`) for trusted admin access.

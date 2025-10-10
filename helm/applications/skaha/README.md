@@ -102,6 +102,8 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `deployment.skaha.sessions.userStorage.nodeURIPrefix` | Required Node URI prefix for the Cavern service when creating User Allocations | `""` |
 | `deployment.skaha.sessions.userStorage.admin.auth.apiKey` | Optional API key for user storage admin authentication (Cavern) for creating user allocations | `""` |
 | `deployment.skaha.sessions.userStorage.admin.auth.certificateSecret` | Secret details for user storage admin authentication to Cavern using a X509 certificate | `{}` |
+| `experimentalFeatures.enabled` | Enable experimental features in Skaha. | `false` |
+| `experimentalFeatures.sessionLimitRange` | Kubernete LimitRange for User Sessions to enforce minimum and maximum resource usage.  Only applied if `experimentalFeatures.enabled` and `sessionLimitRange.enabled` are `true`. | `{ enabled: false }` |
 | `secrets` | List of secrets to be mounted in the Skaha API defined as objects (i.e `secretName: {cert.pem: xxx}`) | `[]` |
 | `storage.service.spec` | Storage class specification for the Skaha API.  Can be `persistentVolumeClaim` or a dynamic instantiation like `hostPath`.  See [Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/). | `{}` |
 | `redis` | [Redis sub-chart configuration](https://github.com/bitnami/charts/tree/main/bitnami/redis) for Skaha's caching of Harbor Docker image metadata. | See [`values.yaml`](https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml) for available configuration values. |

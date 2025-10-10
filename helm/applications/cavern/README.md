@@ -101,6 +101,8 @@ $ curl https://myhost.example.com/cavern/availability
 | `deployment.resources.requests.cpu` | CPU request for the Cavern container | `500m` |
 | `deployment.resources.limits.memory` | Memory limit for the Cavern container | `1Gi` |
 | `deployment.resources.limits.cpu` | CPU limit for the Cavern container | `500m` |
+| `livenessProbe` | Configure the liveness probe check | `{}` |
+| `readinessProbe` | Configure the readiness probe check | `{}` |
 | `tolerations` | Tolerations to apply to the Cavern Pod | `[]` |
 | `secrets` | Secrets to create for the Cavern service, such as CA certificates | `{}` |
 | `service.cavern.extraPorts` | Extra ports to expose for the Cavern service | `[]` |

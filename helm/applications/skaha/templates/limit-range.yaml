@@ -1,0 +1,60 @@
+{{- with .Values.experimentalFeatures }}
+{{- if eq .enabled true }}
+{{- with .sessionLimitRange }}
+{{- if eq .enabled true }}
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+    name: {{ $.Release.Name }}-session-limit-range
+    namespace: {{ $.Values.skahaWorkload.namespace }}
+spec:
+{{- with .limitSpec }}
+  limits:
+    - type: Container
+{{- if .max }}
+      max:
+{{ toYaml .max | indent 8 }}
+{{- end }}
+{{- if .default }}
+      default:
+{{ toYaml .default | indent 8 }}
+{{- end }}
+{{- if .defaultRequest }}
+      defaultRequest:
+{{ toYaml .defaultRequest | indent 8 }}
+{{- end }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $.Release.Name }}-session-limit-range-role
+  namespace: {{ $.Values.skahaWorkload.namespace }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - limitranges
+  verbs:
+  - get
+  - list
+  - status
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $.Release.Name }}-session-limit-range
+  namespace: {{ $.Values.skahaWorkload.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $.Release.Name }}-session-limit-range-role
+subjects:
+- kind: ServiceAccount
+  name: {{ $.Values.deployment.skaha.serviceAccountName | required ".Values.deployment.skaha.serviceAccountName value is required" }}
+  namespace: {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -139,6 +139,9 @@ tolerations: []
 
 # For the token caching
 redis:
+  image:
+    repository: redis
+    tag: 8.2.2-bookworm
   architecture: 'standalone'
   auth:
     enabled: false

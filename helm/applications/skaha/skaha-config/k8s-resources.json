@@ -3,7 +3,6 @@
     "default": 1,
     "defaultRequest": 1,
     "defaultLimit": 8,
-    "defaultHeadless": 1,
     "options": [
       1,
       2,
@@ -27,7 +26,6 @@
     "default": 1,
     "defaultRequest": 4,
     "defaultLimit": 32,
-    "defaultHeadless": 4,
     "options": [
       1,
       2,
@@ -90,5 +88,6 @@
       27,
       28
     ]
-  }
+  },
+  "maxInteractiveSessions": {{ .Values.deployment.skaha.sessions.maxCount }}
 }

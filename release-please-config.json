@@ -1,0 +1,69 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "packages": {
+    "helm/applications/base": {
+      "package-name": "base",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    },
+    "helm/applications/cavern": {
+      "package-name": "cavern",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    },
+    "helm/applications/posix-mapper": {
+      "package-name": "posixmapper",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    },
+    "helm/applications/science-portal": {
+      "package-name": "scienceportal",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    },
+    "helm/applications/skaha": {
+      "package-name": "skaha",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    },
+    "helm/applications/sshd": {
+      "package-name": "sshd",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    },
+    "helm/applications/storage-ui": {
+      "package-name": "storageui",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    },
+    "helm/applications/utils": {
+      "package-name": "utils",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    },
+    "helm/common": {
+      "package-name": "common",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "include-v-in-tag": false
+    }
+  }
+}

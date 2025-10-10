@@ -168,10 +168,11 @@ deployment:
       imagePullPolicy: Always 
 
       # Optionally configure the initContainer image for Redis.  Useful for those not able to reach docker.io
-      # Defaults to redis-7.4.2-alpine3.21.
+      # Defaults to redis:8.2.2-bookworm.
       # Example:
       #   initContainerImage: "private-image-repo/project/my-own-redis:1.0"
       # initContainerImage:
+      initContainerImage: "redis:8.2.2-bookworm"
 
       # Optionally configure the Kueue system to handle large workloads.  Configurable per session type (e.g. desktop, notebook, etc.).
       # Leaving this empty will default to submitting Jobs to the base Kubernetes system.
@@ -354,6 +355,35 @@ ingress:
   enabled: true
   path: /skaha
 
+# Experimental features that can be enabled.  These represent features that are not released and confined behind feature flags.
+experimentalFeatures:
+  enabled: false
+
+  # YAML to pass to a LimitRange object called "{{ .Release.Name }}-session-limit-range" in the workload Namespace to define the resource limits.
+  # These limits will be applied to Container objects (User Sessions).
+  # **NOTE**: This requires the experimentalFeatures.enabled to be true as well as the sessionLimitRange.enabled to be true.
+  # **NOTE**: The min clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  The `defaultRequest` is used instead for these session types.
+  # See https://kubernetes.io/docs/concepts/policy/limit-range/
+  #
+  # Example:
+  # sessionLimitRange:
+  #   enabled: true
+  #   limitSpec:
+  #     max:
+  #       memory: "96Gi"
+  #       cpu: "12"
+  #       "nvidia.com/gpu": "4"
+  #     default:  # actually refers to default limit
+  #       memory: "32Gi"
+  #       cpu: "8"
+  #       "nvidia.com/gpu": "1"
+  #     defaultRequest:
+  #       memory: "4Gi"
+  #       cpu: "1"
+  sessionLimitRange:
+    enabled: false
+    limitSpec: {}
+
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
   # skaha-cacert-secret:
@@ -366,10 +396,13 @@ storage:
       # YAML for service mounted storage.
       # Example is the persistentVolumeClaim below.
       # persistentVolumeClaim:
-      #   claimName: skaha-pvc\
+      #   claimName: skaha-pvc
 
 # For caching images from the Image Repository and for the writing the POSIX Users and Groups to be shared with Job files
 redis:
+  image:
+    repository: redis
+    tag: 8.2.2-bookworm
   architecture: 'standalone'
   auth:
     enabled: false

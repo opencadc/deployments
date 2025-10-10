@@ -31,3 +31,10 @@ If user Jobs remain Pending:
 - Ensure LocalQueue exists in {{ .Values.skahaWorkload.namespace }} and references your configured ClusterQueue.
 - Verify ClusterQueue quotas are sufficient.
 - Confirm priority classes referenced by sessions exist or are created.
+
+Experimental Features Configured:
+{{- if and .Values.experimentalFeatures .Values.experimentalFeatures.enabled }}
+{{ include "skaha.experimentalFeatureGates" $ }}
+{{- else }}
+None
+{{- end }}
