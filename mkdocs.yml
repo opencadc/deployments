@@ -138,3 +138,4 @@ nav:
     - operations/index.md
     - CI/CD Pipelines: operations/ci-cd.md
     - Release Process: operations/release-process.md
+    - Release Cycle: operations/planning/release-cycle.md
