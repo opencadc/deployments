@@ -2,18 +2,54 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://www.opencadc.org/deployments/</loc>
-         <lastmod>2025-10-08</lastmod>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/base/</loc>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/canfar/</loc>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/cavern/</loc>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/posix-mapper/</loc>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/science-portal/</loc>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/skaha/</loc>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/sshd/</loc>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/storage-ui/</loc>
+         <lastmod>2025-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://www.opencadc.org/deployments/helm/utils/</loc>
+         <lastmod>2025-10-16</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/operations/</loc>
-         <lastmod>2025-10-08</lastmod>
+         <lastmod>2025-10-16</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/operations/ci-cd/</loc>
-         <lastmod>2025-10-08</lastmod>
+         <lastmod>2025-10-16</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/operations/release-process/</loc>
-         <lastmod>2025-10-08</lastmod>
+         <lastmod>2025-10-16</lastmod>
     </url>
 </urlset>
