@@ -2,43 +2,63 @@
 
 The deployments repository uses GitHub Actions to automate documentation and code quality tasks.
 
-## Documentation Deployment (`docs.yml`)
+---
 
-Automatically builds and deploys the MkDocs documentation site to GitHub Pages.
+## :material-book-open-variant: Documentation Deployment
 
-### Triggers
+!!! info "Workflow: `docs.yml`"
+    Automatically builds and deploys MkDocs documentation to GitHub Pages.
+
+**Triggers:**
 
 - Pushes to `main` that modify `docs/**`, `mkdocs.yml`, or `pyproject.toml`
-- Manual dispatch with required reason field
+- Manual dispatch
 
-### Workflow Steps
+**Steps:**
 
-1. **Checkout**: Fetches full git history (required for git-revision-date plugin)
-2. **Install uv**: Sets up the uv package manager
-3. **Setup Python**: Installs Python using uv
-4. **Install dependencies**: Runs `uv sync` to install all dependencies from `pyproject.toml`
-5. **Deploy**: Runs `uv run mkdocs gh-deploy --force` to build and publish to `gh-pages` branch
+1. Checkout with full git history
+2. Install uv package manager
+3. Setup Python and dependencies
+4. Deploy to gh-pages branch
 
-### Requirements
+**Requirements:**
 
 - `contents: write` permission for pushing to `gh-pages` branch
-- Dependencies managed in `pyproject.toml`:
-  - `mkdocs-material` - Material theme for MkDocs
-  - `mkdocs-git-revision-date-localized-plugin` - Git revision dates in docs
+- Dependencies: `mkdocs-material`, `mkdocs-git-revision-date-localized-plugin`
 
-## Pre-commit Checks (`pre-commit.yml`)
+**Deployment Command:**
 
-Runs pre-commit hooks on all files to ensure code quality and consistency.
+```bash
+uv run mkdocs gh-deploy --force
+```
 
-### Triggers
+---
+
+## :material-check-circle: Pre-commit Checks
+
+!!! success "Workflow: `pre-commit.yml`"
+    Runs pre-commit hooks to ensure code quality and consistency.
+
+**Triggers:**
 
 - Pull requests to `main`
 - Manual dispatch
 
-### What it checks
+**What it checks:**
 
-- YAML syntax and formatting
-- JSON formatting
+- YAML/JSON syntax and formatting
 - File permissions and naming
 - Security scanning for hardcoded secrets
-- Python code quality (if applicable)
+- Code formatting and quality
+
+**Local Setup:**
+
+```bash
+# Install hooks locally
+uv run pre-commit install
+
+# Run manually
+uv run pre-commit run -a
+```
+
+For detailed information about pre-commit hooks, see [Release Cycle: Quality Checks](release-cycle.md#quality-checks-and-cicd).

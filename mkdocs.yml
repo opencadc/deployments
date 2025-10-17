@@ -134,7 +134,9 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Contributing: CONTRIBUTING.md
   - Operations:
     - operations/index.md
+    - Release Cycle: operations/release-cycle.md
     - CI/CD Pipelines: operations/ci-cd.md
-    - Release Process: operations/release-process.md
+    - Helm Charts: operations/helm-charts.md

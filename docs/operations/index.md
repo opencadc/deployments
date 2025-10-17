@@ -9,7 +9,8 @@ This section provides comprehensive documentation for platform operators managin
 <div class="grid cards" markdown>
 
 - [:material-pipe: __CI/CD Pipelines__ <small>GitHub Actions workflows</small>](ci-cd.md)
-- [:material-rocket-launch-outline: __Release Process__ <small>Release playbook and procedures</small>](release-process.md)
+- [:material-reload: __Release Cycle__ <small>Platform release pipeline and workflows</small>](release-cycle.md)
+- [:material-kubernetes: __Helm Charts__ <small>Chart release process</small>](helm-charts.md)
 
 </div>
 
