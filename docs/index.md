@@ -37,14 +37,14 @@ This documentation is designed for **platform operators, DevOps engineers, and i
 ## Quick Links
 
 - [**CI/CD Pipelines**](operations/ci-cd.md) - Understand GitHub Actions workflows for documentation and code quality
-- [**Release Process**](operations/release-process.md) - Follow the Helm chart release process and CANFAR platform schedule
+- [**Release Cycle**](operations/release-cycle.md) - Understand the CANFAR platform release pipeline and workflows
 - [**GitHub Repository**](https://github.com/opencadc/deployments/) - Browse source code, Helm charts, and configurations
 
 ## Getting Started
 
 If you're new to CANFAR deployments:
 
-1. Review the [Release Process](operations/release-process.md) to understand our deployment workflow
+1. Review the [Release Cycle](operations/release-cycle.md) to understand the platform release pipeline
 2. Explore the [CI/CD Pipelines](operations/ci-cd.md) documentation to see how automation works
 3. Check the [GitHub repository](https://github.com/opencadc/deployments/) for Helm charts and configuration files
 
