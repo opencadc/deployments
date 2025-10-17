@@ -130,11 +130,11 @@ AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 
 # override default of no subsystems
-#Subsystem	sftp	/usr/libexec/sftp-server	
-Subsystem	sftp	internal-sftp	
+#Subsystem	sftp	/usr/libexec/sftp-server
+Subsystem	sftp	internal-sftp
 
 # Example of overriding settings on a per-user basis
-Match User * 
+Match User *
 ChrootDirectory {{ .Values.rootPath }}
 X11Forwarding no
 AllowTcpForwarding no

@@ -1,6 +1,12 @@
 apiVersion: v2
 name: base
 description: "A Helm chart to install base components of the CANFAR Science Platform"
+
+maintainers:
+  - name: Shiny Brar
+    email: shiny.brar@nrc-cnrc.gc.ca
+  - name: Dustin Jenkins
+    email: djenkins.cadc@gmail.com
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives

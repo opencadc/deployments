@@ -89,5 +89,5 @@
       28
     ]
   },
-  "maxInteractiveSessions": {{ .Values.deployment.skaha.sessions.maxCount }}
+  "maxInteractiveSessions": "{{ int .Values.deployment.skaha.sessions.maxCount }}"
 }

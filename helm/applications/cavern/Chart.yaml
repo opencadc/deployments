@@ -2,6 +2,9 @@ apiVersion: v2
 name: cavern
 description: "A Helm chart to install the VOSpace User Storage API (Cavern)"
 
+maintainers:
+  - name: Dustin Jenkins
+    email: djenkins.cadc@gmail.com
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives

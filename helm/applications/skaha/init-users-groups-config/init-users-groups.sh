@@ -17,7 +17,7 @@ if [[ -z "${REDIS_URL}" ]]; then
     exit 1
 else
     echo "Using REDIS_URL: ${REDIS_URL}"
-fi  
+fi
 
 TARGET_PASSWD_FILE="/etc-passwd/passwd"
 TARGET_GROUP_FILE="/etc-group/group"

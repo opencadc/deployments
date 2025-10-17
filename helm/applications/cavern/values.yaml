@@ -154,14 +154,14 @@ deployment:
 
 # This is a list of tolerations that will be added to the Pod spec of the Skaha API.
 # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-# 
+#
 # Example:
 # tolerations:
 # - key: "key1"
 #   operator: "Equal"
 #   value: "value1"
 #   effect: "NoSchedule"
-# 
+#
 tolerations: []
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/

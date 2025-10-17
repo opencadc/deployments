@@ -6,7 +6,7 @@ metadata:
   labels:
     run: {{ .Release.Name }}-svc
 spec:
-  ports: 
+  ports:
   - port: 2222
     name: ssh-connection
     protocol: TCP

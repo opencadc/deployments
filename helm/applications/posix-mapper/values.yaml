@@ -29,7 +29,7 @@ deployment:
 
     # ID (URI) of the GMS Service.
     # gmsID: ivo://example.org/gms
-    gmsID: 
+    gmsID:
 
     # Optionally set the DEBUG port.
     # extraEnv:
@@ -78,14 +78,14 @@ deployment:
 
 # This is a list of tolerations that will be added to the Pod spec of the POSIX Mapper API.
 # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-# 
+#
 # Example:
 # tolerations:
 # - key: "key1"
 #   operator: "Equal"
 #   value: "value1"
 #   effect: "NoSchedule"
-# 
+#
 tolerations: []
 
   # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the

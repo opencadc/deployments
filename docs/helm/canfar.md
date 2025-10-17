@@ -80,7 +80,7 @@ REVISION: 1
 
 ### Persistent Volumes and Persistent Volume Claims
 
-**Note** 
+**Note**
 The `base` MUST be installed first as it creates the necessary Namespaces for the Persistent Volume Claims!
 
 **Important**
@@ -358,7 +358,7 @@ deployment:
       maxCount: "3"  # Max number of sessions per user.
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
-      
+
       # Optionally setup a separate host for User Sessions for Skaha to redirect to.  The HTTPS scheme is assumed.  Defaults to the Skaha hostname (.Values.deployment.hostname).
       # Example:
       #   hostname: myhost.example.org
@@ -367,7 +367,7 @@ deployment:
       # When set to 'true' this flag will enable GPU node scheduling.  Don't forget to declare any related GPU configurations, if appropriate, in the nodeAffinity below!
       # gpuEnabled: false
 
-      # Set the YAML that will go into the "affinity.nodeAffinity" stanza for Pod Spec in User Sessions.  This can be used to enable GPU scheduling, for example, 
+      # Set the YAML that will go into the "affinity.nodeAffinity" stanza for Pod Spec in User Sessions.  This can be used to enable GPU scheduling, for example,
       # or to control how and where User Session Pods are scheduled.  This can be potentially dangerous unless you know what you are doing.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity
       # nodeAffinity: {}
@@ -385,7 +385,7 @@ deployment:
           mountPropagation: HostToContainer
 
       # Kueue configurations for User Sessions
-      kueue: 
+      kueue:
         default:
           # Ensure this name matches whatever was created as the LocalQueue in the workload namespace.
           queueName: canfar-science-platform-local-queue
@@ -405,9 +405,9 @@ deployment:
 
     # Other data to be included in the main ConfigMap of this deployment.
     # Of note, files that end in .key are special and base64 decoded.
-    # 
+    #
     # extraConfigData:
-    
+
     # Resources provided to the Skaha service.
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     resources:
@@ -544,9 +544,9 @@ deployment:
 
     # Other data to be included in the main ConfigMap of this deployment.
     # Of note, files that end in .key are special and base64 decoded.
-    # 
+    #
     # extraConfigData:
-    
+
     # Resources provided to the Science Portal service.
     resources:
       requests:
@@ -631,13 +631,13 @@ deployment:
       # the rootOwner MUST be an object with the following properties set.
       rootOwner:
         # The adminUsername is required to be set whomever has admin access over the filesystem.dataDir above.
-        adminUsername: 
+        adminUsername:
 
         # The username of the root owner.
-        username: 
+        username:
 
         # The UID of the root owner.
-        uid: 
+        uid:
 
         # The GID of the root owner.
         gid:
@@ -690,7 +690,7 @@ deployment:
     # extraVolumeMounts:
     # - mountPath: "/config/cacerts"
     #   name: cacert-volume
-    # 
+    #
     # extraVolumeMounts:
 
     # Create the CA certificate volume to be mounted in extraVolumeMounts
@@ -705,9 +705,9 @@ deployment:
 
     # Other data to be included in the main ConfigMap of this deployment.
     # Of note, files that end in .key are special and base64 decoded.
-    # 
+    #
     # extraConfigData:
-    
+
     # Resources provided to the Cavern service.
     resources:
       requests:
@@ -823,9 +823,9 @@ deployment:
 
     # Other data to be included in the main ConfigMap of this deployment.
     # Of note, files that end in .key are special and base64 decoded.
-    # 
+    #
     # extraConfigData:
-    
+
     # Resources provided to the StorageUI service.
     resources:
       requests:

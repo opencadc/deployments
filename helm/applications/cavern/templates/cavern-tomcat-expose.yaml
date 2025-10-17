@@ -6,14 +6,14 @@ metadata:
   labels:
     run: {{ .Release.Name }}-tomcat-svc
 spec:
-  ports: 
+  ports:
   - port: 8080
     name: http-connection
     protocol: TCP
   - port: 80
     targetPort: 8080
     name: http-connection-automatic
-    protocol: TCP  
+    protocol: TCP
   {{ with .Values.service }}
     {{ with .skaha }}
       {{ with .extraPorts }}

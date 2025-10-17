@@ -28,7 +28,8 @@ CHART_ROOTS: Sequence[Path] = (
     REPO_ROOT / "helm" / "common",
 )
 LOG_FORMAT = "%H%x1f%an%x1f%ae%x1f%ad"
-MAX_MAINTAINERS = 2
+MAX_MAINTAINERS = 3
+MIN_COMMITS = 15
 MONTHS_WINDOW = 12
 
 
@@ -123,11 +124,16 @@ def choose_maintainers(commits: Sequence[Commit]) -> List[Maintainer]:
         counts[key] += 1
         email_lookup.setdefault(key, commit.email)
 
-    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0].lower()))
-    maintainers: List[Maintainer] = []
-    for author, _ in ranked[:MAX_MAINTAINERS]:
-        maintainers.append(Maintainer(name=author, email=email_lookup.get(author, "")))
-    return maintainers
+    ranked = sorted(
+        (
+            (author, commit_count, email_lookup.get(author, ""))
+            for author, commit_count in counts.items()
+            if commit_count >= MIN_COMMITS
+        ),
+        key=lambda item: (-item[1], item[0].lower()),
+    )
+    top_ranked = ranked[:MAX_MAINTAINERS]
+    return [Maintainer(name=author, email=email) for author, _, email in top_ranked]
 
 
 def replace_maintainers_block(chart_file: Path, maintainers: Sequence[Maintainer]) -> bool:

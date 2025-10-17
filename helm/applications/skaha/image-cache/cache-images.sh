@@ -1,3 +1,5 @@
+#!/bin/bash
+
 harborHosts=$(echo $HARBOR_HOST | tr ' ' '\n')
 
 URL="https://$harborHost/api/v2.0/projects?page_size=100"

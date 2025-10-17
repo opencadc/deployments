@@ -4,24 +4,20 @@ exclude: ^deployment/
 repos:
   - repo: local
     hooks:
-      - id: update-helm-maintainers
+      - id: helm-maintainers
         name: Update Helm maintainers
         entry: uv run python -m deployments.maintainers
         language: system
         pass_filenames: false
-        stages: [pre-commit]
+        stages: [pre-commit, post-commit]
         always_run: true
-        env:
-          UV_CACHE_DIR: .uv-cache
-      - id: refresh-chart-inventory
+      - id: helm-inventory
         name: Refresh chart inventory
         entry: uv run python -m deployments.inventory
         language: system
         pass_filenames: false
-        stages: [pre-commit]
+        stages: [pre-commit, post-commit]
         always_run: true
-        env:
-          UV_CACHE_DIR: .uv-cache
   # Commitizen Configuration
   # This configuration will add commitizen to your pre-commit hooks and will run it on commit-msg stage
   # of the git commit process.
@@ -51,7 +47,8 @@ repos:
       - id: check-toml
       # Attempts to load all yaml files to verify syntax.
       - id: check-yaml
-        exclude: ^skaha/src/test/resources/
+        exclude: ^helm/
+        args: [--allow-multiple-documents, --unsafe]
       # Attempts to load all xml files to verify syntax.
       - id: check-xml
       # Check for debugger imports and py37+ breakpoint() calls in python source.

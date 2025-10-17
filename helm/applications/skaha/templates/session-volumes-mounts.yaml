@@ -21,5 +21,3 @@
           name: scratch-dir
           subPath: "${skaha.sessionid}"
 {{- end }}
-
-

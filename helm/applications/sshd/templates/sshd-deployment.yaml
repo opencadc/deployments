@@ -100,7 +100,7 @@ spec:
       - name: ssh-host-ecdsa-key-pub
         emptyDir: {}
       - name: ssh-host-ed25519-key-pub
-        emptyDir: {}        
+        emptyDir: {}
       - name: cavern-volume
         {{- toYaml $storageSpec | nindent 8 }}
       {{- with .Values.extraVolumes }}

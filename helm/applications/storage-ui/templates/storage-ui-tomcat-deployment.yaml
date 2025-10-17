@@ -37,13 +37,13 @@ spec:
           limits:
             memory: {{ .Values.deployment.storageUI.resources.limits.memory }}
             cpu: {{ .Values.deployment.storageUI.resources.limits.cpu }}
-        ports: 
+        ports:
         - containerPort: 8080
           protocol: TCP
         {{- with .Values.deployment.storageUI.extraPorts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        volumeMounts: 
+        volumeMounts:
         - mountPath: "/config"
           name: config-volume
         {{- with .Values.deployment.storageUI.extraVolumeMounts }}

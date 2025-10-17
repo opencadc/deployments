@@ -192,7 +192,7 @@ The affinity for Jobs.  This will import the YAML as defined by the user in the 
 Common security context settings for User Session Jobs
 */}}
 {{- define "skaha.job.securityContext" -}}
-        runAsUser: ${skaha.posixid} 
+        runAsUser: ${skaha.posixid}
         runAsGroup: ${skaha.posixid}
         fsGroup: ${skaha.posixid}
         supplementalGroups: [${skaha.supgroups}]

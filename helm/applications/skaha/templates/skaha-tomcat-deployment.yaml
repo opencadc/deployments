@@ -121,7 +121,7 @@ spec:
           limits:
             memory: {{ .Values.deployment.skaha.resources.limits.memory }}
             cpu: {{ .Values.deployment.skaha.resources.limits.cpu }}
-        ports: 
+        ports:
         - containerPort: 8080
           protocol: TCP
         {{- with .Values.deployment.skaha.extraPorts }}
