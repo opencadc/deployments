@@ -161,7 +161,11 @@ spec:
         configMap:
           name: {{ .Release.Name }}-add-user-config
       - name: cavern-volume
-        {{- toYaml .Values.storage.service.spec | nindent 8 }}
+        {{- if .Values.storage.service.spec }}
+        {{- toYaml (.Values.storage.service.spec | required "storage.service.spec must not be empty") | nindent 8 }}
+        {{- else }}
+        {{- required "storage.service.spec is required and must define the volume configuration (e.g., persistentVolumeClaim or emptyDir)" .Values.storage.service.spec | nindent 8 }}
+        {{- end }}
       {{- with .Values.deployment.skaha.extraVolumes }}
       {{- toYaml . | nindent 6 }}
       {{- end }}

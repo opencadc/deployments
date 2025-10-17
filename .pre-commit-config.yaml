@@ -68,7 +68,7 @@ repos:
     hooks:
       - id: helmlint
   - repo: https://github.com/norwoodj/helm-docs
-    rev: v1.10.0
+    rev: v1.14.2
     hooks:
-      - id: helm-docs
+      - id: helm-docs-container
         files: (README\.md\.gotmpl|(Chart|requirements|values)\.yaml)$

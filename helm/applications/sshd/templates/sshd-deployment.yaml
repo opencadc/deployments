@@ -1,5 +1,5 @@
-{{- $storageSpec := .Values.storageSpec | required ".storageSpec is missing.  This should declare the configuration of the underlying storage." -}}
-{{- $rootPath := .Values.rootPath | required ".rootPath is missing.  This value indicates the parent folder of the /home and /projects folder.  This is also called the TLD in Skaha." -}}
+{{- $storageSpec := .Values.storageSpec -}}
+{{- $rootPath := .Values.rootPath -}}
 
 ---
 apiVersion: apps/v1
@@ -27,12 +27,14 @@ spec:
             - matchExpressions:
               - key: nvidia.com/gpu.count
                 operator: DoesNotExist
-    {{- range $extraHost := .Values.extraHosts }}
+      {{- with .Values.extraHosts }}
       hostAliases:
+      {{- range $extraHost := . }}
         - ip: {{ $extraHost.ip }}
           hostnames:
             - {{ $extraHost.hostname }}
-    {{- end }}
+      {{- end }}
+      {{- end }}
       containers:
       - image: {{ include "common.image" ( dict "imageObject" .Values.image ) }}
         imagePullPolicy: Always
@@ -70,18 +72,14 @@ spec:
         - mountPath: /etc/sssd/sssd.conf
           subPath: sssd.conf
           name: sssd-config
-        - mountPath: "{{ .Values.rootPath }}"
+        - mountPath: "{{ if $rootPath }}{{ $rootPath }}{{ else }}{{ required ".rootPath is missing.  This value indicates the parent folder of the /home and /projects folder.  This is also called the TLD in Skaha." .Values.rootPath }}{{ end }}"
           name: cavern-volume
-          subPath: {{ $rootPath | regexFind "[^/].*$" }}
-        {{- with .Values.extraVolumeMounts }}
-        {{- toYaml . | nindent 8 }}
+          subPath: {{ if $rootPath }}{{ $rootPath | regexFind "[^/].*$" }}{{ else }}{{ required ".rootPath is missing.  This value indicates the parent folder of the /home and /projects folder.  This is also called the TLD in Skaha." .Values.rootPath }}{{ end }}
+        {{- if .Values.extraVolumeMounts }}
+        {{- toYaml .Values.extraVolumeMounts | nindent 8 }}
+        {{- else }}
+        {{- required "extraVolumeMounts is required. If you don't have extra volume mounts, provide an empty list []" .Values.extraVolumeMounts }}
         {{- end }}
-    {{- range $extraHost := .Values.extraHosts }}
-      hostAliases:
-        - ip: {{ $extraHost.ip }}
-          hostnames:
-            - {{ $extraHost.hostname }}
-    {{- end }}
       priorityClassName: uber-user-preempt-high
       serviceAccountName: skaha
       volumes:
@@ -102,7 +100,13 @@ spec:
       - name: ssh-host-ed25519-key-pub
         emptyDir: {}
       - name: cavern-volume
+        {{- if $storageSpec }}
         {{- toYaml $storageSpec | nindent 8 }}
-      {{- with .Values.extraVolumes }}
-      {{- toYaml . | nindent 6 }}
+        {{- else }}
+        {{- required ".storageSpec is missing.  This should declare the configuration of the underlying storage." .Values.storageSpec }}
+        {{- end }}
+      {{- if .Values.extraVolumes }}
+      {{- toYaml .Values.extraVolumes | nindent 6 }}
+      {{- else }}
+      {{- required "extraVolumes is required. If you don't have extra volumes, provide an empty list []" .Values.extraVolumes }}
       {{- end }}
