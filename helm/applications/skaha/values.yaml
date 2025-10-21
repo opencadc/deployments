@@ -245,9 +245,9 @@ deployment:
     #     secretName: skaha-cacert-secret
 
     # API version that is currently in use for this deployment.  Leave this alone unless you know what you're doing.
-    # This the version that will show up in the path for the request (e.g. '/skaha/v0/session').
+    # This the version that will show up in the path for the request (e.g. '/skaha/v1/session').
     # Example:
-    #   apiVersion: 'v0'
+    #   apiVersion: 'v1'
     apiVersion: 'v1'
 
   # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
