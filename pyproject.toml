@@ -9,14 +9,23 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "commitizen>=4.9.1",
-    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
-    "mkdocs-material>=9.6.20",
     "pre-commit>=4.3.0",
+    "typer>=0.20.0",
 ]
 
 [project.scripts]
 deployments = "deployments:main"
+deploy = "deployments.cli:app"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
+docs = [
+    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
+    "mkdocs-material>=9.6.22",
+]

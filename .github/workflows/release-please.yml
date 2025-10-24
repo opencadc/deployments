@@ -13,10 +13,77 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release-please.outputs.releases_created }}
+      paths_released: ${{ steps.release-please.outputs.paths_released }}
+      all_outputs: ${{ toJson(steps.release-please.outputs) }}
     steps:
       - name: Run release-please
-        uses: googleapis/release-please-action@v4
+        id: release-please
+        uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print release-please outputs
+        run: |
+          echo "=== Release Please Outputs ==="
+          echo "releases_created: ${{ steps.release-please.outputs.releases_created }}"
+          echo "paths_released: ${{ steps.release-please.outputs.paths_released }}"
+          echo ""
+          echo "=== All Outputs (JSON) ==="
+          echo '${{ toJson(steps.release-please.outputs) }}'
+
+  release-matrix:
+    needs: release
+    if: ${{ needs.release.outputs.releases_created == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      release_matrix: ${{ steps.build-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7.1.1
+        with:
+          version: "latest"
+          python-version: 3.13
+          enable-cache: "auto"
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          restore-cache: "true"
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Build Release Matrix
+        id: build-matrix
+        env:
+          PATHS_RELEASED: ${{ needs.release.outputs.paths_released }}
+          RELEASE_PLEASE_OUTPUTS: ${{ needs.release.outputs.all_outputs }}
+        run: |
+          uv run deploy release-matrix build
+
+  dispatch-matrix:
+    needs: release-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        release: ${{ fromJson(needs.release-matrix.outputs.release_matrix) }}
+    steps:
+      - name: Dispatch Helm Chart Release Build
+        uses: peter-evans/repository-dispatch@v4.0.0
+        with:
+          event-type: helm-release-build
+          token: ${{ secrets.GITHUB_TOKEN }}
+          client-payload: |-
+            {
+              "chart_name": "${{ matrix.release.chart_name }}",
+              "chart_path": "${{ matrix.release.chart_path }}",
+              "chart_version": "${{ matrix.release.chart_version }}",
+              "tag_name": "${{ matrix.release.tag_name }}",
+              "sha": "${{ matrix.release.sha }}"
+            }

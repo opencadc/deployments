@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Populate Helm chart maintainers based on recent git history."""
+
 from __future__ import annotations
 
 import argparse
@@ -98,7 +99,9 @@ def git_log_for_path(path: Path) -> List[Commit]:
             commit_date = dt.datetime.fromisoformat(raw_date.replace("Z", "+00:00"))
         except ValueError:
             continue
-        commits.append(Commit(author=author.strip(), email=email.strip(), date=commit_date))
+        commits.append(
+            Commit(author=author.strip(), email=email.strip(), date=commit_date)
+        )
     return commits
 
 
@@ -136,7 +139,9 @@ def choose_maintainers(commits: Sequence[Commit]) -> List[Maintainer]:
     return [Maintainer(name=author, email=email) for author, _, email in top_ranked]
 
 
-def replace_maintainers_block(chart_file: Path, maintainers: Sequence[Maintainer]) -> bool:
+def replace_maintainers_block(
+    chart_file: Path, maintainers: Sequence[Maintainer]
+) -> bool:
     """Rewrite the maintainers block in Chart.yaml."""
     if not maintainers:
         return False
@@ -148,7 +153,10 @@ def replace_maintainers_block(chart_file: Path, maintainers: Sequence[Maintainer
 
     start = None
     for idx, line in enumerate(lines):
-        if line.startswith("maintainers:") and line[: len("maintainers:")].strip() == "maintainers:":
+        if (
+            line.startswith("maintainers:")
+            and line[: len("maintainers:")].strip() == "maintainers:"
+        ):
             start = idx
             break
     if start is not None:
@@ -210,7 +218,9 @@ def run(dry_run: bool) -> int:
 def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dry-run", action="store_true", help="Only report planned changes")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Only report planned changes"
+    )
     return parser.parse_args(list(argv))
 
 
