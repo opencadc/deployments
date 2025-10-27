@@ -53,9 +53,6 @@ Obtain a comma-delimited string of Experimental Features and a flag to set if an
 {{- range $feature, $map := . }}
 
 {{- if eq $feature "enabled" -}}
-{{- continue -}}
-{{- end -}}
-
 {{- if ne $feature "" }}
 {{- $thisMap := $map | default dict }}
 
@@ -74,6 +71,7 @@ Obtain a comma-delimited string of Experimental Features and a flag to set if an
 {{- end }}
 {{- end }}
 {{- printf "%s" $features -}}
+{{- end }}
 {{- end }}
 */}}
 
