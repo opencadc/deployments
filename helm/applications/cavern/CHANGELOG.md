@@ -1,5 +1,45 @@
 # CHANGELOG for Cavern User Storage (Chart 0.7.1)
 
+## [0.8.0](https://github.com/opencadc/deployments/compare/cavern-0.7.1...cavern-0.8.0) (2025-10-27)
+
+
+### Features
+
+* add readiness and liveness probes ([f777987](https://github.com/opencadc/deployments/commit/f7779874164faec536368b8871a5eb2438cd2fef))
+* add support for oidc user allocation through cavern api ([0544710](https://github.com/opencadc/deployments/commit/0544710a6b0978da21448cbe401832bc14beff9a))
+* add support for oidc user allocation through cavern api ([8bc17e3](https://github.com/opencadc/deployments/commit/8bc17e37560fa9057a60561a1567eb0a48271c1c))
+* add tls yaml support for configuration of user session ingress ([d9cfe73](https://github.com/opencadc/deployments/commit/d9cfe7364652f241254bc3c490e7c59b58de16ff))
+* add tls yaml support for configuration of user session ingressroutes ([fdb924e](https://github.com/opencadc/deployments/commit/fdb924e31a8e1c808d92017bc670eae7984b5dc3))
+* add tolerations to apis and uis to allow fine grained node deployment ([a2ba229](https://github.com/opencadc/deployments/commit/a2ba2291ffc4cbb41cf47b0d6f1376c8ec64d3d7))
+* allow setting images for those defaulting to docker io ([da0d2e7](https://github.com/opencadc/deployments/commit/da0d2e7fbcf90639adc83a47b0517de827929399))
+* allow setting images for those defaulting to docker io ([97574c2](https://github.com/opencadc/deployments/commit/97574c274c1bf459951d21edbcf539a0abfe0398))
+* **helm-docs:** migrated existing readme to docs, and auto-generated new chart readme, based on values.yml files ([fc2311f](https://github.com/opencadc/deployments/commit/fc2311f11767056b3cc612f45af6e1e87e470ea3))
+* support admin api keys for seamless trusted admin access mainly for allocations ([e40e074](https://github.com/opencadc/deployments/commit/e40e0741488c9b251b44216592acb2b329375e74))
+* support admin api keys for seamless trusted admin access mainly… ([114f8eb](https://github.com/opencadc/deployments/commit/114f8eb42ecf9895325aaa942e3aff34fef163b4))
+
+
+### Bug Fixes
+
+* default values ([0603626](https://github.com/opencadc/deployments/commit/0603626dd52705bf7308783e167d1d10382c4b8e))
+* fix cavern chart version ([efc54aa](https://github.com/opencadc/deployments/commit/efc54aaabf5b1ed1f73181afe721f7c97bddf620))
+* **helm:** maintainer updates ([6af7785](https://github.com/opencadc/deployments/commit/6af7785e0b840d4b58224f114caa20ef255cd473))
+* **helm:** updated maintainers ([67803b1](https://github.com/opencadc/deployments/commit/67803b18ec5e2762f0942451894e4c9b8c7ee2f9))
+* **maintainers:** now need atleast 15 commits in the last 12 months to be considered a maintainer ([02954e4](https://github.com/opencadc/deployments/commit/02954e4e190774cf4756e9b3f90594eac2a80499))
+* make probes configurable ([a8dc074](https://github.com/opencadc/deployments/commit/a8dc07461506c5fcd5ff0a1c9fc07e4419052ccd))
+* make probes configurable ([54737d4](https://github.com/opencadc/deployments/commit/54737d4eb884c496a966daa058992833b97b8cfe))
+* **pre-commit:** added auto-generated helm-maintainers section to all helm charts ([882dfb9](https://github.com/opencadc/deployments/commit/882dfb9f2cf2f0d1b3615d7768b92a2f39c122b8))
+* **pre-commit:** end-of-file-fixer ([1d658c7](https://github.com/opencadc/deployments/commit/1d658c75c74faedd7293d5151be51df295a1ddd9))
+* **pre-commit:** trailing-whitespaces ([178468c](https://github.com/opencadc/deployments/commit/178468c8082ca69a395ebc5e185a2186afbb3335))
+* removed typo ([55f2570](https://github.com/opencadc/deployments/commit/55f25706d0e3cc63aca0de5b3697bbdaa35c1352))
+* review rework ([202356b](https://github.com/opencadc/deployments/commit/202356b1c431837d8919e17fc0487c59253b2aac))
+* rework ordering in values file ([e4289e9](https://github.com/opencadc/deployments/commit/e4289e9e588bbcc20a1b0d3ac1629cea0a3a322d))
+* update cavern chart to fix tokens ([152ce7c](https://github.com/opencadc/deployments/commit/152ce7c2bcfd0e7e9c41bf33364384498e7ab304))
+* update cavern chart to fix tokens ([f386d67](https://github.com/opencadc/deployments/commit/f386d6738d78affc49ff398157876eb910dd7600))
+* update cavern to 0_8_3 to fix npe ([00530d6](https://github.com/opencadc/deployments/commit/00530d66364121efb6765ffecc6b2408170cef98))
+* update cavern to 0_8_3 to fix npe ([9eaa434](https://github.com/opencadc/deployments/commit/9eaa4344a6f17cff65af9baf666a5fdbe97fbe65))
+* use staged images to avoid docker io repository rate limits ([48325f8](https://github.com/opencadc/deployments/commit/48325f87198281b97372b0000c8eb277530460a6))
+* use staged images to avoid docker io repository rate limits ([8a12285](https://github.com/opencadc/deployments/commit/8a122853ed1917cc3679ce9655ea8ffbe8dba320))
+
 ## 2025.09.22 (0.7.1)
 - Make liveness and readiness probes configurable.
 
