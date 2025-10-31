@@ -52,7 +52,8 @@ Obtain a comma-delimited string of Experimental Features and a flag to set if an
 {{- if .enabled }}
 {{- range $feature, $map := . }}
 
-{{- if eq $feature "enabled" -}}
+# The global .enabled flag has already been checked, skip it
+{{- if ne $feature "enabled" -}}
 {{- if ne $feature "" }}
 {{- $thisMap := $map | default dict }}
 
