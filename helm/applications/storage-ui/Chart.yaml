@@ -26,6 +26,7 @@ version: 0.7.1
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
+# renovate: image=images.opencadc.org/client/storage-ui
 appVersion: "1.4.1"
 
 dependencies:

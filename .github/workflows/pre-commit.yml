@@ -13,37 +13,44 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    env:
-      UV_CACHE_DIR: ~/.cache/uv
-      PRE_COMMIT_HOME: ~/.cache/pre-commit
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
       - name: Helm tool installer
-        uses: Azure/setup-helm@v4.3.1
+        uses: Azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
 
       - name: Helm Dependency Updates
         run: |
           for chart in helm/applications/*/; do helm dependency update "$chart" 2>/dev/null || true; done
 
+      - name: Setup Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 'stable'
+
+      - name: Install Helm Docs
+        run: go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
+
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@2ddd2b9cb38ad8efd50337e8ab201519a34c9f24 # v7
         with:
           version: "latest"
           python-version: 3.13
-          enable-cache: true
+          enable-cache: "auto"
           cache-dependency-glob: |
             pyproject.toml
             uv.lock
+          restore-cache: "true"
+          save-cache: "true"
 
       - name: Cache pre-commit
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          path: ${{ env.PRE_COMMIT_HOME }}
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pre-commit-
+            pre-commit-${{ runner.os }}-
 
       - name: Run pre-commit checks
         id: precommit
@@ -52,7 +59,7 @@ jobs:
 
       - name: Share pre-commit guidance
         if: ${{ github.event_name == 'pull_request' && (steps.precommit.outcome == 'failure') }}
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405 # v2
         with:
           message: |
             ### ⚠️ Pre-commit Checks Failed
@@ -73,6 +80,12 @@ jobs:
             uv run pre-commit install
             ```
 
+            #### Errors
+
+            ```
+            $(git diff --minimal)
+            ```
+
             #### Resources
             - [Documentation to install `uv`](https://docs.astral.sh/uv/getting-started/installation/)
             - [Conventional Commits](https://www.conventionalcommits.org/) standards for writing commit messages
@@ -81,7 +94,7 @@ jobs:
 
       - name: Celebrate spotless PR
         if: ${{ github.event_name == 'pull_request' && steps.precommit.outcome == 'success' }}
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405 # v2
         with:
           message: |
             ### ✅ All pre-commit checks passed
@@ -90,4 +103,9 @@ jobs:
 
       - name: Fail if checks failed
         if: ${{ steps.precommit.outcome == 'failure' }}
-        run: exit 1
+        run: |
+          git diff --exit-code
+
+      - name: Cleanup pre-commit cache
+        run: |
+          uv run pre-commit gc
