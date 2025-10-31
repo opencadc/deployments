@@ -1,0 +1,240 @@
+name: Publish Helm Charts
+
+on:
+  repository_dispatch:
+    types: [helm-release-build]
+
+permissions:
+  contents: write  # Required for uploading release assets
+  packages: write
+  id-token: write  # Required for keyless signing with Sigstore
+  attestations: write  # Required for GitHub attestations
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production  # Use deployment environment for secrets
+    steps:
+      - name: Print Incoming Payload
+        id: payload
+        run: |
+          echo "=== Repository Dispatch Payload ==="
+          echo '${{ toJson(github.event.client_payload) }}'
+          echo "=== End Payload ==="
+
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.client_payload.sha }}
+
+      - name: Set up Helm
+        uses: Azure/setup-helm@v4.3.1
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
+
+      - name: Log in to OCI Registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
+        with:
+          registry: ${{ secrets.HELM_REGISTRY }}
+          username: ${{ secrets.HELM_USERNAME }}
+          password: ${{ secrets.HELM_PASSWORD }}
+
+      - name: Package Helm Chart
+        id: package
+        run: |
+          echo "Packaging Helm Chart: ${{ github.event.client_payload.chart_name }} v${{ github.event.client_payload.chart_version }}"
+
+          # Create output directory
+          mkdir -p helm-packages
+
+          # Running Helm Update
+          echo "Running Helm Dependency Update"
+          helm dependency update ${{ github.event.client_payload.chart_path }}
+
+          # Package and sign the chart with GPG key
+          helm package ${{ github.event.client_payload.chart_path }} \
+            --destination helm-packages \
+            --version ${{ github.event.client_payload.chart_version }}
+
+          # Get the package filename
+          CHART_PACKAGE=$(ls helm-packages/*.tgz | head -1)
+          echo "CHART_PACKAGE=$CHART_PACKAGE" >> $GITHUB_OUTPUT
+
+          echo "Chart Packaged: $CHART_PACKAGE"
+
+      - name: Push Chart to OCI Registry
+        id: oci-push
+        run: |
+          echo "Pushing Helm Chart to OCI Registry..."
+
+          PUSH_OUTPUT=$(helm push ${{ steps.package.outputs.CHART_PACKAGE }} "oci://${{ secrets.HELM_REGISTRY }}/${{ secrets.HELM_REPOSITORY }}" 2>&1)
+          echo "$PUSH_OUTPUT"
+
+          # Extract digest from output (format: "Digest: sha256:...")
+          DIGEST=$(echo "$PUSH_OUTPUT" | awk '/Digest:/ {print $2}')
+
+          # Construct the full OCI reference
+          OCI_REFERENCE="${{ secrets.HELM_REGISTRY }}/${{ secrets.HELM_REPOSITORY }}/${{ github.event.client_payload.chart_name }}:${{ github.event.client_payload.chart_version }}"
+          echo "OCI_REFERENCE=$OCI_REFERENCE" >> $GITHUB_OUTPUT
+          echo "DIGEST=$DIGEST" >> $GITHUB_OUTPUT
+          echo "Chart Pushed: $OCI_REFERENCE"
+
+      - name: Sign Chart with Cosign (Keyless)
+        id: sign
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          echo "Signing chart with Sigstore/Cosign (keyless)..."
+          # Sign the chart using keyless signing with OIDC
+          cosign sign --yes ${{ steps.oci-push.outputs.OCI_REFERENCE }}
+          echo "Chart Signed: ${{ steps.oci-push.outputs.OCI_REFERENCE }}"
+
+      - name: Verify Chart Signature
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          echo "Verifying Chart Signature..."
+          cosign verify \
+            --certificate-identity-regexp="https://github.com/${{ github.repository }}" \
+            --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+            ${{ steps.oci-push.outputs.OCI_REFERENCE }}
+          echo "Chart Signature Verified"
+
+      - name: Generate Attestation
+        id: attest
+        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c # v1.4.3
+        with:
+          subject-name: ${{ secrets.HELM_REGISTRY }}/${{ secrets.HELM_REPOSITORY }}/${{ github.event.client_payload.chart_name }}
+          subject-digest: ${{ steps.oci-push.outputs.DIGEST }}
+          push-to-registry: true
+
+      - name: Verify Attestation
+        run: |
+          echo "Verifying Attestation..."
+          gh auth login --with-token <<< '${{ secrets.GITHUB_TOKEN }}'
+          gh attestation verify oci://${{ steps.oci-push.outputs.OCI_REFERENCE }} --owner ${{ github.repository_owner }}
+          echo "Attestation Verified"
+
+      - name: Helm Chart Mueseum Push
+        id: chartrepo-push
+        run: |
+          helm plugin install https://github.com/chartmuseum/helm-push
+          echo "Pushing Helm Chart to ChartMuseum..."
+          helm cm-push \
+            --username '${{ secrets.HELM_USERNAME }}' \
+            --password '${{ secrets.HELM_PASSWORD }}' \
+            ${{ steps.package.outputs.CHART_PACKAGE }} \
+            "https://${{ secrets.HELM_REGISTRY }}/chartrepo/${{ secrets.HELM_REPOSITORY }}"
+          echo "Helm Chart pushed to Chart Museum"
+
+      - name: Create Release Notes
+        run: |
+          CHART_NAME="${{ github.event.client_payload.chart_name }}"
+          CHART_VERSION="${{ github.event.client_payload.chart_version }}"
+          TAG_NAME="${{ github.event.client_payload.tag_name }}"
+          SHA="${{ github.event.client_payload.sha }}"
+          OCI_REFERENCE="${{ steps.oci-push.outputs.OCI_REFERENCE }}"
+          REGISTRY="${{ secrets.HELM_REGISTRY }}"
+          REPOSITORY="${{ secrets.HELM_REPOSITORY }}"
+
+          {
+            echo ""
+            echo "### OCI Registry Location"
+            echo ""
+            echo '```'
+            echo "${OCI_REFERENCE}"
+            echo '```'
+            echo ""
+            echo "### Installation"
+            echo ""
+            echo "Pull and install the chart using Helm:"
+            echo ""
+            echo '```bash'
+            echo "# Pull the chart"
+            echo "helm pull oci://${REGISTRY}/${REPOSITORY}/${CHART_NAME} --version ${CHART_VERSION}"
+            echo ""
+            echo "# Install the chart"
+            echo "helm install ${CHART_NAME} oci://${REGISTRY}/${REPOSITORY}/${CHART_NAME} --version ${CHART_VERSION}"
+            echo '```'
+            echo ""
+            echo "### Security & Verification"
+            echo ""
+            echo "#### Keyless Signature Verification"
+            echo ""
+            echo "This chart has been signed using **Sigstore/Cosign Keyless Signing**. Verify the signature:"
+            echo ""
+            echo '```bash'
+            echo "# Install Cosign"
+            echo "brew install cosign"
+            echo ""
+            echo "# Set experimental mode for keyless verification"
+            echo "export COSIGN_EXPERIMENTAL=1"
+            echo ""
+            echo "# Verify the signature"
+            echo "cosign verify \\"
+            echo "  --certificate-identity-regexp=\"https://github.com/${{ github.repository }}\" \\"
+            echo "  --certificate-oidc-issuer=\"https://token.actions.githubusercontent.com\" \\"
+            echo "  ${OCI_REFERENCE}"
+            echo '```'
+            echo ""
+            echo "#### GitHub Attestation"
+            echo ""
+            echo "This chart includes a GitHub attestation for build provenance. You can verify it using:"
+            echo ""
+            echo '```bash'
+            echo "gh attestation verify oci://${OCI_REFERENCE} --owner ${{ github.repository_owner }}"
+            echo '```'
+          } > release-notes.md
+
+          echo "Release Notes Generated"
+
+      - name: Append Release Notes to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME="${{ github.event.client_payload.tag_name }}"
+
+          echo "Appending release notes to release: $TAG_NAME"
+
+          # Get the current release notes
+          CURRENT_NOTES=$(gh release view "$TAG_NAME" --json body --jq '.body')
+
+          # Read the new release notes
+          NEW_NOTES=$(cat release-notes.md)
+
+          # Combine current notes with new notes (separated by a horizontal rule)
+          COMBINED_NOTES=$(cat <<EOF
+          ${CURRENT_NOTES}
+
+          ${NEW_NOTES}
+          EOF
+          )
+
+          # Update the release with combined notes
+          gh release edit "$TAG_NAME" --notes "$COMBINED_NOTES"
+
+          echo "Release notes appended successfully"
+
+      - name: Summary
+        run: |
+          TAG_NAME="${{ github.event.client_payload.tag_name }}"
+
+          echo "## 🎉 Helm Chart Published Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Chart:** ${{ github.event.client_payload.chart_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ github.event.client_payload.chart_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Release:** [$TAG_NAME](https://github.com/${{ github.repository }}/releases/tag/$TAG_NAME)" >> $GITHUB_STEP_SUMMARY
+          echo "**OCI Reference:** \`${{ steps.oci-push.outputs.OCI_REFERENCE }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Completed Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- Packaged Helm chart" >> $GITHUB_STEP_SUMMARY
+          echo "- Pushed to OCI registry" >> $GITHUB_STEP_SUMMARY
+          echo "- Signed with Sigstore/Cosign (keyless)" >> $GITHUB_STEP_SUMMARY
+          echo "- Verified signature" >> $GITHUB_STEP_SUMMARY
+          echo "- Generated GitHub attestation" >> $GITHUB_STEP_SUMMARY
+          echo "- Appended release notes to GitHub release" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔐 Security" >> $GITHUB_STEP_SUMMARY
+          echo "This chart is signed using **keyless signing** with Sigstore/Cosign." >> $GITHUB_STEP_SUMMARY
+          echo "No private keys were used - authentication via OIDC." >> $GITHUB_STEP_SUMMARY

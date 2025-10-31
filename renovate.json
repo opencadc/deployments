@@ -1,0 +1,75 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "includePaths": [
+    "helm/*/**/Chart.yaml",
+    "helm/*/**/values.yaml",
+    "pyproject.toml",
+    "uv.lock",
+    ".github/workflows/**.yml",
+    ".pre-commit-config.yaml"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "at any time"
+    ]
+  },
+  "pre-commit": {
+    "enabled": true
+  },
+  "postUpgradeTasks": {
+    "commands": ["uv run pre-commit run -a"],
+    "fileFilters": ["**/*"],
+    "executionMode": "update"
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update appVersion in Chart.yaml when container image version changes",
+      "fileMatch": ["^helm/.*/Chart\\.yaml$"],
+      "matchStrings": [
+        "#\\s*renovate: image=(?<depName>.*?)\\s+appVersion:\\s*[\"']?(?<currentValue>[\\w+\\.\\-]*)"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["helm"],
+      "labels": ["helm"]
+    },
+    {
+      "matchManagers": ["pep621"],
+      "labels": ["python"],
+      "groupName": "python",
+      "rangeStrategy": "update-lockfile"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "labels": ["github-actions"],
+      "groupName": "github-actions"
+    },
+    {
+      "matchManagers": ["pre-commit"],
+      "labels": ["pre-commit"],
+      "groupName": "pre-commit"
+    },
+    {
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "prBodyColumns": [
+        "Package",
+        "Update",
+        "Type",
+        "New value",
+        "Package file",
+        "References"
+      ]
+    }
+  ]
+}

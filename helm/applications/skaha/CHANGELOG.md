@@ -1,4 +1,4 @@
-# CHANGELOG for Skaha User Session API (Chart 1.1.1)
+# Skaha User Session API Helm Chart
 
 ## 2025.10.23 (1.1.1)
 - Fix for incorrect checking of existing running sessions (i.e. "Failed" status)

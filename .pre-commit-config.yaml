@@ -4,15 +4,8 @@ exclude: ^deployment/
 repos:
   - repo: local
     hooks:
-      - id: helm-maintainers
-        name: Update Helm maintainers
-        entry: uv run python -m deployments.maintainers
-        language: system
-        pass_filenames: false
-        stages: [pre-commit, post-commit]
-        always_run: true
       - id: helm-inventory
-        name: Refresh chart inventory
+        name: update helm inventory
         entry: uv run python -m deployments.inventory
         language: system
         pass_filenames: false
@@ -22,14 +15,14 @@ repos:
   # This configuration will add commitizen to your pre-commit hooks and will run it on commit-msg stage
   # of the git commit process.
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.31.0
+    rev: v4.9.1
     hooks:
       - id: commitizen
         stages: [commit-msg]
   # Pre-Commit Hooks Configuration
   # This configuration will add pre-commit hooks to your pre-commit hooks and will run it on pre-commit stage
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       # Prevent giant files from being committed.
       - id: check-added-large-files
@@ -60,15 +53,18 @@ repos:
       # Checks for private key files.
       - id: detect-private-key
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.16.3
+    rev: v8.28.0
     hooks:
       - id: gitleaks
+        name: check for secrets
   - repo: https://github.com/gruntwork-io/pre-commit
-    rev: v0.1.15
+    rev: v0.1.30
     hooks:
       - id: helmlint
+        name: helm lint
   - repo: https://github.com/norwoodj/helm-docs
     rev: v1.14.2
     hooks:
-      - id: helm-docs-container
-        files: (README\.md\.gotmpl|(Chart|requirements|values)\.yaml)$
+      - id: helm-docs
+        name: helm docs update
+        args: [--chart-search-root=./helm, --skip-version-footer]

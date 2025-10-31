@@ -1,0 +1,6 @@
+dependencies:
+- name: utils
+  repository: file://../utils
+  version: 0.1.1
+digest: sha256:58af5c673fa42dd5ff12bdfb3827b6ea8294240f37509d24bfc062207cc006b0
+generated: "2025-10-31T13:44:32.94257-07:00"
