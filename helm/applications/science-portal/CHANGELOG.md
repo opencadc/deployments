@@ -1,4 +1,11 @@
-# CHANGELOG for Science Portal UI (Chart 1.0.0)
+# CHANGELOG for Science Portal UI (Chart 1.0.3)
+
+## 2025.10.31 (1.0.3)
+- Feature: Add experimental slider feature gate
+  - Add `experimentalFeatures.slider` section to `values.yaml` to enable/disable the slider feature.
+
+## 2025.10.27 (1.0.2)
+- Add configuration for default project to pre-select in the pull-down menu.
 
 ## 2025.09.09 (1.0.0)
 - Official release

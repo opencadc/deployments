@@ -21,7 +21,7 @@ A Helm chart to install the UID/GID POSIX Mapper
 | deployment.posixMapper.minGID | int | `900000` |  |
 | deployment.posixMapper.minUID | int | `10000` |  |
 | deployment.posixMapper.oidcURI | string | `nil` |  |
-| deployment.posixMapper.registryURL | string | `nil` |  |
+| deployment.posixMapper.registryURL | (list OR string) | `[]` | IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
 | deployment.posixMapper.resourceID | string | `"ivo://opencadc.org/posix-mapper"` |  |
 | deployment.posixMapper.resources.limits.cpu | string | `"750m"` |  |
 | deployment.posixMapper.resources.limits.memory | string | `"1500Mi"` |  |

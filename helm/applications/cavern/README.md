@@ -33,6 +33,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | deployment.cavern.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
 | deployment.cavern.image | string | `"images.opencadc.org/platform/cavern:0.9.0"` |  |
 | deployment.cavern.imagePullPolicy | string | `"IfNotPresent"` |  |
+| deployment.cavern.registryURL | (list OR string) | `[]` | IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
 | deployment.cavern.resourceID | string | `"ivo://example.org/cavern"` |  |
 | deployment.cavern.resources.limits.cpu | string | `"500m"` |  |
 | deployment.cavern.resources.limits.memory | string | `"1Gi"` |  |

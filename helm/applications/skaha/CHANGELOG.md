@@ -1,4 +1,7 @@
-# CHANGELOG for Skaha User Session API (Chart 1.1.0)
+# CHANGELOG for Skaha User Session API (Chart 1.1.1)
+
+## 2025.10.23 (1.1.1)
+- Fix for incorrect checking of existing running sessions (i.e. "Failed" status)
 
 ## 2025.09.29 (1.1.0)
 - Bump Skaha API image to `1.1.0`

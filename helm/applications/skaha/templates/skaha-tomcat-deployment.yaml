@@ -90,6 +90,10 @@ spec:
         - name: SKAHA_HEADLESS_PRIORITY_CLASS
           value: "{{ . }}"
         {{- end }}
+        {{- with .Values.deployment.skaha.sessions.nodeLabelSelector }}
+        - name: SKAHA_WORKER_NODE_LABEL_SELECTOR
+          value: "{{ . }}"
+        {{- end }}
         {{- with .Values.deployment.skaha.sessions.kueue }}
         {{- range $queueConfigKey, $queueConfig := . }}
         - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_NAME

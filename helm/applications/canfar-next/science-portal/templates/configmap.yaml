@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "science-portal.fullname" . }}
+  labels:
+    {{- include "science-portal.labels" . | nindent 4 }}
+data:
+  # This ConfigMap can be used for non-sensitive configuration
+  # For now, we're using environment variables directly in the deployment
+  # Add any configuration files or non-sensitive data here

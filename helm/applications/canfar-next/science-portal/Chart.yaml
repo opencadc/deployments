@@ -1,0 +1,13 @@
+apiVersion: v2
+name: science-portal
+description: A Helm chart for Science Portal Next.js application
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - nextjs
+  - science-portal
+  - web-application
+maintainers:
+  - name: Science Portal Team
+home: https://github.com/opencadc/science-portal

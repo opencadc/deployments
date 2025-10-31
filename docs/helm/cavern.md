@@ -101,6 +101,7 @@ $ curl https://myhost.example.com/cavern/availability
 | `deployment.resources.requests.cpu` | CPU request for the Cavern container | `500m` |
 | `deployment.resources.limits.memory` | Memory limit for the Cavern container | `1Gi` |
 | `deployment.resources.limits.cpu` | CPU limit for the Cavern container | `500m` |
+| `deployment.cavern.registryURL` | (list OR string) | `[]` IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
 | `livenessProbe` | Configure the liveness probe check | `{}` |
 | `readinessProbe` | Configure the readiness probe check | `{}` |
 | `tolerations` | Tolerations to apply to the Cavern Pod | `[]` |

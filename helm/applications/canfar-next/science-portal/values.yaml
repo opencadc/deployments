@@ -1,0 +1,205 @@
+# Default values for science-portal
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+image:
+  repository: science-portal-nextjs
+  pullPolicy: IfNotPresent
+  tag: "" # Overrides the image tag whose default is the chart appVersion.
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false # Next.js needs write access to /tmp
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - host: science-portal.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: science-portal-tls
+      hosts:
+        - science-portal.example.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: 3000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /api/health/ready
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - science-portal
+          topologyKey: kubernetes.io/hostname
+
+# Environment variables
+env:
+  # Server-side API configuration
+  - name: SERVICE_STORAGE_API
+    value: "https://ws-uv.canfar.net/arc/nodes/home/"
+  - name: LOGIN_API
+    value: "https://ws-cadc.canfar.net/ac"
+  - name: SKAHA_API
+    value: "https://ws-uv.canfar.net/skaha"
+  - name: SRC_SKAHA_API
+    value: "https://src.canfar.net/skaha"
+  - name: SRC_CAVERN_API
+    value: "https://src.canfar.net/cavern"
+  - name: API_TIMEOUT
+    value: "30000"
+
+  # Client-side configuration (NEXT_PUBLIC_)
+  - name: NEXT_PUBLIC_LOGIN_API
+    value: "https://ws-cadc.canfar.net/ac"
+  - name: NEXT_PUBLIC_SKAHA_API
+    value: "https://ws-uv.canfar.net/skaha"
+  - name: NEXT_PUBLIC_SRC_SKAHA_API
+    value: "https://src.canfar.net/skaha"
+  - name: NEXT_PUBLIC_SRC_CAVERN_API
+    value: "https://src.canfar.net/cavern"
+  - name: NEXT_PUBLIC_API_TIMEOUT
+    value: "30000"
+  - name: NEXT_PUBLIC_ENABLE_QUERY_DEVTOOLS
+    value: "false"
+  - name: NEXT_PUBLIC_EXPERIMENTAL
+    value: "true"
+
+  # Authentication mode
+  - name: NEXT_USE_CANFAR
+    value: "true"
+  - name: NEXT_PUBLIC_USE_CANFAR
+    value: "true"
+
+  # NextAuth configuration
+  - name: AUTH_TRUST_HOST
+    value: "true"
+  - name: NEXTAUTH_URL
+    value: "https://science-portal.example.com"
+
+# Secrets (should be stored in Kubernetes secrets)
+# Create these secrets separately:
+# kubectl create secret generic science-portal-secrets \
+#   --from-literal=auth-secret=$(openssl rand -base64 32) \
+#   --from-literal=oidc-client-secret=your-secret
+secrets:
+  # Reference to existing secret containing:
+  # - auth-secret (AUTH_SECRET)
+  # - oidc-client-secret (NEXT_OIDC_CLIENT_SECRET)
+  existingSecret: "science-portal-secrets"
+  keys:
+    authSecret: "auth-secret"
+    oidcClientSecret: "oidc-client-secret"
+
+# OIDC Configuration
+oidc:
+  uri: "https://ska-iam.stfc.ac.uk/"
+  clientId: "" # Set this in your values override
+  callbackUri: "https://science-portal.example.com/science-portal"
+  redirectUri: "https://science-portal.example.com/api/auth/callback/oidc"
+  scope: "openid profile offline_access"
+
+# Network Policy
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443 # HTTPS for external APIs
+        - protocol: TCP
+          port: 53 # DNS
+        - protocol: UDP
+          port: 53 # DNS
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

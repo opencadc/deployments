@@ -146,6 +146,7 @@ See the [values.yaml](values.yaml) file for a complete list of configuration opt
 | `deployment.posixMapper.extraHosts` | List of extra hosts to be added to the POSIX Mapper deployment.  See the `values.yaml` file for examples. | `[]` |
 | `deployment.posixMapper.extraEnv` | List of extra environment variables to be set in the POSIX Mapper service.  See the `values.yaml` file for examples. | `[]` |
 | `deployment.posixMapper.resources` | Resource requests and limits for the POSIX Mapper API | `{}` |
+| `deployment.posixMapper.registryURL` | (list OR string) | `[]` IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
 | `postgresql.maxActive` | Maximum number of active connections to the PostgreSQL database | `8` |
 | `postgresql.url` | Required JDBC URL for the PostgreSQL database | `""` |
 | `postgresql.schema` | Required Database schema to use for the POSIX Mapper | `""` |

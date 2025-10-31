@@ -33,6 +33,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.init.imagePullPolicy | string | `"IfNotPresent"` |  |
 | deployment.skaha.priorityClassName | string | `"uber-user-preempt-high"` |  |
 | deployment.skaha.registryHosts | string | `"images.canfar.net"` |  |
+| deployment.skaha.registryURL | (list OR string) | `[]` | IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
 | deployment.skaha.resources.limits.cpu | string | `"2000m"` |  |
 | deployment.skaha.resources.limits.memory | string | `"3Gi"` |  |
 | deployment.skaha.resources.requests.cpu | string | `"1000m"` |  |
@@ -41,8 +42,9 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.expirySeconds | string | `"345600"` |  |
 | deployment.skaha.sessions.imagePullPolicy | string | `"Always"` |  |
 | deployment.skaha.sessions.initContainerImage | string | `"redis:8.2.2-bookworm"` |  |
+| deployment.skaha.sessions.nodeLabelSelector | string | `""` | Used to identify Kubernetes Worker Nodes when querying for resources available to User Sessions. |
 | deployment.skaha.sessions.kueue | object | `{}` |  |
-| deployment.skaha.sessions.maxCount | string | `"3"` |  |
+| deployment.skaha.sessions.maxCount | string | `"5"` | Maximum number of concurrent interactive user sessions.  Does not apply to `headless` User Sessions. |
 | deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` |  |
 | deployment.skaha.sessions.minEphemeralStorage | string | `"20Gi"` |  |
 | deployment.skaha.sessions.persistentVolumeClaimName | string | `"skaha-workload-cavern-pvc"` |  |

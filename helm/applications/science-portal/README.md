@@ -1,6 +1,6 @@
 # scienceportal
 
-![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.1](https://img.shields.io/badge/AppVersion-1.0.1-informational?style=flat-square)
+![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.1](https://img.shields.io/badge/AppVersion-1.0.1-informational?style=flat-square)
 
 A Helm chart to install the Science Portal UI
 
@@ -24,8 +24,10 @@ A Helm chart to install the Science Portal UI
 | deployment.hostname | string | `"example.host.com"` |  |
 | deployment.sciencePortal.gmsID | string | `nil` |  |
 | deployment.sciencePortal.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.sciencePortal.image | string | `"images.opencadc.org/platform/science-portal:1.0.1"` |  |
+| deployment.sciencePortal.defaultProjectName | string | `"skaha"` | Name of the project to select by default when selecting images on new User Sessions |
+| deployment.sciencePortal.image | string | `"images.opencadc.org/platform/science-portal:1.2.0"` |  |
 | deployment.sciencePortal.imagePullPolicy | string | `"Always"` |  |
+| deployment.sciencePortal.registryURL | (list OR string) | `[]` | IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
 | deployment.sciencePortal.resources.limits.cpu | string | `"500m"` |  |
 | deployment.sciencePortal.resources.limits.memory | string | `"500M"` |  |
 | deployment.sciencePortal.resources.requests.cpu | string | `"500m"` |  |
