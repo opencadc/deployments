@@ -325,7 +325,7 @@ def resources(
         console.print(result, width=120)
         if scale != 1.0:
             console.print(f"Scaling by {scale * 100}%...")
-            for k, v in result.items():
+            for _k, v in result.items():
                 # Limit to Decimal precision to 3 decimal places
                 v["value"] = str(Decimal(v["value"]) * Decimal(scale))
             console.print(result, width=120)

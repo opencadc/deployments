@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate chart inventory metadata and update README."""
+
 from __future__ import annotations
 
 import argparse
@@ -108,18 +109,11 @@ def load_chart_metadata(chart_dir: Path) -> Dict[str, Any]:
     raw_data = parse_chart_yaml(chart_file)
     chart_name = str(raw_data.get("name", chart_dir.name))
     maintainers = raw_data.get("maintainers") or []
-    owners = [m.get("name") for m in maintainers if isinstance(m, dict) and m.get("name")]
+    owners = [
+        m.get("name") for m in maintainers if isinstance(m, dict) and m.get("name")
+    ]
     if not owners:
         owners = ["unassigned"]
-
-    dependencies = []
-    for dep in raw_data.get("dependencies", []) or []:
-        if not isinstance(dep, dict):
-            continue
-        name = dep.get("name") or "unknown"
-        version = dep.get("version") or ""
-        repo = dep.get("repository") or ""
-        dependencies.append({"name": name, "version": version, "repository": repo})
 
     return {
         "path": chart_dir.relative_to(REPO_ROOT).as_posix(),
@@ -130,7 +124,6 @@ def load_chart_metadata(chart_dir: Path) -> Dict[str, Any]:
         "version": str(raw_data.get("version", "")),
         "appVersion": str(raw_data.get("appVersion", "")),
         "owners": owners,
-        "dependencies": dependencies,
     }
 
 
@@ -148,23 +141,20 @@ def write_catalog(charts: List[Dict[str, Any]], output_file: Path) -> None:
 def render_markdown_table(charts: List[Dict[str, Any]]) -> str:
     """Build the Markdown table section for the project README."""
 
-    header = ["Chart", "Version", "App Version", "Owners", "Dependencies"]
-    table_lines = ["| " + " | ".join(header) + " |", "| " + " | ".join(["---"] * len(header)) + " |"]
+    header = ["Chart", "Description"]
+    table_lines = [
+        "| " + " | ".join(header) + " |",
+        "| " + " | ".join(["---"] * len(header)) + " |",
+    ]
     for chart in charts:
         chart_link = f"[{chart['name']}]({chart['path']})"
-        dependencies = ", ".join(
-            filter(None, (f"{dep['name']} {dep['version']}".strip() for dep in chart["dependencies"]))
-        ) or "—"
-        owners = ", ".join(chart["owners"]) if chart["owners"] else "unassigned"
+        description = chart["description"] or "—"
         table_lines.append(
             "| "
             + " | ".join(
                 [
                     chart_link,
-                    chart["version"] or "—",
-                    chart["appVersion"] or "—",
-                    owners,
-                    dependencies,
+                    description,
                 ]
             )
             + " |"
@@ -195,7 +185,9 @@ def update_readme(readme_file: Path, table: str) -> None:
 def main() -> None:
     """CLI entry point for inventory generation."""
 
-    parser = argparse.ArgumentParser(description="Generate chart inventory metadata and README table.")
+    parser = argparse.ArgumentParser(
+        description="Generate chart inventory metadata and README table."
+    )
     parser.add_argument(
         "--catalog",
         type=Path,
