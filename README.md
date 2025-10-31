@@ -20,6 +20,7 @@ This section is automatically generated. Do not edit manually.
 | Chart | Description |
 | --- | --- |
 | [base](helm/applications/base) | A Helm chart to install base components of the CANFAR Science Platform |
+| [science-portal](helm/applications/canfar-next/science-portal) | A Helm chart for Science Portal Next.js application |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
 | [posixmapper](helm/applications/posix-mapper) | A Helm chart to install the UID/GID POSIX Mapper |
 | [scienceportal](helm/applications/science-portal) | A Helm chart to install the Science Portal UI |

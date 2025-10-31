@@ -22,7 +22,6 @@ A Helm chart to install the User Storage UI
 | deployment.storageUI.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
 | deployment.storageUI.image | string | `"images.opencadc.org/client/storage-ui:1.4.1"` |  |
 | deployment.storageUI.imagePullPolicy | string | `"IfNotPresent"` |  |
-| deployment.storageUI.registryURL | (list OR string) | `[]` | IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
 | deployment.storageUI.resources.limits.cpu | string | `"500m"` |  |
 | deployment.storageUI.resources.limits.memory | string | `"850Mi"` |  |
 | deployment.storageUI.resources.requests.cpu | string | `"500m"` |  |
