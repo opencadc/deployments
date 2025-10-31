@@ -127,7 +127,7 @@ deployment:
     # themeName: canfar
     themeName:
 
-    # Optional.  The absolute base URL of the /home folder containing the user's home directories.  This is used to query the storage quota 
+    # Optional.  The absolute base URL of the /home folder containing the user's home directories.  This is used to query the storage quota
     # information, and display a panel in the Portal UI.
     # Example:
     #   storageHomeURL: https://example.org/cavern/nodes/home
@@ -141,7 +141,7 @@ experimentalFeatures:
   # This feature allows users to dynamically adjust the resource limits of their jobs with a different User Interface experience.
   slider:
     enabled: false
-    
+
 # This is a list of tolerations that will be added to the Pod spec of the Science Portal UI.
 # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 #

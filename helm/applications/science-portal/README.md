@@ -4,7 +4,7 @@ A Helm chart to install the Science Portal UI
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.0.2<!-- x-release-please-version --> | 1.2.0 | application |
+|1.0.3<!-- x-release-please-version --> | 1.2.0 | application |
 
 ## Requirements
 
@@ -18,21 +18,21 @@ A Helm chart to install the Science Portal UI
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | deployment.hostname | string | `"example.host.com"` |  |
+| deployment.sciencePortal.defaultProjectName | string | `"skaha"` |  |
 | deployment.sciencePortal.gmsID | string | `nil` |  |
 | deployment.sciencePortal.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.sciencePortal.defaultProjectName | string | `"skaha"` | Name of the project to select by default when selecting images on new User Sessions |
 | deployment.sciencePortal.image | string | `"images.opencadc.org/platform/science-portal:1.2.0"` |  |
 | deployment.sciencePortal.imagePullPolicy | string | `"Always"` |  |
-| deployment.sciencePortal.registryURL | (list OR string) | `[]` | IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
-| deployment.sciencePortal.resources.limits.cpu | string | `"500m"` |  |
-| deployment.sciencePortal.resources.limits.memory | string | `"500M"` |  |
+| deployment.sciencePortal.resources.limits.cpu | string | `"1"` |  |
+| deployment.sciencePortal.resources.limits.memory | string | `"1000Mi"` |  |
 | deployment.sciencePortal.resources.requests.cpu | string | `"500m"` |  |
-| deployment.sciencePortal.resources.requests.memory | string | `"500M"` |  |
+| deployment.sciencePortal.resources.requests.memory | string | `"750Mi"` |  |
 | deployment.sciencePortal.skahaResourceID | string | `nil` |  |
 | deployment.sciencePortal.tabLabels[0] | string | `"Standard"` |  |
 | deployment.sciencePortal.tabLabels[1] | string | `"Advanced"` |  |
 | deployment.sciencePortal.themeName | string | `nil` |  |
 | experimentalFeatures.enabled | bool | `false` |  |
+| experimentalFeatures.slider.enabled | bool | `false` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
 | podSecurityContext | object | `{}` |  |
 | redis.architecture | string | `"standalone"` |  |

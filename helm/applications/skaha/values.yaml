@@ -174,7 +174,7 @@ deployment:
       # initContainerImage:
       initContainerImage: "redis:8.2.2-bookworm"
 
-      # Optionally set the node label selector to identify Kubernetes Worker Nodes.  This is used to accurately query for available 
+      # Optionally set the node label selector to identify Kubernetes Worker Nodes.  This is used to accurately query for available
       # resources from schedulable Nodes by eliminating, for example, Nodes that are only cordoned for Web APIs.
       # Example:
       #   nodeLabelSelector: "node-role.kubernetes.io/node-type=worker"
