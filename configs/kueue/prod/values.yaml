@@ -15,11 +15,11 @@ controllerManager:
   manager:
     resources:
       limits:
-        cpu: "2"
-        memory: 1024Mi
+        cpu: "4"
+        memory: 4Gi
       requests:
         cpu: "2"
-        memory: 1024Mi
+        memory: 4Gi
 
 # controller_manager_config.yaml. controllerManager utilizes this yaml via manager-config Configmap.
 managerConfig:
