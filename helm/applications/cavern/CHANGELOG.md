@@ -1,4 +1,4 @@
-# CHANGELOG for Cavern User Storage (Chart 0.7.1)
+# CHANGELOG for Cavern User Storage
 
 ## [0.8.0](https://github.com/shinybrar/deployments/compare/cavern-0.7.1...cavern-0.8.0) (2025-10-29)
 

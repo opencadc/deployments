@@ -27,7 +27,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | deployment.cavern.filesystem.rootOwner.uid | string | `nil` |  |
 | deployment.cavern.filesystem.rootOwner.username | string | `""` |  |
 | deployment.cavern.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.cavern.image | string | `"images.opencadc.org/platform/cavern:0.9.0"` |  |
+| deployment.cavern.image | string | `"images.opencadc.org/platform/cavern:0.9.2"` |  |
 | deployment.cavern.imagePullPolicy | string | `"IfNotPresent"` |  |
 | deployment.cavern.resourceID | string | `"ivo://example.org/cavern"` |  |
 | deployment.cavern.resources.limits.cpu | string | `"500m"` |  |
