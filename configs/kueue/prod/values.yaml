@@ -5,6 +5,10 @@ enablePrometheus: true
 
 # Kueue Controller Configuration
 controllerManager:
+  # Constrain to the worker nodes for now as the 'p' nodes are full.
+  nodeSelector:
+    skaha.opencadc.org/node-type: worker-node
+
   # Kueue Feature Gates, deprecated features excluded
   # Based on v0.10.0 retrieved on 2025-01-01
   # Source: https://kueue.sigs.k8s.io/docs/installation/
