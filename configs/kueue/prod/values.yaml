@@ -5,6 +5,10 @@ enablePrometheus: true
 
 # Kueue Controller Configuration
 controllerManager:
+  # Constrain to the worker nodes for now as the 'p' nodes are full.
+  nodeSelector:
+    skaha.opencadc.org/node-type: worker-node
+
   # Kueue Feature Gates, deprecated features excluded
   # Based on v0.10.0 retrieved on 2025-01-01
   # Source: https://kueue.sigs.k8s.io/docs/installation/
@@ -15,11 +19,11 @@ controllerManager:
   manager:
     resources:
       limits:
-        cpu: "2"
-        memory: 1024Mi
+        cpu: "6"
+        memory: 10Gi
       requests:
         cpu: "2"
-        memory: 1024Mi
+        memory: 4Gi
 
 # controller_manager_config.yaml. controllerManager utilizes this yaml via manager-config Configmap.
 managerConfig:

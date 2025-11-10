@@ -1,10 +1,7 @@
 apiVersion: v2
-name: cavern
-description: "A Helm chart to install the VOSpace User Storage API (Cavern)"
+name: datalink
+description: A Helm chart for Kubernetes
 
-maintainers:
-  - name: Dustin Jenkins
-    email: djenkins.cadc@gmail.com
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
@@ -18,16 +15,10 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.8.0
+version: 0.1.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-# renovate: image=images.opencadc.org/platform/cavern
-appVersion: "0.9.2"
-
-dependencies:
-  - name: "utils"
-    version: "^0.1.0"
-    repository: "file://../utils"
+appVersion: "1.16.0"
