@@ -66,5 +66,4 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | secrets | string | `nil` |  |
 | service.port | int | `8080` |  |
 | skahaWorkload.namespace | string | `"skaha-workload"` |  |
-| storage.service.spec | string | `nil` |  |
 | tolerations | list | `[]` |  |

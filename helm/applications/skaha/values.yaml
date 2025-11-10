@@ -402,15 +402,6 @@ secrets:
   # skaha-cacert-secret:
   #   ca.crt: <base64 encoded CA crt>
 
-# Set these appropriately to match your Persistent Volume labels.
-storage:
-  service:
-    spec:
-      # YAML for service mounted storage.
-      # Example is the persistentVolumeClaim below.
-      # persistentVolumeClaim:
-      #   claimName: skaha-pvc
-
 # For caching images from the Image Repository and for the writing the POSIX Users and Groups to be shared with Job files
 redis:
   image:
