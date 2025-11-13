@@ -1,0 +1,18 @@
+dependencies:
+- name: datalink
+  repository: file://../datalink
+  version: 0.1.0
+- name: meta
+  repository: file://../meta
+  version: 0.1.0
+- name: repo
+  repository: file://../repo
+  version: 0.1.0
+- name: search
+  repository: file://../search
+  version: 0.1.0
+- name: tap
+  repository: file://../tap
+  version: 0.1.0
+digest: sha256:85fea7358ccf7b431d01404865b8bc113f456918025f0cc0bac8850bb9e8d6e5
+generated: "2025-11-08T17:08:18.985627-08:00"
