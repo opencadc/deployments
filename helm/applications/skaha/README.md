@@ -26,6 +26,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.imagePullPolicy | string | `"Always"` |  |
 | deployment.skaha.init.image | string | `"busybox:1.37.0"` |  |
 | deployment.skaha.init.imagePullPolicy | string | `"IfNotPresent"` |  |
+| deployment.skaha.posixMapperCacheTTLSeconds | string | `"86400"` |  |
 | deployment.skaha.priorityClassName | string | `"uber-user-preempt-high"` |  |
 | deployment.skaha.registryHosts | string | `"images.canfar.net"` |  |
 | deployment.skaha.resources.limits.cpu | string | `"2000m"` |  |

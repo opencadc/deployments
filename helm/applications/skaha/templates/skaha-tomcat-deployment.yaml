@@ -60,6 +60,10 @@ spec:
         - name: SKAHA_USER_STORAGE_PROJECTS_BASE_DIRECTORY
           value: "{{ template "skaha.job.userStorage.projectsBaseDirectory" $ }}"
       {{- end }}  # End with - userStorage
+      {{- if .Values.deployment.skaha.posixMapperCacheTTLSeconds }}
+        - name: SKAHA_POSIX_MAPPER_CACHE_TTL_SECONDS
+          value: "{{ .Values.deployment.skaha.posixMapperCacheTTLSeconds }}"
+      {{- end }}
         - name: SKAHA_SESSIONS_HOSTNAME
           value: "{{ .Values.deployment.skaha.sessions.hostname | default .Values.deployment.hostname }}"
         - name: SKAHA_HOSTNAME

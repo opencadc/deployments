@@ -34,7 +34,7 @@ podSecurityContext: {}
 deployment:
   hostname: myhost.example.com  # Change this!
   skaha:
-    image: images.opencadc.org/platform/skaha:1.1.3
+    image: images.opencadc.org/platform/skaha:1.2.0
     imagePullPolicy: Always
 
     # Cron string for the image caching cron job schedule. Defaults to every half hour.
@@ -52,6 +52,10 @@ deployment:
       # This image is used to create the /home and /projects directories, in case Cavern is not already running.
       image: busybox:1.37.0
       imagePullPolicy: IfNotPresent
+
+    # Optionally set the TTL (Time To Live) for POSIX Mapper cache entries, in seconds.  Defaults to 86400 seconds (1 day) if not set.
+    # This is used to cache POSIX user and group information to reduce load on the POSIX Mapper service.
+    posixMapperCacheTTLSeconds: "86400"
 
     # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
     # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
