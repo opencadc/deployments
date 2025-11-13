@@ -1,5 +1,12 @@
 # Skaha User Session API Helm Chart
 
+## [1.2.1](https://github.com/opencadc/deployments/compare/skaha-1.2.0...skaha-1.2.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* configure cache expiration ttl ([172c2f4](https://github.com/opencadc/deployments/commit/172c2f4a75d7f24d0310050cbbc8ae8694e97e43))
+
 ## [1.2.0](https://github.com/opencadc/deployments/compare/skaha-1.1.1...skaha-1.2.0) (2025-10-31)
 
 
