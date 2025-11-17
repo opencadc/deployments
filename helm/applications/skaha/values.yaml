@@ -15,7 +15,7 @@ skahaWorkload:
 deployment:
   hostname: myhost.example.com  # Change this!
   skaha:
-    image: images.opencadc.org/platform/skaha:1.1.3
+    image: images.opencadc.org/platform/skaha:1.1.4
     imagePullPolicy: Always
 
     # Cron string for the image caching cron job schedule. Defaults to every half hour.
