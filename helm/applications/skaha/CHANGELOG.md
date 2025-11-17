@@ -1,5 +1,13 @@
 # Skaha User Session API Helm Chart
 
+## [1.2.2](https://github.com/opencadc/deployments/compare/skaha-1.2.1...skaha-1.2.2) (2025-11-17)
+
+
+### Bug Fixes
+
+* chart version bump ([da79b5b](https://github.com/opencadc/deployments/commit/da79b5bf26e148bf3546db3be8581a51041c6e13))
+* chart version updates ([106330d](https://github.com/opencadc/deployments/commit/106330d3da2b72395fefd5243b44968bb70c2987))
+
 ## [1.2.1](https://github.com/opencadc/deployments/compare/skaha-1.2.0...skaha-1.2.1) (2025-11-13)
 
 
