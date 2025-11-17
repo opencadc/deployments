@@ -20,7 +20,7 @@ controllerManager:
     resources:
       limits:
         cpu: "6"
-        memory: 10Gi
+        memory: 12Gi
       requests:
         cpu: "2"
         memory: 4Gi

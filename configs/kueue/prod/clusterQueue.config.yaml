@@ -36,11 +36,11 @@ spec:
           # borrowing / lending = size * 25%
           resources:
             - name: "cpu"
-              nominalQuota:   "1680"
+              nominalQuota:   "1997" # ((40 nodes * 64 cores) * 0.8) - 2%
               borrowingLimit: "420"
               lendingLimit:   "420"
             - name: "memory"
-              nominalQuota:   "6562Gi"
+              nominalQuota:   "7520Gi" # ((40 nodes * 241 Gi) * 0.8) - 2%
               borrowingLimit: "1640Gi"
               lendingLimit:   "1640Gi"
               # 40 nodes * 2048Gi = 81920Gi
