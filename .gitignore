@@ -2,3 +2,4 @@ charts/
 .uv-cache/
 .venv/
 **/__pycache__/
+site/

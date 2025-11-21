@@ -1,7 +1,5 @@
 # Skaha Helm Chart
 
-See the [Deployment Guide](../science-platform/README.md) for a better idea of a full system.
-
 The Skaha Helm chart facilitates the deployment of the Skaha application within a Kubernetes cluster. This chart is designed to streamline the installation and management of Skaha, ensuring a seamless integration into your Kubernetes environment.
 
 ## Prerequisites

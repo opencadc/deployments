@@ -46,6 +46,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.tls | object | `{}` |  |
 | deployment.skaha.sessions.tolerations | list | `[]` |  |
 | experimentalFeatures.enabled | bool | `false` |  |
+| experimentalFeatures.sessionLimitRange.rbac.create | bool | `true` |  |
 | experimentalFeatures.sessionLimitRange.enabled | bool | `false` |  |
 | experimentalFeatures.sessionLimitRange.limitSpec | object | `{}` |  |
 | ingress.enabled | bool | `true` |  |
@@ -67,5 +68,4 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | secrets | string | `nil` |  |
 | service.port | int | `8080` |  |
 | skahaWorkload.namespace | string | `"skaha-workload"` |  |
-| storage.service.spec | string | `nil` |  |
 | tolerations | list | `[]` |  |

@@ -14,7 +14,7 @@
           {{- end }}
         {{- end }}
         {{- end }}
-        - mountPath: "${SKAHA_TLD}"
+        - mountPath: "${SKAHA_TOP_LEVEL_DIR}"
           name: cavern-volume
           subPath: "cavern"
         - mountPath: "/scratch"

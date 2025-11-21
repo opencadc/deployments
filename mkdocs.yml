@@ -97,8 +97,7 @@ markdown_extensions:
   - md_in_html
   - toc:
       permalink: true
-      title: Page contents
-      toc_depth: 2
+      toc_depth: 3
   - pymdownx.betterem:
       smart_enable: all
   - pymdownx.caret
@@ -133,6 +132,9 @@ markdown_extensions:
   - pymdownx.tilde
 
 nav:
+  - Helm Charts:
+    - helm/index.md
+    - Science Platform: helm/science-platform/index.md
   - Home: index.md
   - Operations:
     - operations/index.md

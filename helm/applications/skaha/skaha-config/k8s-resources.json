@@ -1,6 +1,6 @@
 {
   "cores": {
-    "default": 1,
+    "default": 2,
     "defaultRequest": 1,
     "defaultLimit": 8,
     "options": [
@@ -23,7 +23,7 @@
     ]
   },
   "memoryGB": {
-    "default": 1,
+    "default": 8,
     "defaultRequest": 4,
     "defaultLimit": 32,
     "options": [

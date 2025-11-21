@@ -1,4 +1,4 @@
-# Helm Chart for base objects of the CANFAR Science Platform
+# Base Helm Chart
 
 ## Install
 
