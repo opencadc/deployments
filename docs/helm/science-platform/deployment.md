@@ -743,6 +743,11 @@ deployment:
             values:
             - my-special-ui-host
 
+experimentalFeatures:
+  enabled: true
+  slider:
+    enabled: true
+
   # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
   # deployment object, not the sciencePortal one.
   #
