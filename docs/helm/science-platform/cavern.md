@@ -1,6 +1,4 @@
-# Helm Chart for the Cavern User Storage API
-
-See the [Deployment Guide](../README.md) for a better idea of a full system.
+# Cavern Helm Chart
 
 ## Install
 

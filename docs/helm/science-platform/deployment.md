@@ -1,24 +1,11 @@
 # Deployment Guide
 
-- [Dependencies](#dependencies)
-- [Quick Start](#quick-start)
-  - [Base install](#base-install)
-  - [Persistent Volumes](#persistent-volumes-and-persistent-volume-claims)
-  - [POSIX Mapper install](#posix-mapper-install)
-  - [Kueue install](#kueue-install)
-  - [Skaha install](#skaha-install)
-  - [Science Portal install](#science-portal-user-interface-install)
-  - [Cavern install](#cavern-user-storage-api-install)
-  - [Storage User Interface install](#user-storage-ui-installation)
-- [Helm](#helm)
-- [Obtaining a bearer token](#obtaining-a-bearer-token)
-- [Flow](#flow)
-- [Structure](#structure)
+[TOC]
 
 ## Dependencies
 
 - An existing Kubernetes cluster.
-- An [Service Registry deployment](https://github.com/opencadc/reg/tree/master/reg)
+- An [IVOA Service Registry deployment](https://github.com/opencadc/reg/tree/master/reg)
 
 ## Quick Start
 
@@ -27,28 +14,28 @@ helm repo add science-platform https://images.opencadc.org/chartrepo/platform
 helm repo add science-platform-client https://images.opencadc.org/chartrepo/client
 helm repo update
 
-helm install --values my-base-local-values-file.yaml base science-platform/base
-helm install -n skaha-system --values my-posix-mapper-local-values-file.yaml posixmapper science-platform/posixmapper
-helm install -n skaha-system --values my-skaha-local-values-file.yaml skaha science-platform/skaha
-helm install -n skaha-system --values my-scienceportal-local-values-file.yaml scienceportal science-platform/scienceportal
-helm install -n skaha-system --values my-cavern-local-values-file.yaml cavern science-platform/cavern
-helm install -n skaha-system --values my-storage-ui-local-values-file.yaml storage-ui science-platform-client/storageui
-```
-
-## Helm
-
-Add the Helm repository:
-
-```bash
-helm repo add science-platform https://images.opencadc.org/chartrepo/platform
-helm repo update
+helm upgrade --install -n traefik --create-namespace --values my-base-local-values-file.yaml base science-platform/base
+helm upgrade --install -n skaha-system --values my-posix-mapper-local-values-file.yaml posix-mapper science-platform/posixmapper
+helm upgrade --install -n skaha-system --values my-cavern-local-values-file.yaml cavern science-platform/cavern
+helm upgrade --install -n skaha-system --values my-skaha-local-values-file.yaml skaha science-platform/skaha
+helm upgrade --install -n skaha-system --values my-scienceportal-local-values-file.yaml science-portal science-platform/scienceportal
+helm upgrade --install -n skaha-system --values my-storage-ui-local-values-file.yaml storage-ui science-platform-client/storageui
 ```
 
 ### Base install
 
-The [Base](base) install will create ServiceAccount, Role, Namespace, and RBAC objects needed to place the Skaha service.
+The [Base](base) install will create ServiceAccount, Role, Namespace, and RBAC objects needed to deploy the Skaha service, as such it requires cluster-admin privileges.
 
-Create a `my-base-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](base/values.yaml).  Mainly the
+
+!!! important "Important"
+
+    :vertical_traffic_light: :warning:
+
+    The `base` chart itself is optional, but the objects it creates are required for the other services to operate correctly.  If you have already created the necessary Namespaces and RBAC objects, or if
+    they have been created for you by your Cluster Administrator, you can skip this step.
+
+
+Create a `my-base-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/base/values.yaml).  Mainly the
 Traefik Default Server certificate (optional if needed):
 
 `my-base-local-values-file.yaml`
@@ -69,27 +56,27 @@ traefik:
 ```
 
 ```bash
-helm install --values my-base-local-values-file.yaml base science-platform/base
+helm upgrade --install -n traefik --create-namespace --values my-base-local-values-file.yaml base science-platform/base
 
 NAME: base
-LAST DEPLOYED: Thu Sep 14 07:28:45 2025
-NAMESPACE: default
+LAST DEPLOYED: Thu Nov 11 07:28:45 2025
+NAMESPACE: traefik
 STATUS: deployed
-REVISION: 1
+REVISION: 4
 ```
 
 ### Persistent Volumes and Persistent Volume Claims
 
-**Note**
-The `base` MUST be installed first as it creates the necessary Namespaces for the Persistent Volume Claims!
+!!! important "Important"
 
-**Important**
+    The `base` Helm Chart **must** be installed first as it creates the necessary Namespaces for the Persistent Volume Claims!
+
 There are two (2) Persistent Volume Claims that are used in the system, due to the fact that there are two (2) Namespaces (`skaha-system` and `skaha-workload`).  These PVCs, while
-having potentially different configurations, **SHOULD** point to the same storage.  For example, if two `hostPath` PVCs are created, the `hostPath.path` **MUST** point to the same
+having potentially different configurations, **must** point to the same storage.  For example, if two `hostPath` PVCs are created, the `hostPath.path` **must** point to the same
 folder in order to have shared content between the Cavern Service (`cavern`) and the User Sessions (Notebooks, CARTA, etc.).
 
 It is expected that the deployer, or an Administrator, will create the necessary Persistent Volumes (if needed), and the required Persistent Volume Claims at
-this point.  There are sample [Local Storage](https://kubernetes.io/docs/concepts/storage/volumes/#local) Persistent Volume examples in the `base/volumes` folder.
+this point.  There are sample [Local Storage](https://kubernetes.io/docs/concepts/storage/volumes/#local) [Persistent Volume examples](../../../helm/applications/base/volumes) in the `base/volumes` folder.
 
 Two (2) Persistent Volume Claims are required.  While both point to the same underlying storage, they are in different Namespaces.  This leads to somewhat duplicated effort, but it is necessary to ensure that both the `skaha-system` and `skaha-workload` namespaces have access to the required storage resources.
 See this [short explanation](https://youtu.be/NSO0HioWLiI) for more information.
@@ -101,7 +88,7 @@ The [POSIX Mapper Service](posix-mapper) is required to provide a UID to Usernam
 
 This service is required to be installed _before_ the Skaha service.
 
-Create a `my-posix-mapper-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](posix-mapper/values.yaml).
+Create a `my-posix-mapper-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/posix-mapper/values.yaml).
 
 `my-posix-mapper-local-values-file.yaml`
 ```yaml
@@ -163,21 +150,13 @@ deployment:
   #
   # extraHosts: []
 
-# Declare the storage for the skaha service to use.
-storage:
-  service:
-    spec:
-      persistentVolumeClaim:
-        claimName: skaha-pvc # Match this label up with whatever was installed in the base install, or the desired PVC, or create dynamically provisioned storage.
-
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
 #   posix-manager-cacert-secret:
 #     ca.crt: <base64 encoded ca crt>
 
 # These values are preset in the catalina.properties, and this default database only exists beside this service.
-# It's usually safe to leave these as-is.
-# postgresql:
+postgresql:
 #   maxActive: 4
 #   schema: mapping
 #   url: jdbc:postgresql://db.host:5432/mapping
@@ -187,10 +166,10 @@ secrets:
 ```
 
 ```bash
-helm install -n skaha-system  --values my-posix-mapper-local-values-file.yaml posixmapper science-platform/posixmapper
+helm -n skaha-system upgrade --install  --values my-posix-mapper-local-values-file.yaml posix-mapper science-platform/posixmapper
 
-NAME: posixmapper
-LAST DEPLOYED: Thu Sep 28 07:28:45 2023
+NAME: posix-mapper
+LAST DEPLOYED: Thu Oct 28 07:28:45 2025
 NAMESPACE: skaha-system
 STATUS: deployed
 REVISION: 1
@@ -204,12 +183,182 @@ curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com
 []%
 
 curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" "https://example.host.com/posix-mapper/uid?user=mynewuser"
-mynewuser:x:1000:1000:::
+mynewuser:x:10000:10000:::
+```
+
+### Cavern (User Storage API) install
+
+The Cavern API provides access to the User Storage which is shared between Skaha and all of the User Sessions.  A [Bearer token](#obtaining-a-bearer-token) is required when trying to read
+private access, or any writing.
+
+Create a `my-cavern-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/cavern/values.yaml).
+
+`my-cavern-local-values-file.yaml`
+```yaml
+# Cavern web service deployment
+deployment:
+  hostname: example.org
+  cavern:
+    # How cavern identifies itself.  Required.
+    resourceID: "ivo://example.org/cavern"
+
+    # Set the Registry URL pointing to the desired registry.  Required
+    registryURL: "https://example.org/reg"
+
+    # How to find the POSIX Mapper API.  URI (ivo://) or URL (https://).  Required.
+    posixMapperResourceID: "ivo://example.org/posix-mapper"
+
+    # User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.
+    allocations:
+      # Required.  The default size, in GB, of an allocation.  This is used in the absence of the Quota VOSpace property.  Can be a floating point number.
+      # Provided value is 10 (10 GiB) by default.
+      # Example:
+      #   defaultSizeGB: 25.5
+      defaultSizeGB: 25
+
+    filesystem:
+      # persistent data directory in container
+      dataDir: # e.g. "/data"
+
+      # RELATIVE path to the node/file content that could be mounted in other containers
+      subPath: # e.g. "cavern"
+
+      # See https://github.com/opencadc/vos/tree/master/cavern for documentation.  For deployments using OpenID Connect,
+      # the rootOwner MUST be an object with the following properties set.
+      rootOwner:
+        # The adminUsername is required to be set whomever has admin access over the filesystem.dataDir above.
+        adminUsername:
+
+        # The username of the root owner.
+        username:
+
+        # The UID of the root owner.
+        uid:
+
+        # The GID of the root owner.
+        gid:
+
+    # The API keys object that will be permitted to perform administrative tasks.  These will be passed as authorization headers to the Cavern API.
+    # The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
+    # Format is <clientApplicationName>: <apiKeyToken>
+    # Example:
+    #   adminAPIKeys:
+    #     skaha: "token-value"
+    #     prepareData: "another-token-value"
+    adminAPIKeys:
+      prepareData: "32fjd93jfn93n3nFjsl293jfn93jf="
+      skaha: "88shdj3en1rBuMVSllWVuuz190HJpF="
+
+    # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set the uws.db.url property, with authentication.
+    uws:
+      db:
+        install: true
+        schema: uws
+        maxActive: 2
+
+    # Optional rename of the application from the default "cavern"
+    # applicationName: "cavern"
+
+    # The endpoint to serve this from.  Defaults to /cavern.  If the applicationName is changed, then this should match.
+    # Don't forget to update your registry entries!
+    #
+    # endpoint: "/cavern"
+
+    # Simple Class name of the QuotaPlugin to use.  This is used to request quota and folder size information
+    # from the underlying storage system.  Optional, defaults to NoQuotaPlugin.
+    #
+    # - For CephFS deployments: CephFSQuotaPlugin
+    # - Default: NoQuotaPlugin
+    #
+    # quotaPlugin: {NoQuotaPlugin | CephFSQuotaPlug}
+
+    # Optionally set the DEBUG port.
+    #
+    # Example:
+    # extraEnv:
+    # - name: CATALINA_OPTS
+    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
+    # - name: JAVA_OPTS
+    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
+    #
+    # extraEnv:
+
+    # Optionally mount a custom CA certificate
+    # Example:
+    # extraVolumeMounts:
+    # - mountPath: "/config/cacerts"
+    #   name: cacert-volume
+    #
+    # extraVolumeMounts:
+
+    # Create the CA certificate volume to be mounted in extraVolumeMounts
+    # Example:
+    # extraVolumes:
+    # - name: cacert-volume
+    #   secret:
+    #     defaultMode: 420
+    #     secretName: cavern-cacert-secret
+    #
+    # extraVolumes:
+
+    # Other data to be included in the main ConfigMap of this deployment.
+    # Of note, files that end in .key are special and base64 decoded.
+    #
+    # extraConfigData:
+
+    # Resources provided to the Cavern service.
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+
+    # Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Cavern.
+    # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
+    # Example:
+    nodeAffinity:
+      # Only allow Cavern to run on specific Nodes.
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - my-special-api-host
+
+  # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
+  # deployment object, not the cavern one.
+  #
+  # These entries get added as hostAliases entries to the Deployment.
+  #
+  # Example:
+  # extraHosts:
+  #   - ip: 127.3.34.5
+  #     hostname: myhost.example.org
+  #
+  # extraHosts: []
+
+# secrets:
+  # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
+  # cavern-cacert-secret:
+  #   ca.crt: <base64 encoded CA crt>
+
+# Set these appropriately to match your Persistent Volume Claim labels.
+storage:
+  service:
+    spec:
+      # YAML for service mounted storage.
+      # Example is the persistentVolumeClaim below.  This should match whatever Skaha used.
+      # persistentVolumeClaim:
+      #   claimName: skaha-pvc
 ```
 
 ### Kueue install
 
-Kueue is a Kubernetes-native job queuing and scheduling system that enhances the management of workloads in a Kubernetes cluster. It provides advanced features for job scheduling, resource management, and workload prioritization, making it particularly useful for environments where efficient resource utilization and job handling are critical.
+Kueue is a Kubernetes-native job queuing and scheduling system that enhances the management of workloads in a Kubernetes cluster. It provides advanced features for job scheduling, resource management, and workload prioritization, 
+making it particularly useful for environments where efficient resource utilization and job handling are critical.
 Kueue is optional, but highly recommended for production deployments.
 
 See https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version for details.
@@ -274,7 +423,7 @@ ivo://example.org/posix-mapper = https://example.host.com/posix-mapper/capabilit
 ...
 ```
 
-Create a `my-skaha-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](skaha/values.yaml).
+Create a `my-skaha-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/skaha/values.yaml).
 
 `my-skaha-local-values-file.yaml`
 ```yaml
@@ -367,6 +516,27 @@ deployment:
       # When set to 'true' this flag will enable GPU node scheduling.  Don't forget to declare any related GPU configurations, if appropriate, in the nodeAffinity below!
       # gpuEnabled: false
 
+      # Optionally set the node label selector to identify Kubernetes Worker Nodes.  This is used to accurately query for available
+      # resources from schedulable Nodes by eliminating, for example, Nodes that are only cordoned for Web APIs.
+      # Example:
+      #   nodeLabelSelector: "node-role.kubernetes.io/node-type=worker"
+      #
+      # Example (multiple labels ANDed):
+      #   nodeLabelSelector: "node-role.kubernetes.io/node-type=worker,environment=production"
+      #
+      #
+      # Example (multiple labels ORed):
+      #   nodeLabelSelector: "node-role.kubernetes.io/node-type in (worker,worker-gpu)"
+      nodeLabelSelector:
+
+      userStorage:
+        persistentVolumeClaimName: skaha-workload-cavern-pvc
+        nodeURIPrefix: "vos://canfar.net~src~cavern"
+        serviceURI: "ivo://canfar.net/src/cavern"
+        admin:
+          auth:
+            apiKey: "88shdj3en1rBuMVSllWVuuz190HJpF="
+
       # Set the YAML that will go into the "affinity.nodeAffinity" stanza for Pod Spec in User Sessions.  This can be used to enable GPU scheduling, for example,
       # or to control how and where User Session Pods are scheduled.  This can be potentially dangerous unless you know what you are doing.
       # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity
@@ -430,22 +600,26 @@ deployment:
   #
   # extraHosts: []
 
-# Set these labels appropriately to match your Persistent Volume labels.
-# The storage.service.spec can be anything that supports ACLs, such as CephFS or Local.
-# The CephFS Volume can be dynamically allocated here for the storage.service.spec:
-# Example:
-# storage:
-#   service:
-#     spec:
-#       cephfs:
-#         mons:
-#           ...
-# Default is a PersistentVolumeClaim to the Local Storage.
-storage:
-  service:
-    spec:
-      persistentVolumeClaim:
-        claimName: skaha-pvc # Match this label up with whatever was installed in the base install, or the desired PVC, or create dynamically provisioned storage.
+# Enable experimental feature flags
+experimentalFeatures:
+  enabled: true
+  sessionLimitRange:
+    enabled: true
+    rbac:
+      create: false
+    limitSpec:
+      max:  # maximum allowed requested
+        memory: "192Gi"
+        cpu: "16"
+        nvidia.com/gpu: "1"
+      default:  # actually refers to default limits
+        memory: "24Gi"
+        cpu: "4"
+        nvidia.com/gpu: "0"
+      defaultRequest:  # default requests
+        memory: "4Gi"
+        cpu: "1"
+        nvidia.com/gpu: "0"
 
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
@@ -454,13 +628,13 @@ secrets:
 ```
 
 ```bash
-helm install -n skaha-system --values my-skaha-local-values-file.yaml skaha science-platform/skaha
+helm -n skaha-system upgrade --install --values my-skaha-local-values-file.yaml skaha science-platform/skaha
 
 NAME: skaha
-LAST DEPLOYED: Thu Sep 28 07:31:10 2023
+LAST DEPLOYED: Thu Oct 31 02:01:10 2025
 NAMESPACE: skaha-system
 STATUS: deployed
-REVISION: 1
+REVISION: 8
 ```
 
 Test it.
@@ -487,7 +661,7 @@ ivo://example.org/skaha = https://example.host.com/skaha/capabilities
 ...
 ```
 
-Create a `my-science-portal-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](science-portal/values.yaml).
+Create a `my-science-portal-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/science-portal/values.yaml).
 
 `my-science-portal-local-values-file.yaml`
 ```yaml
@@ -587,183 +761,10 @@ deployment:
     # ca.crt: <base64 encoded ca.crt blob>
 ```
 
-### Cavern (User Storage API) install
-
-The Cavern API provides access to the User Storage which is shared between Skaha and all of the User Sessions.  A [Bearer token](#obtaining-a-bearer-token) is required when trying to read
-private access, or any writing.
-
-> [!NOTE]
-> The `/home` and `/projects` folders will be created if not present during install.  Do **not** include them with your configuration!
-
-Create a `my-cavern-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](cavern/values.yaml).
-
-`my-cavern-local-values-file.yaml`
-```yaml
-# Cavern web service deployment
-deployment:
-  hostname: example.org
-  cavern:
-    # How cavern identifies itself.  Required.
-    resourceID: "ivo://example.org/cavern"
-
-    # Set the Registry URL pointing to the desired registry.  Required
-    registryURL: "https://example.org/reg"
-
-    # How to find the POSIX Mapper API.  URI (ivo://) or URL (https://).  Required.
-    posixMapperResourceID: "ivo://example.org/posix-mapper"
-
-    # User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.
-    allocations:
-      # Required.  The default size, in GB, of an allocation.  This is used in the absence of the Quota VOSpace property.  Can be a floating point number.
-      # Provided value is 10 (10 GiB) by default.
-      # Example:
-      #   defaultSizeGB: 25.5
-      defaultSizeGB: 25
-
-    filesystem:
-      # persistent data directory in container
-      dataDir: # e.g. "/data"
-
-      # RELATIVE path to the node/file content that could be mounted in other containers
-      subPath: # e.g. "cavern"
-
-      # See https://github.com/opencadc/vos/tree/master/cavern for documentation.  For deployments using OpenID Connect,
-      # the rootOwner MUST be an object with the following properties set.
-      rootOwner:
-        # The adminUsername is required to be set whomever has admin access over the filesystem.dataDir above.
-        adminUsername:
-
-        # The username of the root owner.
-        username:
-
-        # The UID of the root owner.
-        uid:
-
-        # The GID of the root owner.
-        gid:
-
-    # The API keys object that will be permitted to perform administrative tasks.  These will be passed as authorization headers to the Cavern API.
-    # The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
-    # Format is <clientApplicationName>: <apiKeyToken>
-    # Example:
-    #   adminAPIKeys:
-    #     skaha: "token-value"
-    #     prepareData: "another-token-value"
-    adminAPIKeys:
-      skaha: "secret-for-skaha"
-
-    # Further UWS settings for the Tomcat Pool setup.
-    uws:
-      install: true
-      schema: uws
-      maxActive: 2
-
-    # Optional rename of the application from the default "cavern"
-    # applicationName: "cavern"
-
-    # The endpoint to serve this from.  Defaults to /cavern.  If the applicationName is changed, then this should match.
-    # Don't forget to update your registry entries!
-    #
-    # endpoint: "/cavern"
-
-    # Simple Class name of the QuotaPlugin to use.  This is used to request quota and folder size information
-    # from the underlying storage system.  Optional, defaults to NoQuotaPlugin.
-    #
-    # - For CephFS deployments: CephFSQuotaPlugin
-    # - Default: NoQuotaPlugin
-    #
-    # quotaPlugin: {NoQuotaPlugin | CephFSQuotaPlug}
-
-    # Optionally set the DEBUG port.
-    #
-    # Example:
-    # extraEnv:
-    # - name: CATALINA_OPTS
-    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
-    # - name: JAVA_OPTS
-    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
-    #
-    # extraEnv:
-
-    # Optionally mount a custom CA certificate
-    # Example:
-    # extraVolumeMounts:
-    # - mountPath: "/config/cacerts"
-    #   name: cacert-volume
-    #
-    # extraVolumeMounts:
-
-    # Create the CA certificate volume to be mounted in extraVolumeMounts
-    # Example:
-    # extraVolumes:
-    # - name: cacert-volume
-    #   secret:
-    #     defaultMode: 420
-    #     secretName: cavern-cacert-secret
-    #
-    # extraVolumes:
-
-    # Other data to be included in the main ConfigMap of this deployment.
-    # Of note, files that end in .key are special and base64 decoded.
-    #
-    # extraConfigData:
-
-    # Resources provided to the Cavern service.
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "500m"
-      limits:
-        memory: "1Gi"
-        cpu: "500m"
-
-    # Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Cavern.
-    # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
-    # Example:
-    nodeAffinity:
-      # Only allow Cavern to run on specific Nodes.
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: kubernetes.io/hostname
-            operator: In
-            values:
-            - my-special-api-host
-
-  # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
-  # deployment object, not the cavern one.
-  #
-  # These entries get added as hostAliases entries to the Deployment.
-  #
-  # Example:
-  # extraHosts:
-  #   - ip: 127.3.34.5
-  #     hostname: myhost.example.org
-  #
-  # extraHosts: []
-
-# secrets:
-  # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
-  # cavern-cacert-secret:
-  #   ca.crt: <base64 encoded CA crt>
-
-# Set these appropriately to match your Persistent Volume Claim labels.
-storage:
-  service:
-    spec:
-      # YAML for service mounted storage.
-      # Example is the persistentVolumeClaim below.  This should match whatever Skaha used.
-      # persistentVolumeClaim:
-      #   claimName: skaha-pvc
-
-# UWS Database
-postgresql:
-  install: true  # To run your own database, set this to false and override auth settings.
-```
 
 ### User Storage UI installation
 
-Create a `my-storage-ui-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](storage-ui/values.yaml).
+Create a `my-storage-ui-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/storage-ui/values.yaml).
 
 `my-storage-ui-local-values-file.yaml`
 ```yaml

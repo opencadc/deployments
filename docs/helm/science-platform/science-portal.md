@@ -1,4 +1,4 @@
-# Helm Chart for the Science Portal user interface
+# Science Portal Helm Chart
 
 See the [Deployment Guide](../README.md) for a better idea of the underlying APIs.
 

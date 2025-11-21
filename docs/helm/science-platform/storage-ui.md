@@ -1,4 +1,4 @@
-# Helm Chart for the User Storage user interface
+# Storage User Interface Helm Chart
 
 See the [Deployment Guide](../README.md) for a better idea of the underlying APIs.
 
