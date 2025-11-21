@@ -385,6 +385,8 @@ experimentalFeatures:
   # Example:
   # sessionLimitRange:
   #   enabled: true
+  #   rbac:
+  #     create: true
   #   limitSpec:
   #     max:
   #       memory: "96Gi"
@@ -399,6 +401,10 @@ experimentalFeatures:
   #       cpu: "1"
   sessionLimitRange:
     enabled: false
+    # Whether to create the RBAC Role and RoleBinding for the LimitRange.  Some organzations may not have the ability to create RBAC objects
+    # in the cluster, so setting this to false allows the LimitRange to be created without the RBAC objects, assuming they are created elsewhere.
+    rbac:
+      create: true
     limitSpec: {}
 
 secrets:
