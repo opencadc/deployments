@@ -4,7 +4,7 @@ This Helm chart deploys the POSIX Mapper application, which is designed to map P
 
 ## Prerequisites
 
-- Kubernetes 1.27+
+- Kubernetes 1.29+
 - Helm 3.0+
 - Deployed PostgreSQL database for application data storage (Sample installation instructions [provided below](#postgresql-database))
 
@@ -137,7 +137,6 @@ See the [values.yaml](values.yaml) file for a complete list of configuration opt
 | `deployment.posixMapper.gmsID` | Resource ID (URI) for the IVOA Group Management Service | `""` |
 | `deployment.posixMapper.minUID` | Minimum UID for POSIX Mapper operations.  High to avoid conflicts. | `10000` |
 | `deployment.posixMapper.minGID` | Minimum GID for POSIX Mapper operations.  High to avoid conflicts. | `900000` |
-| `deployment.posixMapper.registryURL` | URL for the IVOA registry containing service locations | `""` |
 | `deployment.posixMapper.nodeAffinity` | Kubernetes Node affinity for the POSIX Mapper API Pod | `{}` |
 | `deployment.posixMapper.extraPorts` | List of extra ports to expose in the POSIX Mapper service.  See the `values.yaml` file for examples. | `[]` |
 | `deployment.posixMapper.extraVolumeMounts` | List of extra volume mounts to be mounted in the POSIX Mapper deployment.  See the `values.yaml` file for examples. | `[]` |
@@ -145,7 +144,7 @@ See the [values.yaml](values.yaml) file for a complete list of configuration opt
 | `deployment.posixMapper.extraHosts` | List of extra hosts to be added to the POSIX Mapper deployment.  See the `values.yaml` file for examples. | `[]` |
 | `deployment.posixMapper.extraEnv` | List of extra environment variables to be set in the POSIX Mapper service.  See the `values.yaml` file for examples. | `[]` |
 | `deployment.posixMapper.resources` | Resource requests and limits for the POSIX Mapper API | `{}` |
-| `deployment.posixMapper.registryURL` | (list OR string) | `[]` IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
+| `deployment.posixMapper.registryURL` | (list OR string) IVOA Registry array of IVOA Registry locations or single IVOA Registry location | `[]` |
 | `postgresql.maxActive` | Maximum number of active connections to the PostgreSQL database | `8` |
 | `postgresql.url` | Required JDBC URL for the PostgreSQL database | `""` |
 | `postgresql.schema` | Required Database schema to use for the POSIX Mapper | `""` |

@@ -4,11 +4,9 @@
 
 ### Dependencies
 
-Kubernetes 1.27 and up are supported.
+Kubernetes 1.29 and up are supported.
 
 ### From source
-
-Installation depends on a working Kubernetes cluster version 1.23 or greater.
 
 The base install also installs the Traefik proxy, which is needed by the Ingress when the Science Platform services are installed.
 
@@ -25,10 +23,10 @@ $ helm install --dependency-update --values ./base/values.yaml base ./base
 This will create the core namespace (`skaha-system`), and install the Traefik proxy dependency.  Expected output:
 ```
 NAME: base
-LAST DEPLOYED: <Timestamp e.g. Fri Jun 30 10:39:04 2023>
+LAST DEPLOYED: <Timestamp e.g. Mon Jun 30 10:39:04 2025>
 NAMESPACE: skaha-system
 STATUS: deployed
-REVISION: 1
+REVISION: 4
 TEST SUITE: None
 ```
 
@@ -37,9 +35,9 @@ TEST SUITE: None
 The Helm repository contains the current stable version as well.
 
 ```sh
-$ helm repo add canfar-skaha-system https://images.canfar.net/chartrepo/skaha-system
+$ helm repo add canfar-skaha-system https://images.opencadc.org/chartrepo/platform
 $ helm repo update
-$ helm install --dependency-update --values canfar-skaha-system/base/values.yaml canfar-science-platform-base canfar-skaha-system/base
+$ helm -n traefik upgrade --install --dependency-update --values canfar-skaha-system/base/values.yaml canfar-science-platform-base canfar-skaha-system/base
 ```
 
 ## Verification
@@ -98,3 +96,14 @@ $ cat /vm-root/etc/resolv.conf
 nameserver 192.168.65.7
 nameserver 10.96.0.10
 ```
+
+## Configuration
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `kubernetesClusterDomain` | The DNS cluster domain | ` cluster.local` |
+| `skaha.namespace` | The Namespace for the APIs (UIs and APIs) | `skaha-system` |
+| `skahaWorkload.namespace` | The Namespace for the User Sessions | `skaha-workload` |
+| `secrets` | Any secrets to be created at install. | `{}` |
+| `traefik.install` | Whether to install Traefik | `false` |
+| `traefik` | Traefik configuration options | See [Traefik Chart](https://doc.traefik.io/traefik/getting-started/install-traefik/#use-the-helm-chart) |

@@ -24,7 +24,7 @@ helm repo update
 
 3. **Install the Skaha Chart**:
 ```bash
-helm install skaha-release skaha-repo/skaha
+helm -n skaha-system upgrade --install --values <your-skaha-values.yaml> skaha-release skaha-repo/skaha
 ```
 
 Replace `skaha-release` with your desired release name.
@@ -37,7 +37,7 @@ To customize the installation:
 - **Create a `values.yaml` File**: Define your custom configurations in this file.
 - **Install the Chart with Custom Values**:
 ```bash
-helm install skaha-release skaha-repo/skaha -f values.yaml
+helm -n skaha-system upgrade --install --values values.yaml skaha-release skaha-repo/skaha
 ```
 
 ### Supported Configuration Options
@@ -48,13 +48,15 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `kubernetesClusterDomain` | Kubernetes cluster domain used to find internal hosts | `cluster.local` |
 | `replicaCount` | Number of Skaha replicas to deploy | `1` |
 | `tolerations` | Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the `skaha` API | `[]` |
-| `skaha.namespace` | Namespace where Skaha is deployed | `skaha-system` |
 | `skahaWorkload.namespace` | Namespace where Skaha Workload (User Sesssion space) is deployed | `skaha-workload` |
+| `experimentalFeatures.enabled`    | Enable/Disable all feature flags for unreleased or experimental features. | `false`       |
+| `experimentalFeatures.sessionLimitRange.enabled` | Enable/Disable per-session `LimitRange` enforcement for User Sessions. | `false` |
+| `experimentalFeatures.sessionLimitRange.rbac.create` | Whether to create RBAC resources for session LimitRange enforcement. | `false` |
+| `experimentalFeatures.sessionLimitRange.limitSpec` | List of resource limits to enforce in User Sessions. See [Kubernetes LimitRange](https://kubernetes.io/docs/concepts/policy/limit-range/) for details. | `{}` |
 | `deployment.hostname` | Hostname for the Skaha deployment | `""` |
 | `deployment.skaha.image` | Skaha Docker image | `images.opencadc.org/platform/skaha:<current release version>` |
 | `deployment.skaha.imagePullPolicy` | Image pull policy for the Skaha container | `IfNotPresent` |
 | `deployment.skaha.imageCache.refreshSchedule` | Schedule for refreshing the Skaha image cache in `cron` format | `@daily` |
-| `deployment.skaha.skahaTld` | Top-level directory for Skaha | `/cavern` |
 | `deployment.skaha.defaultQuotaGB` | Default quota for Skaha in GB.  Used when allocating first-time users into the system. | `10` |
 | `deployment.skaha.registryHosts` | Space delimited list of Docker (Harbor) registry hosts | `images.canfar.net` |
 | `deployment.skaha.usersGroup` | GMS style Group URI for Skaha users to belong to | `""` |
@@ -77,7 +79,7 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `deployment.skaha.serviceAccountName` | Name of the Service Account for the Skaha API Pod | `"skaha"` |
 | `deployment.skaha.identityManagerClass` | Java Class name for the [IdentityManager](https://github.com/opencadc/core/blob/main/cadc-util/src/main/java/ca/nrc/cadc/auth/IdentityManager.java) to use.  Defaults to [`org.opencadc.auth.StandardIdentityManager`](https://github.com/opencadc/ac/blob/main/cadc-gms/src/main/java/org/opencadc/auth/StandardIdentityManager.java) for use with bearer tokens (OIDC) | `"org.opencadc.auth.StandardIdentityManager"` |
 | `deployment.skaha.apiVersion` | API version used to match the Ingress path (e.g. `/skaha/v0`) | `"v0"` |
-| `deployment.skaha.registryURL` | (list OR string) | `[]` IVOA Registry array of IVOA Registry locations or single IVOA Registry location |
+| `deployment.skaha.registryURL` | (list OR string) IVOA Registry array of IVOA Registry locations or single IVOA Registry location | `[]` |
 | `deployment.skaha.sessions.expirySeconds` | Expiry time, in seconds, for interactive sessions.  Defaults to four (4) days. | `"345600"` |
 | `deployment.skaha.sessions.imagePullPolicy` | Image pull policy for all User Sessions. | `"Always"` |
 | `deployment.skaha.sessions.maxCount` | Maximum number of interactive sessions per user.  Defaults to three (3). | `"3"` |
@@ -90,6 +92,15 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `deployment.skaha.sessions.kueue.<typename>.priorityClass` | Name of the `priorityClass` for the given type to allow some pre-emption | `""` |
 | `deployment.skaha.sessions.hostname` | Hostname to access user sessions on.  Defaults to `deployment.hostname` | `deployment.hostname` |
 | `deployment.skaha.sessions.tls` | TLS configuration for the User Sessions IngressRoute. | `{}` |
+| `deployment.skaha.sessions.userStorage.topLevelDirectory`         | **Absolute** mount point where `/home` and `/projects` directories exist.          | `"/cavern"`                   |
+| `deployment.skaha.sessions.userStorage.homeDirectory`             | **Relative** path under `topLevelDirectory` used for user home directories.        | `"home"`                      |
+| `deployment.skaha.sessions.userStorage.projectsDirectory`         | **Relative** path where project/shared directories exist (used in CARTA sessions). | `"projects"`                  |
+| `deployment.skaha.sessions.userStorage.persistentVolumeClaimName` | PVC name used for user storage mounting inside sessions.                           | `"skaha-workload-cavern-pvc"` |
+| `deployment.skaha.sessions.userStorage.serviceURI`                | VOSpace service URI (ivo://). Required when enabled.                               | *None*                        |
+| `deployment.skaha.sessions.userStorage.nodeURIPrefix`             | VOSpace Node URI prefix (vos://).                                                  | *None*                        |
+| `deployment.skaha.sessions.userStorage.admin`                     | Admin credentials block used to create allocations in Cavern.                      | *N/A (object)*                |
+| `deployment.skaha.sessions.userStorage.admin.auth.apiKey`            | API key used between Skaha and Cavern for home directory (allocation) creation.                         | *None*  |
+| `deployment.skaha.sessions.userStorage.admin.auth.certificateSecret` | Optional Kubernetes Secret containing PEM client certificate for storage admin operations.  Only used by the CADC. | *None*  |
 | `deployment.skaha.sessions.extraVolumes` | List of extra `volume` and `volumeMount` to be mounted in User Sessions.  See the `values.yaml` file for examples. | `[]` |
 | `deployment.skaha.sessions.gpuEnabled` | Enable GPU support for User Sessions.  Defaults to `false` | `false` |
 | `deployment.skaha.sessions.nodeAffinity` | Kubernetes Node affinity for the Skaha User Session Pods | `{}` |
@@ -97,7 +108,6 @@ The following table lists the configurable parameters for the Skaha Helm chart:
 | `secrets` | List of secrets to be mounted in the Skaha API defined as objects (i.e `secretName: {cert.pem: xxx}`) | `[]` |
 | `storage.service.spec` | Storage class specification for the Skaha API.  Can be `persistentVolumeClaim` or a dynamic instantiation like `hostPath`.  See [Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/). | `{}` |
 | `redis` | [Redis sub-chart configuration](https://github.com/bitnami/charts/tree/main/bitnami/redis) for Skaha's caching of Harbor Docker image metadata. | See [`values.yaml`](https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml) for available configuration values. |
-| `kueue` | [Kueue sub-chart configuration](https://github.com/kubernetes-sigs/kueue/tree/main/charts/kueue) for Skaha's Kueue integration | See [`values.yaml`](https://github.com/kubernetes-sigs/kueue/tree/main/charts/kueue/values.yaml) for available configuration values. |
 
 #### Notes on tolerations and nodeAffinity
 
@@ -126,8 +136,8 @@ https://github.com/opencadc/deployments/tree/main/configs/kueue/kueuer
 
 Then run:
 ```bash
-git clone https://github.com/opencadc/deployments/tree/main/configs/kueue/kueuer
-cd kueuer
+git clone https://github.com/opencadc/deployments.git
+cd deployments/configs/kueue/kueuer
 # if not using the default ~/.kube/config
 export KUBECONFIG=/home/user/.kube/my-config
 
@@ -142,7 +152,7 @@ uv run kr cluster resources -f allocatable -s 0.8
 To remove the Skaha application from your cluster:
 
 ```bash
-helm uninstall skaha-release
+helm -n skaha-system uninstall skaha-release
 ```
 
 This command will delete all resources associated with the Skaha release.

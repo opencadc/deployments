@@ -6,17 +6,17 @@ Welcome to the operational documentation for deploying and maintaining the CANFA
 
 This documentation is designed for **platform operators, DevOps engineers, and infrastructure maintainers** who deploy, configure, and manage CANFAR services.
 
-<div class="grid cards" markdown>
+<div class="grid cards grid-3" markdown>
 
-- :material-kubernetes: **Helm Charts**
+- <a href="helm">:material-kubernetes: **Helm Charts** --></a>
 
     Reusable deployment templates for CANFAR services with configurable values and environment overlays.
 
-- :material-rocket-launch: **Release Automation**
+- <a href="operations/ci-cd">:material-rocket-launch: **Release Automation** --></a>
 
     Automated CI/CD pipelines using GitHub Actions and Release Please for Helm chart versioning.
 
-- :material-file-document: **Operations Runbooks**
+- <a href="operations/release-process">:material-file-document: **Operations Runbooks** --></a>
 
     Step-by-step procedures for releases, rollbacks, monitoring, and troubleshooting production deployments.
 

@@ -3,10 +3,6 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
-# It's best to keep these set as such, unless you're willing to change these in several places.
-skaha:
-  namespace: skaha-system
-
 # @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
 # securityContext: {}
 #
@@ -18,7 +14,7 @@ skaha:
 # @param applicationName - The name of the application.  This will rename the underlying WAR file, thus changing the endpoint.  Defaults to storage.
 # applicationName: storage
 
-# POSIX Mapper web service deployment
+# Storage UI web service deployment
 deployment:
   hostname: example.host.com    # Change this!
   storageUI:
@@ -43,8 +39,8 @@ deployment:
         memory: "500Mi"
         cpu: "500m"
       limits:
-        memory: "850Mi"
-        cpu: "500m"
+        memory: "1Gi"
+        cpu: "750m"
 
     # Groups that can alter logging.  Empty array means nobody can alter it.
     # loggingGroups: []

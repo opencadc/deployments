@@ -872,6 +872,10 @@ deployment:
     # ca.crt: <base64 encoded ca.crt blob>
 ```
 
+## Browser Authentication
+
+Encrypted cookies are used to gain access to a Bearer Token for API access.  These cookies are managed by the browser based applications (Storage UI and Science Portal).  See the [Browser Authentication](./browser-authentication.md) documentation for details.
+
 ## Obtaining a Bearer Token
 
 See the [JIRA Confluence page](https://confluence.skatelescope.org/display/SRCSC/RED-10+Using+oidc-agent+to+authenticate+to+OpenCADC+services) on obtaining a Bearer Token.
