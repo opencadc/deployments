@@ -1,24 +1,11 @@
 # Deployment Guide
 
-- [Dependencies](#dependencies)
-- [Quick Start](#quick-start)
-  - [Base install](#base-install)
-  - [Persistent Volumes](#persistent-volumes-and-persistent-volume-claims)
-  - [POSIX Mapper install](#posix-mapper-install)
-  - [Kueue install](#kueue-install)
-  - [Skaha install](#skaha-install)
-  - [Science Portal install](#science-portal-user-interface-install)
-  - [Cavern install](#cavern-user-storage-api-install)
-  - [Storage User Interface install](#user-storage-ui-installation)
-- [Helm](#helm)
-- [Obtaining a bearer token](#obtaining-a-bearer-token)
-- [Flow](#flow)
-- [Structure](#structure)
+[TOC]
 
 ## Dependencies
 
 - An existing Kubernetes cluster.
-- An [Service Registry deployment](https://github.com/opencadc/reg/tree/master/reg)
+- An [IVOA Service Registry deployment](https://github.com/opencadc/reg/tree/master/reg)
 
 ## Quick Start
 
@@ -27,28 +14,28 @@ helm repo add science-platform https://images.opencadc.org/chartrepo/platform
 helm repo add science-platform-client https://images.opencadc.org/chartrepo/client
 helm repo update
 
-helm install --values my-base-local-values-file.yaml base science-platform/base
-helm install -n skaha-system --values my-posix-mapper-local-values-file.yaml posixmapper science-platform/posixmapper
-helm install -n skaha-system --values my-skaha-local-values-file.yaml skaha science-platform/skaha
-helm install -n skaha-system --values my-scienceportal-local-values-file.yaml scienceportal science-platform/scienceportal
-helm install -n skaha-system --values my-cavern-local-values-file.yaml cavern science-platform/cavern
-helm install -n skaha-system --values my-storage-ui-local-values-file.yaml storage-ui science-platform-client/storageui
-```
-
-## Helm
-
-Add the Helm repository:
-
-```bash
-helm repo add science-platform https://images.opencadc.org/chartrepo/platform
-helm repo update
+helm upgrade --install -n traefik --create-namespace --values my-base-local-values-file.yaml base science-platform/base
+helm upgrade --install -n skaha-system --values my-posix-mapper-local-values-file.yaml posix-mapper science-platform/posixmapper
+helm upgrade --install -n skaha-system --values my-cavern-local-values-file.yaml cavern science-platform/cavern
+helm upgrade --install -n skaha-system --values my-skaha-local-values-file.yaml skaha science-platform/skaha
+helm upgrade --install -n skaha-system --values my-scienceportal-local-values-file.yaml science-portal science-platform/scienceportal
+helm upgrade --install -n skaha-system --values my-storage-ui-local-values-file.yaml storage-ui science-platform-client/storageui
 ```
 
 ### Base install
 
-The [Base](base) install will create ServiceAccount, Role, Namespace, and RBAC objects needed to place the Skaha service.
+The [Base](base) install will create ServiceAccount, Role, Namespace, and RBAC objects needed to deploy the Skaha service, as such it requires cluster-admin privileges.
 
-Create a `my-base-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](base/values.yaml).  Mainly the
+
+!!! important "Important"
+
+    :vertical_traffic_light: :warning:
+
+    The `base` chart itself is optional, but the objects it creates are required for the other services to operate correctly.  If you have already created the necessary Namespaces and RBAC objects, or if
+    they have been created for you by your Cluster Administrator, you can skip this step.
+
+
+Create a `my-base-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/base/values.yaml).  Mainly the
 Traefik Default Server certificate (optional if needed):
 
 `my-base-local-values-file.yaml`
@@ -69,27 +56,27 @@ traefik:
 ```
 
 ```bash
-helm install --values my-base-local-values-file.yaml base science-platform/base
+helm upgrade --install -n traefik --create-namespace --values my-base-local-values-file.yaml base science-platform/base
 
 NAME: base
-LAST DEPLOYED: Thu Sep 14 07:28:45 2025
-NAMESPACE: default
+LAST DEPLOYED: Thu Nov 11 07:28:45 2025
+NAMESPACE: traefik
 STATUS: deployed
-REVISION: 1
+REVISION: 4
 ```
 
 ### Persistent Volumes and Persistent Volume Claims
 
-**Note**
-The `base` MUST be installed first as it creates the necessary Namespaces for the Persistent Volume Claims!
+!!! important "Important"
 
-**Important**
+    The `base` Helm Chart **must** be installed first as it creates the necessary Namespaces for the Persistent Volume Claims!
+
 There are two (2) Persistent Volume Claims that are used in the system, due to the fact that there are two (2) Namespaces (`skaha-system` and `skaha-workload`).  These PVCs, while
-having potentially different configurations, **SHOULD** point to the same storage.  For example, if two `hostPath` PVCs are created, the `hostPath.path` **MUST** point to the same
+having potentially different configurations, **must** point to the same storage.  For example, if two `hostPath` PVCs are created, the `hostPath.path` **must** point to the same
 folder in order to have shared content between the Cavern Service (`cavern`) and the User Sessions (Notebooks, CARTA, etc.).
 
 It is expected that the deployer, or an Administrator, will create the necessary Persistent Volumes (if needed), and the required Persistent Volume Claims at
-this point.  There are sample [Local Storage](https://kubernetes.io/docs/concepts/storage/volumes/#local) Persistent Volume examples in the `base/volumes` folder.
+this point.  There are sample [Local Storage](https://kubernetes.io/docs/concepts/storage/volumes/#local) [Persistent Volume examples](../../../helm/applications/base/volumes) in the `base/volumes` folder.
 
 Two (2) Persistent Volume Claims are required.  While both point to the same underlying storage, they are in different Namespaces.  This leads to somewhat duplicated effort, but it is necessary to ensure that both the `skaha-system` and `skaha-workload` namespaces have access to the required storage resources.
 See this [short explanation](https://youtu.be/NSO0HioWLiI) for more information.
@@ -101,7 +88,7 @@ The [POSIX Mapper Service](posix-mapper) is required to provide a UID to Usernam
 
 This service is required to be installed _before_ the Skaha service.
 
-Create a `my-posix-mapper-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](posix-mapper/values.yaml).
+Create a `my-posix-mapper-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/posix-mapper/values.yaml).
 
 `my-posix-mapper-local-values-file.yaml`
 ```yaml
@@ -163,21 +150,13 @@ deployment:
   #
   # extraHosts: []
 
-# Declare the storage for the skaha service to use.
-storage:
-  service:
-    spec:
-      persistentVolumeClaim:
-        claimName: skaha-pvc # Match this label up with whatever was installed in the base install, or the desired PVC, or create dynamically provisioned storage.
-
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
 #   posix-manager-cacert-secret:
 #     ca.crt: <base64 encoded ca crt>
 
 # These values are preset in the catalina.properties, and this default database only exists beside this service.
-# It's usually safe to leave these as-is.
-# postgresql:
+postgresql:
 #   maxActive: 4
 #   schema: mapping
 #   url: jdbc:postgresql://db.host:5432/mapping
@@ -187,10 +166,10 @@ secrets:
 ```
 
 ```bash
-helm install -n skaha-system  --values my-posix-mapper-local-values-file.yaml posixmapper science-platform/posixmapper
+helm -n skaha-system upgrade --install  --values my-posix-mapper-local-values-file.yaml posix-mapper science-platform/posixmapper
 
-NAME: posixmapper
-LAST DEPLOYED: Thu Sep 28 07:28:45 2023
+NAME: posix-mapper
+LAST DEPLOYED: Thu Oct 28 07:28:45 2025
 NAMESPACE: skaha-system
 STATUS: deployed
 REVISION: 1
@@ -204,390 +183,7 @@ curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com
 []%
 
 curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" "https://example.host.com/posix-mapper/uid?user=mynewuser"
-mynewuser:x:1000:1000:::
-```
-
-### Kueue install
-
-Kueue is a Kubernetes-native job queuing and scheduling system that enhances the management of workloads in a Kubernetes cluster. It provides advanced features for job scheduling, resource management, and workload prioritization, making it particularly useful for environments where efficient resource utilization and job handling are critical.
-Kueue is optional, but highly recommended for production deployments.
-
-See https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version for details.
-
-#### Helm
-
-Install CRDs and the various components:
-```bash
-helm -n kueue-system install kueue oci://registry.k8s.io/kueue/charts/kueue --create-namespace
-```
-
-#### ClusterQueue
-
-A `ClusterQueue` is a global resource in Kueue that defines a set of resources and policies for managing workloads across the entire Kubernetes cluster. It serves as a template for creating and managing `LocalQueues`, which are specific to namespaces.
-
-An example `ClusterQueue` has been added to the [Skaha Example Kueue ClusterQueue](../skaha/kueue/examples/clusterQueue.config.yaml) file.  Adjust as needed.
-
-Create the `ClusterQueue`, with the associated `ResourceFlavor` and `WorkloadPriorityClass` objects:
-```bash
-cp ../skaha/kueue/examples/clusterQueue.config.yaml ./
-# Edit as needed.
-
-kubectl apply -f ./clusterQueue.config.yaml
-```
-
-#### LocalQueue
-A `LocalQueue` is a namespace-specific resource in Kueue that allows for the management of workloads within a particular Kubernetes namespace. It provides a way to define how jobs are queued, prioritized, and scheduled based on the policies set in the associated `ClusterQueue`.
-
-An example `LocalQueue` has been added to the [Skaha Example Kueue LocalQueue](../skaha/kueue/examples/localQueue.config.yaml) file.  Adjust as needed, but it needs to exist in the workload namespace (`skaha-workload` by default).
-
-Create the `LocalQueue` in the `skaha-workload` namespace:
-```bash
-cp ../skaha/kueue/examples/localQueue.config.yaml ./
-# Edit as needed.
-
-kubectl apply -f ./localQueue.config.yaml
-```
-
-#### RBAC
-The Science Platform (`skaha`) requires certain RBAC permissions to operate correctly within the Kubernetes cluster. These permissions allow Kueue to manage resources, schedule jobs, and interact with other components in the cluster.
-
-An example `RBAC` configuration has been added to the [Skaha Example Kueue RBAC](../skaha/kueue/examples/rbac.yaml) file.  Adjust as needed.
-The example files contains rules to allow both the `skaha` system to query for the existence of any configured LocalQueues to ensure integrity, as well
-as permitting Jobs to be scheduled into it from the Workload Namespace.
-
-Create the `RBAC` objects in the `skaha-system` namespace:
-```bash
-cp ../skaha/kueue/examples/rbac.yaml ./
-kubectl apply -f ./rbac.yaml
-```
-
-### Skaha install
-
-The Skaha service will manage User Sessions.  It relies on the POSIX Mapper being deployed, and available to be found
-via the IVOA Registry:
-
-`/reg/resource-caps`
-```
-...
-# Ensure the hostname matches the deployment hostname.
-ivo://example.org/posix-mapper = https://example.host.com/posix-mapper/capabilities
-...
-```
-
-Create a `my-skaha-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](skaha/values.yaml).
-
-`my-skaha-local-values-file.yaml`
-```yaml
-# Skaha web service deployment
-deployment:
-  hostname: example.org
-  skaha:
-    # Optionally set the DEBUG port.
-    # extraEnv:
-    # - name: CATALINA_OPTS
-    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
-    # - name: JAVA_OPTS
-    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
-
-    # Uncomment to debug.  Requires options above as well as service port exposure below.
-    # extraPorts:
-    # - containerPort: 5555
-    #   protocol: TCP
-
-    # Set the top-level-directory name that gets mounted at the root.
-    # skahaTld: "/cavern"
-
-    defaultQuotaGB: "10"
-
-    # Space delimited list of allowed Image Registry hosts.  These hosts should match the hosts in the User Session images.
-    registryHosts: "images.canfar.net"
-
-    # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
-    usersGroup: "ivo://example.org/gms?skaha-platform-users"
-
-    # The IVOA GMS Group URI to verify images without contacting Harbor.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
-    adminsGroup: "ivo://example.org/gms?skaha-admin-users"
-
-    # The IVOA GMS Group URI to verify users against for permission to run headless jobs.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
-    headlessGroup: "ivo://example.org/gms?skaha-headless-users"
-
-    # The IVOA GMS Group URI to verify users against that have priority for their headless jobs.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
-    headlessPriorityGroup: "ivo://example.org/gms?skaha-priority-headless-users"
-
-    # Class name to set for priority headless jobs.
-    headlessPriorityClass: "uber-user-vip"
-
-    # Array of GMS Group URIs allowed to set the logging level.  If none set, then nobody can change the log level.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2 for GMS Group URIs
-    # See https://github.com/opencadc/core/tree/main/cadc-log for Logging control
-    loggingGroups:
-      - "ivo://example.org/gms?skaha-logging-admin-users"
-
-    # The Resource ID (URI) of the Service that contains the Posix Mapping information
-    posixMapperResourceID: "ivo://example.org/posix-mapper"
-
-    # URI or URL of the OIDC (IAM) server.  Used to validate incoming tokens.
-    oidcURI: https://iam.example.org/
-
-    # The Resource ID (URI) of the GMS Service.
-    gmsID: ivo://example.org/gms
-
-    # The absolute URL of the IVOA Registry where services are registered
-    registryURL: https://example.org/reg
-
-    # Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Skaha itself.
-    # Note the different indentation level compared to the sessions.nodeAffinity.
-    # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
-    # See the [Sample Skaha Values file](skaha/sample-local-values.yaml).
-    # Example:
-    nodeAffinity:
-      # Only allow Skaha to run on specific Nodes.
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: kubernetes.io/hostname
-            operator: In
-            values:
-            - my-special-node-host
-
-    # Settings for User Sessions.  Sensible defaults supplied, but can be overridden.
-    # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
-    sessions:
-      expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
-      maxCount: "3"  # Max number of sessions per user.
-      minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
-      maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
-
-      # Optionally setup a separate host for User Sessions for Skaha to redirect to.  The HTTPS scheme is assumed.  Defaults to the Skaha hostname (.Values.deployment.hostname).
-      # Example:
-      #   hostname: myhost.example.org
-      hostname: sessions.example.org
-
-      # When set to 'true' this flag will enable GPU node scheduling.  Don't forget to declare any related GPU configurations, if appropriate, in the nodeAffinity below!
-      # gpuEnabled: false
-
-      # Set the YAML that will go into the "affinity.nodeAffinity" stanza for Pod Spec in User Sessions.  This can be used to enable GPU scheduling, for example,
-      # or to control how and where User Session Pods are scheduled.  This can be potentially dangerous unless you know what you are doing.
-      # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity
-      # nodeAffinity: {}
-
-      # Mount CVMFS from the Node's mounted path into all User Sessions.
-      extraVolumes:
-      - name: cvmfs-mount
-        volume:
-          type: HOST_PATH     # HOST_PATH is for host path
-          hostPath: "/cvmfs"  # Path on the Node to look for a source folder
-          hostPathType: Directory
-        volumeMount:
-          mountPath: "/cvmfs"   # Path to mount on the User Sesssion Pod.
-          readOnly: false
-          mountPropagation: HostToContainer
-
-      # Kueue configurations for User Sessions
-      kueue:
-        default:
-          # Ensure this name matches whatever was created as the LocalQueue in the workload namespace.
-          queueName: canfar-science-platform-local-queue
-          priorityClass: low
-
-    # Optionally mount a custom CA certificate as an extra mount in Skaha (*not* user sessions)
-    # extraVolumeMounts:
-    # - mountPath: "/config/cacerts"
-    #   name: cacert-volume
-
-    # Create the CA certificate volume to be mounted in extraVolumeMounts
-    # extraVolumes:
-    # - name: cacert-volume
-    #   secret:
-    #     defaultMode: 420
-    #     secretName: skaha-cacert-secret
-
-    # Other data to be included in the main ConfigMap of this deployment.
-    # Of note, files that end in .key are special and base64 decoded.
-    #
-    # extraConfigData:
-
-    # Resources provided to the Skaha service.
-    # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "500m"
-      limits:
-        memory: "1500Mi"
-        cpu: "750m"
-
-  # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
-  # deployment object, not the skaha one.
-  #
-  # These entries get added as hostAliases entries to the Deployment.
-  #
-  # Example:
-  # extraHosts:
-  #   - ip: 127.3.34.5
-  #     hostname: myhost.example.org
-  #
-  # extraHosts: []
-
-# Set these labels appropriately to match your Persistent Volume labels.
-# The storage.service.spec can be anything that supports ACLs, such as CephFS or Local.
-# The CephFS Volume can be dynamically allocated here for the storage.service.spec:
-# Example:
-# storage:
-#   service:
-#     spec:
-#       cephfs:
-#         mons:
-#           ...
-# Default is a PersistentVolumeClaim to the Local Storage.
-storage:
-  service:
-    spec:
-      persistentVolumeClaim:
-        claimName: skaha-pvc # Match this label up with whatever was installed in the base install, or the desired PVC, or create dynamically provisioned storage.
-
-secrets:
-  # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
-#   skaha-cacert-secret:
-#     ca.crt: <base64 encoded ca crt>
-```
-
-```bash
-helm install -n skaha-system --values my-skaha-local-values-file.yaml skaha science-platform/skaha
-
-NAME: skaha
-LAST DEPLOYED: Thu Sep 28 07:31:10 2023
-NAMESPACE: skaha-system
-STATUS: deployed
-REVISION: 1
-```
-
-Test it.
-```bash
-# See below for tokens
-export SKA_TOKEN=...
-curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com/skaha/v1/session
-[]%
-
-# xxxxxx is the returned session ID.
-curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" -d "ram=1" -d "cores=1" -d "image=images.canfar.net/canucs/canucs:1.2.5" -d "name=myjupyternotebook" "https://example.host.com/skaha/v1/session"
-```
-
-### Science Portal User Interface install
-
-The Science Portal service will manage User Sessions.  It relies on the Skaha service being deployed, and available to be found
-via the IVOA Registry:
-
-`/reg/resource-caps`
-```
-...
-# Ensure the hostname matches the deployment hostname.
-ivo://example.org/skaha = https://example.host.com/skaha/capabilities
-...
-```
-
-Create a `my-science-portal-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](science-portal/values.yaml).
-
-`my-science-portal-local-values-file.yaml`
-```yaml
-deployment:
-  hostname: example.org
-  sciencePortal:
-    # The Resource ID of the Service that contains the URL of the Skaha service in the IVOA Registry
-    skahaResourceID: ivo://example.org/skaha
-
-    # OIDC (IAM) server configuration.  These are required
-    # oidc:
-    #
-    # Location of the OpenID Provider (OIdP), and where users will login
-    #   uri: https://iam.example.org/
-
-      # The Client ID as listed on the OIdP.  Create one at the uri above.
-    #   clientID: my-client-id
-
-      # The Client Secret, which should be generated by the OIdP.
-    #   clientSecret: my-client-secret
-
-      # Where the OIdP should send the User after successful authentication.  This is also known as the redirect_uri in OpenID.
-    #   redirectURI: https://example.com/science-portal/oidc-callback
-
-      # Where to redirect to after the redirectURI callback has completed.  This will almost always be the URL to the /science-portal main page (https://example.com/science-portal).
-    #   callbackURI: https://example.com/science-portal/
-
-      # The standard OpenID scopes for token requests.  This is required, and if using the SKAO IAM, can be left as-is.
-    #   scope: "openid profile offline_access"
-
-    # Optionally mount a custom CA certificate
-    # extraVolumeMounts:
-    # - mountPath: "/config/cacerts"
-    #   name: cacert-volume
-
-    # Create the CA certificate volume to be mounted in extraVolumeMounts
-    # extraVolumes:
-    # - name: cacert-volume
-    #   secret:
-    #     defaultMode: 420
-    #     secretName: science-portal-cacert-secret
-
-    # The theme name for styling.
-    # src: The SRCNet theme
-    # canfar: The CANFAR theme for internal CADC deployment
-    # themeName: {src | canfar}
-
-    # Labels on the tabs
-    # Default:
-    # tabLabels:
-    #  - Public
-    #  - Advanced
-    # tabLabels: []
-
-    # Other data to be included in the main ConfigMap of this deployment.
-    # Of note, files that end in .key are special and base64 decoded.
-    #
-    # extraConfigData:
-
-    # Resources provided to the Science Portal service.
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "500m"
-      limits:
-        memory: "1500Mi"
-        cpu: "750m"
-
-    # Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Science Portal itself.
-    # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
-    # Example:
-    nodeAffinity:
-      # Only allow Science Portal to run on specific Nodes.
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: kubernetes.io/hostname
-            operator: In
-            values:
-            - my-special-ui-host
-
-  # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
-  # deployment object, not the sciencePortal one.
-  #
-  # These entries get added as hostAliases entries to the Deployment.
-  #
-  # Example:
-  # extraHosts:
-  #   - ip: 127.3.34.5
-  #     hostname: myhost.example.org
-  #
-  # extraHosts: []
-
-# secrets:
-  # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
-  # science-portal-cacert-secret:
-    # ca.crt: <base64 encoded ca.crt blob>
+mynewuser:x:10000:10000:::
 ```
 
 ### Cavern (User Storage API) install
@@ -595,10 +191,7 @@ deployment:
 The Cavern API provides access to the User Storage which is shared between Skaha and all of the User Sessions.  A [Bearer token](#obtaining-a-bearer-token) is required when trying to read
 private access, or any writing.
 
-> [!NOTE]
-> The `/home` and `/projects` folders will be created if not present during install.  Do **not** include them with your configuration!
-
-Create a `my-cavern-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](cavern/values.yaml).
+Create a `my-cavern-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/cavern/values.yaml).
 
 `my-cavern-local-values-file.yaml`
 ```yaml
@@ -653,13 +246,15 @@ deployment:
     #     skaha: "token-value"
     #     prepareData: "another-token-value"
     adminAPIKeys:
-      skaha: "secret-for-skaha"
+      prepareData: "32fjd93jfn93n3nFjsl293jfn93jf="
+      skaha: "88shdj3en1rBuMVSllWVuuz190HJpF="
 
-    # Further UWS settings for the Tomcat Pool setup.
+    # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set the uws.db.url property, with authentication.
     uws:
-      install: true
-      schema: uws
-      maxActive: 2
+      db:
+        install: true
+        schema: uws
+        maxActive: 2
 
     # Optional rename of the application from the default "cavern"
     # applicationName: "cavern"
@@ -758,15 +353,423 @@ storage:
       # Example is the persistentVolumeClaim below.  This should match whatever Skaha used.
       # persistentVolumeClaim:
       #   claimName: skaha-pvc
-
-# UWS Database
-postgresql:
-  install: true  # To run your own database, set this to false and override auth settings.
 ```
+
+### Kueue install
+
+Kueue is a Kubernetes-native job queuing and scheduling system that enhances the management of workloads in a Kubernetes cluster. It provides advanced features for job scheduling, resource management, and workload prioritization, 
+making it particularly useful for environments where efficient resource utilization and job handling are critical.
+Kueue is optional, but highly recommended for production deployments.
+
+See https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version for details.
+
+#### Helm
+
+Install CRDs and the various components:
+```bash
+helm -n kueue-system install kueue oci://registry.k8s.io/kueue/charts/kueue --create-namespace
+```
+
+#### ClusterQueue
+
+A `ClusterQueue` is a global resource in Kueue that defines a set of resources and policies for managing workloads across the entire Kubernetes cluster. It serves as a template for creating and managing `LocalQueues`, which are specific to namespaces.
+
+An example `ClusterQueue` has been added to the [Skaha Example Kueue ClusterQueue](../skaha/kueue/examples/clusterQueue.config.yaml) file.  Adjust as needed.
+
+Create the `ClusterQueue`, with the associated `ResourceFlavor` and `WorkloadPriorityClass` objects:
+```bash
+cp ../skaha/kueue/examples/clusterQueue.config.yaml ./
+# Edit as needed.
+
+kubectl apply -f ./clusterQueue.config.yaml
+```
+
+#### LocalQueue
+A `LocalQueue` is a namespace-specific resource in Kueue that allows for the management of workloads within a particular Kubernetes namespace. It provides a way to define how jobs are queued, prioritized, and scheduled based on the policies set in the associated `ClusterQueue`.
+
+An example `LocalQueue` has been added to the [Skaha Example Kueue LocalQueue](../skaha/kueue/examples/localQueue.config.yaml) file.  Adjust as needed, but it needs to exist in the workload namespace (`skaha-workload` by default).
+
+Create the `LocalQueue` in the `skaha-workload` namespace:
+```bash
+cp ../skaha/kueue/examples/localQueue.config.yaml ./
+# Edit as needed.
+
+kubectl apply -f ./localQueue.config.yaml
+```
+
+#### RBAC
+The Science Platform (`skaha`) requires certain RBAC permissions to operate correctly within the Kubernetes cluster. These permissions allow Kueue to manage resources, schedule jobs, and interact with other components in the cluster.
+
+An example `RBAC` configuration has been added to the [Skaha Example Kueue RBAC](../skaha/kueue/examples/rbac.yaml) file.  Adjust as needed.
+The example files contains rules to allow both the `skaha` system to query for the existence of any configured LocalQueues to ensure integrity, as well
+as permitting Jobs to be scheduled into it from the Workload Namespace.
+
+Create the `RBAC` objects in the `skaha-system` namespace:
+```bash
+cp ../skaha/kueue/examples/rbac.yaml ./
+kubectl apply -f ./rbac.yaml
+```
+
+### Skaha install
+
+The Skaha service will manage User Sessions.  It relies on the POSIX Mapper being deployed, and available to be found
+via the IVOA Registry:
+
+`/reg/resource-caps`
+```
+...
+# Ensure the hostname matches the deployment hostname.
+ivo://example.org/posix-mapper = https://example.host.com/posix-mapper/capabilities
+...
+```
+
+Create a `my-skaha-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/skaha/values.yaml).
+
+`my-skaha-local-values-file.yaml`
+```yaml
+# Skaha web service deployment
+deployment:
+  hostname: example.org
+  skaha:
+    # Optionally set the DEBUG port.
+    # extraEnv:
+    # - name: CATALINA_OPTS
+    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
+    # - name: JAVA_OPTS
+    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
+
+    # Uncomment to debug.  Requires options above as well as service port exposure below.
+    # extraPorts:
+    # - containerPort: 5555
+    #   protocol: TCP
+
+    defaultQuotaGB: "10"
+
+    # Space delimited list of allowed Image Registry hosts.  These hosts should match the hosts in the User Session images.
+    registryHosts: "images.canfar.net"
+
+    # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
+    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
+    usersGroup: "ivo://example.org/gms?skaha-platform-users"
+
+    # The IVOA GMS Group URI to verify images without contacting Harbor.
+    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
+    adminsGroup: "ivo://example.org/gms?skaha-admin-users"
+
+    # The IVOA GMS Group URI to verify users against for permission to run headless jobs.
+    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
+    headlessGroup: "ivo://example.org/gms?skaha-headless-users"
+
+    # The IVOA GMS Group URI to verify users against that have priority for their headless jobs.
+    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
+    headlessPriorityGroup: "ivo://example.org/gms?skaha-priority-headless-users"
+
+    # Class name to set for priority headless jobs.
+    headlessPriorityClass: "uber-user-vip"
+
+    # Array of GMS Group URIs allowed to set the logging level.  If none set, then nobody can change the log level.
+    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2 for GMS Group URIs
+    # See https://github.com/opencadc/core/tree/main/cadc-log for Logging control
+    loggingGroups:
+      - "ivo://example.org/gms?skaha-logging-admin-users"
+
+    # The Resource ID (URI) of the Service that contains the Posix Mapping information
+    posixMapperResourceID: "ivo://example.org/posix-mapper"
+
+    # URI or URL of the OIDC (IAM) server.  Used to validate incoming tokens.
+    oidcURI: https://iam.example.org/
+
+    # The Resource ID (URI) of the GMS Service.
+    gmsID: ivo://example.org/gms
+
+    # The absolute URL of the IVOA Registry where services are registered
+    registryURL: https://example.org/reg
+
+    # Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Skaha itself.
+    # Note the different indentation level compared to the sessions.nodeAffinity.
+    # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
+    # See the [Sample Skaha Values file](skaha/sample-local-values.yaml).
+    # Example:
+    nodeAffinity:
+      # Only allow Skaha to run on specific Nodes.
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - my-special-node-host
+
+    # Settings for User Sessions.  Sensible defaults supplied, but can be overridden.
+    # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
+    sessions:
+      expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
+      maxCount: "3"  # Max number of sessions per user.
+      minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
+      maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
+
+      # Optionally setup a separate host for User Sessions for Skaha to redirect to.  The HTTPS scheme is assumed.  Defaults to the Skaha hostname (.Values.deployment.hostname).
+      # Example:
+      #   hostname: myhost.example.org
+      hostname: sessions.example.org
+
+      # When set to 'true' this flag will enable GPU node scheduling.  Don't forget to declare any related GPU configurations, if appropriate, in the nodeAffinity below!
+      # gpuEnabled: false
+
+      # Optionally set the node label selector to identify Kubernetes Worker Nodes.  This is used to accurately query for available
+      # resources from schedulable Nodes by eliminating, for example, Nodes that are only cordoned for Web APIs.
+      # Example:
+      #   nodeLabelSelector: "node-role.kubernetes.io/node-type=worker"
+      #
+      # Example (multiple labels ANDed):
+      #   nodeLabelSelector: "node-role.kubernetes.io/node-type=worker,environment=production"
+      #
+      #
+      # Example (multiple labels ORed):
+      #   nodeLabelSelector: "node-role.kubernetes.io/node-type in (worker,worker-gpu)"
+      nodeLabelSelector:
+
+      userStorage:
+        persistentVolumeClaimName: skaha-workload-cavern-pvc
+        nodeURIPrefix: "vos://canfar.net~src~cavern"
+        serviceURI: "ivo://canfar.net/src/cavern"
+        admin:
+          auth:
+            apiKey: "88shdj3en1rBuMVSllWVuuz190HJpF="
+
+      # Set the YAML that will go into the "affinity.nodeAffinity" stanza for Pod Spec in User Sessions.  This can be used to enable GPU scheduling, for example,
+      # or to control how and where User Session Pods are scheduled.  This can be potentially dangerous unless you know what you are doing.
+      # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity
+      # nodeAffinity: {}
+
+      # Mount CVMFS from the Node's mounted path into all User Sessions.
+      extraVolumes:
+      - name: cvmfs-mount
+        volume:
+          type: HOST_PATH     # HOST_PATH is for host path
+          hostPath: "/cvmfs"  # Path on the Node to look for a source folder
+          hostPathType: Directory
+        volumeMount:
+          mountPath: "/cvmfs"   # Path to mount on the User Sesssion Pod.
+          readOnly: false
+          mountPropagation: HostToContainer
+
+      # Kueue configurations for User Sessions
+      kueue:
+        default:
+          # Ensure this name matches whatever was created as the LocalQueue in the workload namespace.
+          queueName: canfar-science-platform-local-queue
+          priorityClass: low
+
+    # Optionally mount a custom CA certificate as an extra mount in Skaha (*not* user sessions)
+    # extraVolumeMounts:
+    # - mountPath: "/config/cacerts"
+    #   name: cacert-volume
+
+    # Create the CA certificate volume to be mounted in extraVolumeMounts
+    # extraVolumes:
+    # - name: cacert-volume
+    #   secret:
+    #     defaultMode: 420
+    #     secretName: skaha-cacert-secret
+
+    # Other data to be included in the main ConfigMap of this deployment.
+    # Of note, files that end in .key are special and base64 decoded.
+    #
+    # extraConfigData:
+
+    # Resources provided to the Skaha service.
+    # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "1500Mi"
+        cpu: "750m"
+
+  # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
+  # deployment object, not the skaha one.
+  #
+  # These entries get added as hostAliases entries to the Deployment.
+  #
+  # Example:
+  # extraHosts:
+  #   - ip: 127.3.34.5
+  #     hostname: myhost.example.org
+  #
+  # extraHosts: []
+
+# Enable experimental feature flags
+experimentalFeatures:
+  enabled: true
+  sessionLimitRange:
+    enabled: true
+    rbac:
+      create: false
+    limitSpec:
+      max:  # maximum allowed requested
+        memory: "192Gi"
+        cpu: "16"
+        nvidia.com/gpu: "1"
+      default:  # actually refers to default limits
+        memory: "24Gi"
+        cpu: "4"
+        nvidia.com/gpu: "0"
+      defaultRequest:  # default requests
+        memory: "4Gi"
+        cpu: "1"
+        nvidia.com/gpu: "0"
+
+secrets:
+  # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
+#   skaha-cacert-secret:
+#     ca.crt: <base64 encoded ca crt>
+```
+
+```bash
+helm -n skaha-system upgrade --install --values my-skaha-local-values-file.yaml skaha science-platform/skaha
+
+NAME: skaha
+LAST DEPLOYED: Thu Oct 31 02:01:10 2025
+NAMESPACE: skaha-system
+STATUS: deployed
+REVISION: 8
+```
+
+Test it.
+```bash
+# See below for tokens
+export SKA_TOKEN=...
+curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com/skaha/v1/session
+[]%
+
+# xxxxxx is the returned session ID.
+curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" -d "ram=1" -d "cores=1" -d "image=images.canfar.net/canucs/canucs:1.2.5" -d "name=myjupyternotebook" "https://example.host.com/skaha/v1/session"
+```
+
+### Science Portal User Interface install
+
+The Science Portal service will manage User Sessions.  It relies on the Skaha service being deployed, and available to be found
+via the IVOA Registry:
+
+`/reg/resource-caps`
+```
+...
+# Ensure the hostname matches the deployment hostname.
+ivo://example.org/skaha = https://example.host.com/skaha/capabilities
+...
+```
+
+Create a `my-science-portal-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/science-portal/values.yaml).
+
+`my-science-portal-local-values-file.yaml`
+```yaml
+deployment:
+  hostname: example.org
+  sciencePortal:
+    # The Resource ID of the Service that contains the URL of the Skaha service in the IVOA Registry
+    skahaResourceID: ivo://example.org/skaha
+
+    # OIDC (IAM) server configuration.  These are required
+    # oidc:
+    #
+    # Location of the OpenID Provider (OIdP), and where users will login
+    #   uri: https://iam.example.org/
+
+      # The Client ID as listed on the OIdP.  Create one at the uri above.
+    #   clientID: my-client-id
+
+      # The Client Secret, which should be generated by the OIdP.
+    #   clientSecret: my-client-secret
+
+      # Where the OIdP should send the User after successful authentication.  This is also known as the redirect_uri in OpenID.
+    #   redirectURI: https://example.com/science-portal/oidc-callback
+
+      # Where to redirect to after the redirectURI callback has completed.  This will almost always be the URL to the /science-portal main page (https://example.com/science-portal).
+    #   callbackURI: https://example.com/science-portal/
+
+      # The standard OpenID scopes for token requests.  This is required, and if using the SKAO IAM, can be left as-is.
+    #   scope: "openid profile offline_access"
+
+    # Optionally mount a custom CA certificate
+    # extraVolumeMounts:
+    # - mountPath: "/config/cacerts"
+    #   name: cacert-volume
+
+    # Create the CA certificate volume to be mounted in extraVolumeMounts
+    # extraVolumes:
+    # - name: cacert-volume
+    #   secret:
+    #     defaultMode: 420
+    #     secretName: science-portal-cacert-secret
+
+    # The theme name for styling.
+    # src: The SRCNet theme
+    # canfar: The CANFAR theme for internal CADC deployment
+    # themeName: {src | canfar}
+
+    # Labels on the tabs
+    # Default:
+    # tabLabels:
+    #  - Public
+    #  - Advanced
+    # tabLabels: []
+
+    # Other data to be included in the main ConfigMap of this deployment.
+    # Of note, files that end in .key are special and base64 decoded.
+    #
+    # extraConfigData:
+
+    # Resources provided to the Science Portal service.
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "1500Mi"
+        cpu: "750m"
+
+    # Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Science Portal itself.
+    # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
+    # Example:
+    nodeAffinity:
+      # Only allow Science Portal to run on specific Nodes.
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - my-special-ui-host
+
+experimentalFeatures:
+  enabled: true
+  slider:
+    enabled: true
+
+  # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
+  # deployment object, not the sciencePortal one.
+  #
+  # These entries get added as hostAliases entries to the Deployment.
+  #
+  # Example:
+  # extraHosts:
+  #   - ip: 127.3.34.5
+  #     hostname: myhost.example.org
+  #
+  # extraHosts: []
+
+# secrets:
+  # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
+  # science-portal-cacert-secret:
+    # ca.crt: <base64 encoded ca.crt blob>
+```
+
 
 ### User Storage UI installation
 
-Create a `my-storage-ui-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](storage-ui/values.yaml).
+Create a `my-storage-ui-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/storage-ui/values.yaml).
 
 `my-storage-ui-local-values-file.yaml`
 ```yaml
@@ -868,6 +871,10 @@ deployment:
   # storage-ui-cacert-secret:
     # ca.crt: <base64 encoded ca.crt blob>
 ```
+
+## Browser Authentication
+
+Encrypted cookies are used to gain access to a Bearer Token for API access.  These cookies are managed by the browser based applications (Storage UI and Science Portal).  See the [Browser Authentication](./browser-authentication.md) documentation for details.
 
 ## Obtaining a Bearer Token
 

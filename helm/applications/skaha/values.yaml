@@ -11,19 +11,35 @@ replicaCount: 1
 skahaWorkload:
   namespace: skaha-workload
 
+# @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
+# securityContext: {}
+#
+# Example:
+# securityContext:
+#   seccompProfile:
+#     type: RuntimeDefault
+securityContext: {}
+
+# @param podSecurityContext - Optional pod security context for the deployment.
+# podSecurityContext: {}
+#
+# Example:
+# podSecurityContext:
+#   fsGroup: 1000
+#   runAsUser: 1000
+#   allowPrivilegeEscalation: false
+podSecurityContext: {}
+
 # Skaha web service deployment
 deployment:
   hostname: myhost.example.com  # Change this!
   skaha:
-    image: images.opencadc.org/platform/skaha:1.1.4
+    image: images.opencadc.org/platform/skaha:1.2.0
     imagePullPolicy: Always
 
     # Cron string for the image caching cron job schedule. Defaults to every half hour.
     imageCache:
       refreshSchedule: "*/30 * * * *"
-
-    # Set the top-level-directory name that gets mounted at the root.
-    # skahaTld: "/cavern"
 
     # Used when allocating first-time users into the system.
     defaultQuotaGB: "10"
@@ -92,7 +108,62 @@ deployment:
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
 
-      persistentVolumeClaimName: "skaha-workload-cavern-pvc"  # The PVC that is mounted into User Sessions at /home and /projects.
+      # Storage setings to be passed into the User Session Kubernetes Job spec.
+      userStorage:
+        # Required.  ABSOLUTE path mount point to where the top level directory is mounted in the User Sessions.  For most, this can be set to "/cavern", and
+        # it is expected that the "/home" and the "/projects" folders will be found under this path (i.e. "/cavern/home" and "/cavern/projects").
+        # Example:
+        #   topLevelDirectory: "/cavern"
+        #
+        topLevelDirectory: "/cavern"
+
+        # Required.  RELATIVE path to the User Storage Home folder.  This is the folder where the User's home directories will be created.  Defaults to "home".
+        # Example:
+        #   homeDirectory: "home"
+        #
+        homeDirectory: "home"
+
+        # Required.  RELATIVE path to the User Storage Projects folder.  This is the folder where the Users can share data.  This is used for CARTA sessions.  Defaults to "projects".
+        # Example:
+        #   projectsDirectory: "projects"
+        #
+        projectsDirectory: "projects"
+
+        # Optional. Name of the Persistent Volume Claim to use for User Storage when mounted into sessions.  Defaults to "skaha-workload-cavern-pvc".
+        # Example:
+        #   persistentVolumeClaimName: "skaha-workload-cavern-pvc"
+        persistentVolumeClaimName: "skaha-workload-cavern-pvc"
+
+        # Required.  The VOSpace Service URI (uses ivo:// scheme) for the Cavern Service.
+        # This is the VOSpace location where user home directories will be created, as well as any other user data.  Requires Cavern to be running.
+        # Example:
+        #   serviceURI: "ivo://example.org/cavern"
+        # serviceURI:
+
+        # Required.  The VOSpace Resource ID (Node URI) prefix (uses vos:// scheme) for the Cavern Service.
+        # Example:
+        #   nodeURIPrefix: "vos://skao.int~cavern"
+        # nodeURIPrefix:
+
+        # Required.  These are the credentials and details to connect to the Cavern service to provide Administrative access to User Storage, namely creating new allocations.
+        admin:
+          auth:
+            # Authenticate with an agreed API Key between Skaha and Cavern.  This is used to create new user home directories (allocations).
+            # Generate Key: 
+            #   $ openssl rand -base64 32
+            #   $ jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I=
+            # Example:
+            #   apiKey: "jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I="  # Ensure this value is also used in the Cavern deployment's apiKeys object as "skaha:jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I=".
+            # apiKey:
+
+            # Alternatively, you can specify a Kubernetes Secret that contains a PEM Client Certificate representing the User Storage Admin.
+            # If both this and the OIDC Client are specified, Helm will throw an error.
+            # Default key is "cadcproxy.pem", but you can override it.
+            # Example:
+            #   certificateSecret: 
+            #     name: "science-platform-user-storage-admin-certificate"
+            #     key: "certificate.pem"  # The key in the Secret that contains the PEM certificate
+            # certificateSecret:
 
       # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Deafults to Always.
       # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
@@ -314,6 +385,8 @@ experimentalFeatures:
   # Example:
   # sessionLimitRange:
   #   enabled: true
+  #   rbac:
+  #     create: true
   #   limitSpec:
   #     max:
   #       memory: "96Gi"
@@ -328,21 +401,16 @@ experimentalFeatures:
   #       cpu: "1"
   sessionLimitRange:
     enabled: false
+    # Whether to create the RBAC Role and RoleBinding for the LimitRange.  Some organzations may not have the ability to create RBAC objects
+    # in the cluster, so setting this to false allows the LimitRange to be created without the RBAC objects, assuming they are created elsewhere.
+    rbac:
+      create: true
     limitSpec: {}
 
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
   # skaha-cacert-secret:
   #   ca.crt: <base64 encoded CA crt>
-
-# Set these appropriately to match your Persistent Volume labels.
-storage:
-  service:
-    spec:
-      # YAML for service mounted storage.
-      # Example is the persistentVolumeClaim below.
-      # persistentVolumeClaim:
-      #   claimName: skaha-pvc
 
 # For caching images from the Image Repository and for the writing the POSIX Users and Groups to be shared with Job files
 redis:

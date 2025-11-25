@@ -1,6 +1,4 @@
-# Helm Chart for the Cavern User Storage API
-
-See the [Deployment Guide](../README.md) for a better idea of a full system.
+# Cavern Helm Chart
 
 ## Install
 
@@ -28,7 +26,7 @@ $ helm install -n skaha-system --dependency-update --values my-values-local.yaml
 This will install Skaha service dependency, as well as the Skaha webservice and any necessary Ingress.
 ```
 NAME: cavern
-LAST DEPLOYED: <Timestamp e.g. Fri Nov 07 04:19:04 2023>
+LAST DEPLOYED: <Timestamp e.g. Tue Nov 25 04:19:04 2025>
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None

@@ -32,7 +32,7 @@ TODO: jenkinsd 2024.09.20
       {{- end }}
       - name: cavern-volume
         persistentVolumeClaim:
-          claimName: {{ .Values.deployment.skaha.sessions.persistentVolumeClaimName | default "skaha-workload-cavern-pvc" }}
+          claimName: {{ .Values.deployment.skaha.sessions.userStorage.persistentVolumeClaimName | default "skaha-workload-cavern-pvc" }}
       - name: scratch-dir
         emptyDir: {}
 {{- end }}

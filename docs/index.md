@@ -6,17 +6,17 @@ Welcome to the operational documentation for deploying and maintaining the CANFA
 
 This documentation is designed for **platform operators, DevOps engineers, and infrastructure maintainers** who deploy, configure, and manage CANFAR services.
 
-<div class="grid cards" markdown>
+<div class="grid cards grid-3" markdown>
 
-- :material-kubernetes: **Helm Charts**
+- <a href="helm">:material-kubernetes: **Helm Charts** --></a>
 
     Reusable deployment templates for CANFAR services with configurable values and environment overlays.
 
-- :material-rocket-launch: **Release Automation**
+- <a href="operations/ci-cd">:material-rocket-launch: **Release Automation** --></a>
 
     Automated CI/CD pipelines using GitHub Actions and Release Please for Helm chart versioning.
 
-- :material-file-document: **Operations Runbooks**
+- <a href="operations/release-process">:material-file-document: **Operations Runbooks** --></a>
 
     Step-by-step procedures for releases, rollbacks, monitoring, and troubleshooting production deployments.
 
@@ -36,6 +36,7 @@ This documentation is designed for **platform operators, DevOps engineers, and i
 
 ## Quick Links
 
+- [**Helm Charts Documentation**](helm/index.md) - Explore reusable Helm charts for CANFAR services
 - [**CI/CD Pipelines**](operations/ci-cd.md) - Understand GitHub Actions workflows for documentation and code quality
 - [**Release Process**](operations/release-process.md) - Follow the Helm chart release process and CANFAR platform schedule
 - [**GitHub Repository**](https://github.com/opencadc/deployments/) - Browse source code, Helm charts, and configurations
@@ -44,9 +45,10 @@ This documentation is designed for **platform operators, DevOps engineers, and i
 
 If you're new to CANFAR deployments:
 
+1. Familiarize yourself with the [Helm Charts Documentation](helm/index.md) to understand service deployments
 1. Review the [Release Process](operations/release-process.md) to understand our deployment workflow
-2. Explore the [CI/CD Pipelines](operations/ci-cd.md) documentation to see how automation works
-3. Check the [GitHub repository](https://github.com/opencadc/deployments/) for Helm charts and configuration files
+1. Explore the [CI/CD Pipelines](operations/ci-cd.md) documentation to see how automation works
+1. Check the [GitHub repository](https://github.com/opencadc/deployments/) for Helm charts and configuration files
 
 ## Contributing
 
