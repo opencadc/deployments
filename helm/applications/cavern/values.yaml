@@ -3,10 +3,6 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
-# It's best to keep these set as such, unless you're willing to change these in several places.
-skaha:
-  namespace: skaha-system
-
 # Skaha web service deployment
 deployment:
   hostname: example.org
