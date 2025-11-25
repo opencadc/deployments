@@ -12,28 +12,24 @@
         <meta name="author" content="CANFAR">
       
       
-        <link rel="canonical" href="https://www.opencadc.org/deployments/operations/ci-cd/">
+        <link rel="canonical" href="https://www.opencadc.org/deployments/helm/science-platform/browser-authentication/">
       
       
-        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../release-process/">
-      
-      
-      <link rel="icon" href="../../logo.png">
+      <link rel="icon" href="../../../logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
     
     
       
-        <title>CI/CD Pipelines - CANFAR Deployments</title>
+        <title>Authentication in browser based applications (Science Portal & Storage User Interface) - CANFAR Deployments</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.84d31ad4.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.84d31ad4.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -52,11 +48,11 @@
       
     
     
-      <link rel="stylesheet" href="../../css/timeago.css">
+      <link rel="stylesheet" href="../../../css/timeago.css">
     
-      <link rel="stylesheet" href="../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cicd-pipelines" class="md-skip">
+        <a href="#authentication-in-browser-based-applications-science-portal-storage-user-interface" class="md-skip">
           Skip to content
         </a>
       
@@ -98,9 +94,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CANFAR Deployments" class="md-header__button md-logo" aria-label="CANFAR Deployments" data-md-component="logo">
+    <a href="../../.." title="CANFAR Deployments" class="md-header__button md-logo" aria-label="CANFAR Deployments" data-md-component="logo">
       
-  <img src="../../logo.png" alt="logo">
+  <img src="../../../logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -117,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              CI/CD Pipelines
+              Authentication in browser based applications (Science Portal &amp; Storage User Interface)
             
           </span>
         </div>
@@ -241,7 +237,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../helm/" class="md-tabs__link">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -261,7 +257,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -278,13 +274,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../operations/" class="md-tabs__link">
           
   
   
@@ -326,9 +320,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CANFAR Deployments" class="md-nav__button md-logo" aria-label="CANFAR Deployments" data-md-component="logo">
+    <a href="../../.." title="CANFAR Deployments" class="md-nav__button md-logo" aria-label="CANFAR Deployments" data-md-component="logo">
       
-  <img src="../../logo.png" alt="logo">
+  <img src="../../../logo.png" alt="logo">
 
     </a>
     CANFAR Deployments
@@ -383,7 +377,7 @@
   
   
   
-    <a href="../../helm/" class="md-nav__link">
+    <a href="../../" class="md-nav__link">
       
   
   
@@ -411,7 +405,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -430,8 +424,6 @@
       
   
   
-    
-  
   
   
     
@@ -449,26 +441,24 @@
     
     
       
-        
-        
-      
       
         
       
     
     
       
+        
+        
+      
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
-              
+  
+  
+  
+    <a href="../../../operations/" class="md-nav__link">
+      
   
   
   <span class="md-ellipsis">
@@ -477,189 +467,12 @@
   </span>
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            Operations
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+        <span class="md-nav__icon md-icon"></span>
       
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    CI/CD Pipelines
-    
-  </span>
+    </a>
   
 
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    CI/CD Pipelines
-    
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#documentation-deployment-docsyml" class="md-nav__link">
-    <span class="md-ellipsis">
-      Documentation Deployment (docs.yml)
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Documentation Deployment (docs.yml)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#triggers" class="md-nav__link">
-    <span class="md-ellipsis">
-      Triggers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      Workflow Steps
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Requirements
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pre-commit-checks-pre-commityml" class="md-nav__link">
-    <span class="md-ellipsis">
-      Pre-commit Checks (pre-commit.yml)
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Pre-commit Checks (pre-commit.yml)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#triggers_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Triggers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-it-checks" class="md-nav__link">
-    <span class="md-ellipsis">
-      What it checks
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../release-process/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Release Process
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
       
     </li>
   
@@ -692,37 +505,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#documentation-deployment-docsyml" class="md-nav__link">
+  <a href="#openid-connect" class="md-nav__link">
     <span class="md-ellipsis">
-      Documentation Deployment (docs.yml)
+      OpenID Connect
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Documentation Deployment (docs.yml)">
+    <nav class="md-nav" aria-label="OpenID Connect">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#triggers" class="md-nav__link">
+  <a href="#login" class="md-nav__link">
     <span class="md-ellipsis">
-      Triggers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      Workflow Steps
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Requirements
+      Login
     </span>
   </a>
   
@@ -734,28 +529,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pre-commit-checks-pre-commityml" class="md-nav__link">
+  <a href="#bff-pattern" class="md-nav__link">
     <span class="md-ellipsis">
-      Pre-commit Checks (pre-commit.yml)
+      BFF Pattern
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Pre-commit Checks (pre-commit.yml)">
+    <nav class="md-nav" aria-label="BFF Pattern">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#triggers_1" class="md-nav__link">
+  <a href="#after-successful-login" class="md-nav__link">
     <span class="md-ellipsis">
-      Triggers
+      After Successful Login
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#what-it-checks" class="md-nav__link">
+  <a href="#authenticated-requests" class="md-nav__link">
     <span class="md-ellipsis">
-      What it checks
+      Authenticated Requests
     </span>
   </a>
   
@@ -782,7 +577,7 @@
 
 
   
-    <a href="https://github.com/opencadc/deployments/blob/main/docs/operations/ci-cd.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/opencadc/deployments/blob/main/docs/helm/science-platform/browser-authentication.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm-2.3 6.35c.22-.21.22-.56 0-.77L15.42 7.3a.53.53 0 0 0-.77 0l-1 1 2.05 2.05zM7 14.94V17h2.06l6.06-6.06-2.06-2.06z"/></svg>
     </a>
@@ -791,52 +586,115 @@
     
       
     
-    <a href="https://github.com/opencadc/deployments/raw/main/docs/operations/ci-cd.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/opencadc/deployments/raw/main/docs/helm/science-platform/browser-authentication.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m0-4.5c5 0 9.27 3.11 11 7.5-1.73 4.39-6 7.5-11 7.5S2.73 16.39 1 12c1.73-4.39 6-7.5 11-7.5M3.18 12a9.821 9.821 0 0 0 17.64 0 9.821 9.821 0 0 0-17.64 0"/></svg>
     </a>
   
 
 
-<h1 id="cicd-pipelines">CI/CD Pipelines<a class="headerlink" href="#cicd-pipelines" title="Permanent link">&para;</a></h1>
-<p>The deployments repository uses GitHub Actions to automate documentation and code quality tasks.</p>
-<h2 id="documentation-deployment-docsyml">Documentation Deployment (<code>docs.yml</code>)<a class="headerlink" href="#documentation-deployment-docsyml" title="Permanent link">&para;</a></h2>
-<p>Automatically builds and deploys the MkDocs documentation site to GitHub Pages.</p>
-<h3 id="triggers">Triggers<a class="headerlink" href="#triggers" title="Permanent link">&para;</a></h3>
+<h1 id="authentication-in-browser-based-applications-science-portal-storage-user-interface">Authentication in browser based applications (Science Portal &amp; Storage User Interface)<a class="headerlink" href="#authentication-in-browser-based-applications-science-portal-storage-user-interface" title="Permanent link">&para;</a></h1>
 <ul>
-<li>Pushes to <code>main</code> that modify <code>docs/**</code>, <code>mkdocs.yml</code>, or <code>pyproject.toml</code></li>
-<li>Manual dispatch with required reason field</li>
+<li><a href="#openid-connect">OpenID Connect</a></li>
+<li><a href="#login">Login</a></li>
+<li><a href="#bff-pattern">BFF Pattern</a></li>
+<li><a href="#after-successful-login">After Successful Login</a></li>
+<li><a href="#authenticated-requests">Authenticated Requests</a><ul>
+<li><a href="#general-steps">Flow</a></li>
 </ul>
-<h3 id="workflow-steps">Workflow Steps<a class="headerlink" href="#workflow-steps" title="Permanent link">&para;</a></h3>
+</li>
+</ul>
+<h2 id="openid-connect">OpenID Connect<a class="headerlink" href="#openid-connect" title="Permanent link">&para;</a></h2>
+<p>Browser based applications use the Authorization Code flow to authenticate users to the OpenId Provider (OIdP).  A good example of how that works is shown at <a href="https://darutk.medium.com/diagrams-of-all-the-openid-connect-flows-6968e3990660#c027">Medium.com</a>, with <code>openid</code> included in the <code>scope</code> parameter.</p>
+<p>Once that flow succeeds, the OpenID Connect Client (the application) will have an Access Token (and Refresh Token) to use to make authenticated calls on behalf of the user to an API, such as Cavern or Skaha.</p>
+<p>As this flow is inefficient to use each time a request is made, the Access Token and Refresh Tokens are stored for the user, and retrieved when an authenticated call is necessary.  Access Tokens cannot be securely stored in the browser however, so a secure way of doing it is to implement the <a href="#bff-pattern">Backend For Frontend (BFF)</a> pattern.</p>
+<h3 id="login">Login<a class="headerlink" href="#login" title="Permanent link">&para;</a></h3>
+<p>Login is supplied by the OpenID Connect Provider, and the endpoint can be looked up using the JSON document at the <code>.well-known/openid-configuration</code> endpoint, and looking up the <code>authorization_endpoint</code> key.  To start the Authorization Code flow, redirect the user to the <code>authorization_endpoint</code> with the following <code>properties</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scope</code></td>
+<td><code>openid profile offline_access</code></td>
+</tr>
+<tr>
+<td><code>redirect_uri</code></td>
+<td><code>https://example.com/myapplication/oidc-callback</code></td>
+</tr>
+<tr>
+<td><code>response_type</code></td>
+<td><code>code</code></td>
+</tr>
+<tr>
+<td><code>client_id</code></td>
+<td><code>myclient_identifier</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<p><em>https<a href=""></a>://ska-iam.stfc.ac.uk/authorize?client_id=asfaslkfjlkj3-asdfdsdflkj&amp;scope=openid%20profile%20offline_access&amp;response_type=code&amp;redirect_uri=https%3A%2F%2Fexample.com%2Fmyapplication%2Foidc-callback</em></p>
+<p>If successful, this will call the URL at <code>redirect_uri</code> with a <code>code</code> parameter, containing a very short lived string value:</p>
+<p><em>https<a href=""></a>://example.com/myapplication/oidc-callback?code=sdfue887hdyr</em></p>
+<p>The <code>redirect_uri</code> endpoint can then pull the <code>code</code> query parameter, and use the <code>token_endpoint</code> from the <code>.well-known/openid-configuration</code> endpoint to exchange that <code>code</code> for tokens.  In order to do that, the client must authenticate with the same <code>client_id</code> used in the Login, as well as the <code>client_secret</code>, and POST the values.  The <code>client_secret</code> is typically generated by the client on registration.</p>
+<p><strong>Example</strong>:
+<div class="language-java highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">final</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">codeFromCallbackURI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getParameter</span><span class="p">(</span><span class="s">&quot;code&quot;</span><span class="p">);</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">final</span><span class="w"> </span><span class="n">ClientID</span><span class="w"> </span><span class="n">clientID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClientID</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">clientID</span><span class="p">);</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kd">final</span><span class="w"> </span><span class="n">Secret</span><span class="w"> </span><span class="n">clientSecret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Secret</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">clientSecret</span><span class="p">);</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kd">final</span><span class="w"> </span><span class="n">AuthorizationCodeGrant</span><span class="w"> </span><span class="n">codeGrant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AuthorizationCodeGrant</span><span class="p">(</span><span class="n">codeFromCallbackURI</span><span class="p">);</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1">// Basic Authentication to obtain a Token from the IAM service.</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="kd">final</span><span class="w"> </span><span class="n">ClientAuthentication</span><span class="w"> </span><span class="n">clientAuth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClientSecretBasic</span><span class="p">(</span><span class="n">clientID</span><span class="p">,</span><span class="w"> </span><span class="n">clientSecret</span><span class="p">);</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="kd">final</span><span class="w"> </span><span class="n">URI</span><span class="w"> </span><span class="n">tokenEndpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">URI</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">Client</span><span class="p">.</span><span class="na">getTokenEndpoint</span><span class="p">().</span><span class="na">toExternalForm</span><span class="p">());</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="kd">final</span><span class="w"> </span><span class="n">TokenRequest</span><span class="w"> </span><span class="n">tokenRequest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">TokenRequest</span><span class="p">(</span><span class="n">tokenEndpoint</span><span class="p">,</span><span class="w"> </span><span class="n">clientAuth</span><span class="p">,</span><span class="w"> </span><span class="n">codeGrant</span><span class="p">);</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="c1">// Send the request for the token...</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="kd">final</span><span class="w"> </span><span class="n">TokenResponse</span><span class="w"> </span><span class="n">tokenResponse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sendTokenRequest</span><span class="p">(</span><span class="n">tokenRequest</span><span class="p">);</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="kd">final</span><span class="w"> </span><span class="n">AccessTokenResponse</span><span class="w"> </span><span class="n">tokenSuccessResponse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tokenResponse</span><span class="p">.</span><span class="na">toSuccessResponse</span><span class="p">();</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1">// We now have the Assets (Access Token, Refresh Token, and Expiry Time of Access Token)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="kd">final</span><span class="w"> </span><span class="n">Assets</span><span class="w"> </span><span class="n">assets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Assets</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">JSONObject</span><span class="p">(</span><span class="n">tokenSuccessResponse</span><span class="p">.</span><span class="na">toJSONObject</span><span class="p">().</span><span class="na">toJSONString</span><span class="p">()));</span>
+</span></code></pre></div></p>
+<p>Document returned from the <code>TokenRequest</code>:
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;access_token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3&quot;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;expires_in&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3600</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;refresh_token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;IwOGYzYTlmM2YxOTQ5MGE3YmNmMDFkNTVk&quot;</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">&quot;id_token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;asklIILLdnsf9sdjsdfhkjhjh&quot;</span><span class="w"> </span><span class="c1">// Not actually used, but there if needed.</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">}</span>
+</span></code></pre></div></p>
+<p>The application now has what it needs to make authenticated calls to the API(s).  Let's look at how they're stored and used with the <a href="#bff-pattern">BFF Pattern</a>.</p>
+<h2 id="bff-pattern">BFF Pattern<a class="headerlink" href="#bff-pattern" title="Permanent link">&para;</a></h2>
+<p>The UI applications use the Backend For Frontend (BFF) pattern to securely store tokens in a server-side cache, and can only be retrieved with an encrypted, HTTP-Only, and Secure, first-party cookie from the browser.  First-party cookies are obtained from a direct visit to the site, such as from a redirect, rather than from a request made from the page using JavaScript (third-party).  As browsers tighten security on cookies, this helps to future proof it.</p>
+<p>All OpenID Connect (OIDC) interaction is handled by the <a href="https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions/src/master/">Nimbus OAuth2 Java Library</a>.</p>
+<h3 id="after-successful-login">After Successful Login<a class="headerlink" href="#after-successful-login" title="Permanent link">&para;</a></h3>
+<p>The JSON document with a token set represents the Assets.  These Assets are stored in a Redis cache on the server, and a key is issued to retrieve them.  Each application has its own Token Cache.  The Assets are made up of the <code>access_token</code>, <code>refresh_token</code>, and the <code>expires_in</code> values.</p>
+<p>That returned Assets key is SHA-256 encrypted, and set in the browser in a secure cookie.  That cookie is only good for this application, and cannot be read by JavaScript (<code>http-only</code>).</p>
+<h3 id="authenticated-requests">Authenticated Requests<a class="headerlink" href="#authenticated-requests" title="Permanent link">&para;</a></h3>
+<p>That encrypted cookie can now be used with the application to make authenticated requests.  The browser will send the cookie with each request, and follow the path as laid out in the diagram.</p>
+<p><img alt="BFF Pattern" src="../BFF.png" /></p>
+<h4 id="general-steps">General Steps<a class="headerlink" href="#general-steps" title="Permanent link">&para;</a></h4>
 <ol>
-<li><strong>Checkout</strong>: Fetches full git history (required for git-revision-date plugin)</li>
-<li><strong>Install uv</strong>: Sets up the uv package manager</li>
-<li><strong>Setup Python</strong>: Installs Python using uv</li>
-<li><strong>Install dependencies</strong>: Runs <code>uv sync</code> to install all dependencies from <code>pyproject.toml</code></li>
-<li><strong>Deploy</strong>: Runs <code>uv run mkdocs gh-deploy --force</code> to build and publish to <code>gh-pages</code> branch</li>
+<li>User makes a request for a resource from a browser application</li>
+<li>If there is no first-party cookie, then proceed as though anonymous.  If the resource is protected, then a 401 or 403 status code is returned.</li>
+<li>For the Science Portal, this means denying access with a modal login box as authentication is required.</li>
+<li>For the Storage UI, this means producing a button to optionally authenticate, as public browsing is allowed for Public items.</li>
+<li>Decrypt the cookie if present, then use the key to look up the Assets in the Redis cache.</li>
+<li>Use the Access Token from the Assets as a Bearer token in the request header to the API.</li>
 </ol>
-<h3 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>contents: write</code> permission for pushing to <code>gh-pages</code> branch</li>
-<li>Dependencies managed in <code>pyproject.toml</code>:</li>
-<li><code>mkdocs-material</code> - Material theme for MkDocs</li>
-<li><code>mkdocs-git-revision-date-localized-plugin</code> - Git revision dates in docs</li>
-</ul>
-<h2 id="pre-commit-checks-pre-commityml">Pre-commit Checks (<code>pre-commit.yml</code>)<a class="headerlink" href="#pre-commit-checks-pre-commityml" title="Permanent link">&para;</a></h2>
-<p>Runs pre-commit hooks on all files to ensure code quality and consistency.</p>
-<h3 id="triggers_1">Triggers<a class="headerlink" href="#triggers_1" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Pull requests to <code>main</code></li>
-<li>Manual dispatch</li>
-</ul>
-<h3 id="what-it-checks">What it checks<a class="headerlink" href="#what-it-checks" title="Permanent link">&para;</a></h3>
-<ul>
-<li>YAML syntax and formatting</li>
-<li>JSON formatting</li>
-<li>File permissions and naming</li>
-<li>Security scanning for hardcoded secrets</li>
-<li>Python code quality (if applicable)</li>
-</ul>
+<p>If the Access Token is valid (and the user is granted access to the resource), then the resource is returned.  The system will check the <code>expires_in</code> value to determine if the Access Token will soon expire, and if so, will request a refresh.</p>
+<ol>
+<li>If no Refresh Token is present in the Assets, the user needs to re-authenticate.</li>
+<li>If a Refresh Token is present in the Assets, then request a new Access Token from the token endpoint.</li>
+<li>If the Refresh Token is expired (i.e. 401 is returned from the OIdP), then the user needs to re-authenticate.</li>
+<li>Use the refreshed Access Token and return the resource to the user.</li>
+</ol>
 
 
 
@@ -859,7 +717,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 7, 2025 19:04:08 PDT"><span class="timeago" datetime="2025-10-07T19:04:08-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 7, 2025 19:04:08 PDT">2025-10-07</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 24, 2025 12:07:57 PST"><span class="timeago" datetime="2025-11-24T12:07:57-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 24, 2025 12:07:57 PST">2025-11-24</span>
   </span>
 
     
@@ -869,7 +727,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 7, 2025 19:04:08 PDT"><span class="timeago" datetime="2025-10-07T19:04:08-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 7, 2025 19:04:08 PDT">2025-10-07</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 24, 2025 12:07:57 PST"><span class="timeago" datetime="2025-11-24T12:07:57-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 24, 2025 12:07:57 PST">2025-11-24</span>
   </span>
 
     
@@ -956,14 +814,14 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.instant", "navigation.instant.progress", "navigation.prune", "navigation.sections", "navigation.tracking", "navigation.indexes", "navigation.expand", "navigation.instant.prefetch", "toc.follow", "navigation.top", "announce.dismiss", "content.code.annotate", "content.action.edit", "content.action.view", "content.code.copy", "content.code.select", "content.footnote.tooltips", "content.tabs.link", "content.tooltips", "search.highlight", "search.share", "search.suggest"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.instant", "navigation.instant.progress", "navigation.prune", "navigation.sections", "navigation.tracking", "navigation.indexes", "navigation.expand", "navigation.instant.prefetch", "toc.follow", "navigation.top", "announce.dismiss", "content.code.annotate", "content.action.edit", "content.action.view", "content.code.copy", "content.code.select", "content.footnote.tooltips", "content.tabs.link", "content.tooltips", "search.highlight", "search.share", "search.suggest"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.f55a23d4.min.js"></script>
       
-        <script src="../../js/timeago.min.js"></script>
+        <script src="../../../js/timeago.min.js"></script>
       
-        <script src="../../js/timeago_mkdocs_material.js"></script>
+        <script src="../../../js/timeago_mkdocs_material.js"></script>
       
     
   </body>
