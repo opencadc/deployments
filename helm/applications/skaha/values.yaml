@@ -34,7 +34,7 @@ podSecurityContext: {}
 deployment:
   hostname: myhost.example.com  # Change this!
   skaha:
-    image: images.opencadc.org/platform/skaha:1.1.5
+    image: images.opencadc.org/platform/skaha:1.1.6
     imagePullPolicy: Always
 
     # Cron string for the image caching cron job schedule. Defaults to every half hour.
