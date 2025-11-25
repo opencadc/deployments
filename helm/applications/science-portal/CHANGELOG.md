@@ -1,4 +1,7 @@
-# CHANGELOG for Science Portal UI (Chart 1.0.4)
+# CHANGELOG for Science Portal UI (Chart 1.1.1)
+
+## 2025.11.25 (1.1.1)
+- Use `Release.Namespace` for installation rather than separate `namespace` value.
 
 ## 2025.11.17 (1.0.4)
 - Fix: Remove running instances counts due to severe ineffieciency.
