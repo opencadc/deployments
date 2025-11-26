@@ -74,11 +74,11 @@ spec:
           # Realistically the GPU 01 node will get used more, but smaller Jobs may get scheduled on 02.
           resources:
             - name: "cpu"
-              nominalQuota:   "60" # 80% of GPU Nodes minus 2%
+              nominalQuota:   "60" # 80% of GPU Node 01
               borrowingLimit: "0"
               lendingLimit:   "0"
             - name: "memory"
-              nominalQuota:   "585Gi" # 80% of GPU Nodes minus 2%
+              nominalQuota:   "585Gi" # 80% of GPU Node 01
               borrowingLimit: "0Gi"
               lendingLimit:   "0Gi"
             - name: "ephemeral-storage"
