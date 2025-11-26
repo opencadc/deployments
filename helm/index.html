@@ -550,11 +550,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#science-platform" class="md-nav__link">
+  <a href="#canfar-science-platform" class="md-nav__link">
     <span class="md-ellipsis">
-      Science Platform
+      CANFAR Science Platform
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="CANFAR Science Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#up-and-running" class="md-nav__link">
+    <span class="md-ellipsis">
+      Up and Running
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explore-the-science-platform-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explore the Science Platform Components
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -591,9 +615,28 @@
 
 
 <h1 id="helm-charts-documentation">Helm Charts Documentation<a class="headerlink" href="#helm-charts-documentation" title="Permanent link">&para;</a></h1>
-<h2 id="science-platform">Science Platform<a class="headerlink" href="#science-platform" title="Permanent link">&para;</a></h2>
+<p>This section provides comprehensive documentation for deploying and managing Helm charts for software services provided by the Candan Astronomy Data Centre (CADC).</p>
+<h2 id="canfar-science-platform">CANFAR Science Platform<a class="headerlink" href="#canfar-science-platform" title="Permanent link">&para;</a></h2>
 <p>The CANFAR Science Platform is deployed using a collection of reusable Helm charts. These charts provide configurable templates for deploying various services and components that make up the platform.</p>
-<p>Get started with the <a href="science-platform/">Science Platform Helm Chart Deployment</a> documentation.</p>
+<p>Guides and documentation for deploying and managing the CANFAR Science Platform using Helm charts. This section covers the structure, configuration options, and deployment procedures for the platform's Helm charts.</p>
+<h3 id="up-and-running">Up and Running<a class="headerlink" href="#up-and-running" title="Permanent link">&para;</a></h3>
+<p>To deploy the CANFAR Science Platform using Helm charts, follow <a href="deployment.md">the deployment guide</a> which provides step-by-step instructions for setting up the platform in your Kubernetes environment.</p>
+<div class="grid cards">
+<ul>
+<li><a href="deployment.md"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m13.13 22.19-1.63-3.83c1.57-.58 3.04-1.36 4.4-2.27zM5.64 12.5l-3.83-1.63 6.1-2.77C7 9.46 6.22 10.93 5.64 12.5M19.22 4c.28 0 .53 0 .74.05.17 1.39-.02 4.25-3.3 7.53-1.7 1.71-3.73 3.02-6.01 3.89l-2.15-2.1c.92-2.31 2.23-4.34 3.92-6.03C15.18 4.58 17.64 4 19.22 4m0-2c-1.98 0-4.98.69-8.22 3.93-2.19 2.19-3.5 4.6-4.35 6.71-.28.75-.09 1.57.46 2.13l2.13 2.12c.38.38.89.61 1.42.61.23 0 .47-.06.7-.15A19.1 19.1 0 0 0 18.07 13c5.66-5.66 3.54-10.61 3.54-10.61S20.7 2 19.22 2m-4.68 7.46c-.78-.78-.78-2.05 0-2.83s2.05-.78 2.83 0c.77.78.78 2.05 0 2.83s-2.05.78-2.83 0m-5.66 7.07-1.41-1.41zM6.24 22l3.64-3.64c-.34-.09-.67-.24-.97-.45L4.83 22zM2 22h1.41l4.77-4.76-1.42-1.41L2 20.59zm0-2.83 4.09-4.08c-.21-.3-.36-.62-.45-.97L2 17.76z"/></svg></span> <strong>Get Started with the Deployment Guide</strong> <small>Step-by-step deployment instructions</small></a> &rarr;</li>
+</ul>
+</div>
+<h3 id="explore-the-science-platform-components">Explore the Science Platform Components<a class="headerlink" href="#explore-the-science-platform-components" title="Permanent link">&para;</a></h3>
+<h4>Discover the configurable values for each Helm Chart</h4>
+<div class="grid cards">
+<ul>
+<li><a href="posix-mapper.md"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 7v2H9v6h1v2H6v-2h1V9H6V7zm6 0a2 2 0 0 1 2 2v6c0 1.11-.89 2-2 2h-4V7m4 2h-2v6h2z"/></svg></span> <strong>POSIX Mapper</strong> <small>for UID and GID mapping</small></a></li>
+<li><a href="cavern.md"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.11.89 2 2 2h12c1.11 0 2-.89 2-2V8zm4 18H6V4h7v5h5zm-1-3.08c0 1.15-.93 2.08-2.08 2.08H9.5A2.5 2.5 0 0 1 7 16.5c0-1.29 1-2.35 2.23-2.5.52-1 1.56-1.67 2.77-1.67 1.5 0 2.78 1.09 3.07 2.5 1.07.1 1.93.99 1.93 2.09"/></svg></span> <strong>Cavern</strong> <small>for IVOA VOSpace storage</small></a></li>
+<li><a href="skaha.md"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 20a1 1 0 0 0-1-1h-1v-2h4a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4v2h-1a1 1 0 0 0-1 1H2v2h7a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1h7v-2zm-8-5V5h10v10z"/></svg></span> <strong>Skaha</strong> <small>to manage user sessions and workloads</small></a></li>
+<li><a href="science-portal.md"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 16V4H3v12zm0-14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-7v2h2v2H8v-2h2v-2H3a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2zM5 6h9v5H5zm10 0h4v2h-4zm4 3v5h-4V9zM5 12h4v2H5zm5 0h4v2h-4z"/></svg></span> <strong>Science Portal</strong> <small>interactive user sessions</small></a></li>
+<li><a href="storage-ui.md"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 16H3V4h18m0-2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7v2H8v2h8v-2h-2v-2h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-5 8h-3V6h-2v4H8l4 4z"/></svg></span> <strong>Storage UI</strong> <small>manage Cavern storage from the Browser</small></a></li>
+</ul>
+</div>
 
 
 
@@ -616,7 +659,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 21, 2025 13:57:37 PST"><span class="timeago" datetime="2025-11-21T13:57:37-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 21, 2025 13:57:37 PST">2025-11-21</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 26, 2025 01:42:26 PST"><span class="timeago" datetime="2025-11-26T01:42:26-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 26, 2025 01:42:26 PST">2025-11-26</span>
   </span>
 
     
