@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/opencadc/deployments/compare/utils-0.1.1...utils-0.1.2) (2025-11-26)
+
+
+### Bug Fixes
+
+* **merge:** conflict ([8c14f17](https://github.com/opencadc/deployments/commit/8c14f1738feba41cd6ae78812b77661e543a2617))
+* **release:** helm-docs now add the release-please slug, renovate now updates AppVersion, deprecated requirement for maintainers in helm charts, updated release please config, updated release-matrix logic to properly create downstream payloads for releasing charts ([2c2b931](https://github.com/opencadc/deployments/commit/2c2b9313c469475bd2b1f6bcfdb3b041a0f0f715))
+
 ## [0.1.1](https://github.com/opencadc/deployments/compare/utils-0.1.0...utils-0.1.1) (2025-10-23)
 
 
