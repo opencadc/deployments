@@ -4,7 +4,7 @@ A Helm chart to install the User Storage UI
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.7.1<!-- x-release-please-version --> | 1.4.1 | application |
+|0.8.0<!-- x-release-please-version --> | 1.4.1 | application |
 
 ## Requirements
 
@@ -22,8 +22,8 @@ A Helm chart to install the User Storage UI
 | deployment.storageUI.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
 | deployment.storageUI.image | string | `"images.opencadc.org/client/storage-ui:1.4.1"` |  |
 | deployment.storageUI.imagePullPolicy | string | `"IfNotPresent"` |  |
-| deployment.storageUI.resources.limits.cpu | string | `"500m"` |  |
-| deployment.storageUI.resources.limits.memory | string | `"850Mi"` |  |
+| deployment.storageUI.resources.limits.cpu | string | `"750m"` |  |
+| deployment.storageUI.resources.limits.memory | string | `"1Gi"` |  |
 | deployment.storageUI.resources.requests.cpu | string | `"500m"` |  |
 | deployment.storageUI.resources.requests.memory | string | `"500Mi"` |  |
 | deployment.storageUI.themeName | string | `nil` |  |
@@ -34,5 +34,4 @@ A Helm chart to install the User Storage UI
 | redis.image.tag | string | `"8.2.2-bookworm"` |  |
 | redis.master.persistence.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
-| skaha.namespace | string | `"skaha-system"` |  |
 | tolerations | list | `[]` |  |

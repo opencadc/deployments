@@ -357,7 +357,7 @@ storage:
 
 ### Kueue install
 
-Kueue is a Kubernetes-native job queuing and scheduling system that enhances the management of workloads in a Kubernetes cluster. It provides advanced features for job scheduling, resource management, and workload prioritization, 
+Kueue is a Kubernetes-native job queuing and scheduling system that enhances the management of workloads in a Kubernetes cluster. It provides advanced features for job scheduling, resource management, and workload prioritization,
 making it particularly useful for environments where efficient resource utilization and job handling are critical.
 Kueue is optional, but highly recommended for production deployments.
 

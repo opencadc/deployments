@@ -23,6 +23,12 @@ This section is automatically generated. Do not edit manually.
 | [science-portal](helm/applications/canfar-next/science-portal) | A Helm chart for Science Portal Next.js application |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
 | [posixmapper](helm/applications/posix-mapper) | A Helm chart to install the UID/GID POSIX Mapper |
+| [datalink](helm/applications/sandbox/datalink) | A Helm chart for Kubernetes |
+| [meta](helm/applications/sandbox/meta) | A Helm chart for Kubernetes |
+| [repo](helm/applications/sandbox/repo) | A Helm chart for Kubernetes |
+| [search](helm/applications/sandbox/search) | A Helm chart for Kubernetes |
+| [stack](helm/applications/sandbox/stack) | A Helm chart for the SC2 Sandbox Stack |
+| [tap](helm/applications/sandbox/tap) | A Helm chart for Kubernetes |
 | [scienceportal](helm/applications/science-portal) | A Helm chart to install the Science Portal UI |
 | [skaha](helm/applications/skaha) | A Helm chart to install the Skaha web service of the CANFAR Science Platform |
 | [sshd](helm/applications/sshd) | An SSHD service with SSSD to get users from LDAP |

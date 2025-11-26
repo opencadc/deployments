@@ -1,0 +1,60 @@
+# meta
+
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.9.4](https://img.shields.io/badge/AppVersion-0.9.4-informational?style=flat-square)
+
+A Helm chart for Kubernetes
+
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| affinity | object | `{}` |  |
+| autoscaling.enabled | bool | `false` |  |
+| autoscaling.maxReplicas | int | `100` |  |
+| autoscaling.minReplicas | int | `1` |  |
+| autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| fullnameOverride | string | `""` |  |
+| httpRoute | object | `{"annotations":{},"enabled":false,"hostnames":["chart-example.local"],"parentRefs":[{"name":"gateway","sectionName":"http"}],"rules":[{"matches":[{"path":{"type":"PathPrefix","value":"/headers"}}]}]}` | Expose the service via gateway-api HTTPRoute Requires Gateway API resources and suitable controller installed within the cluster (see: https://gateway-api.sigs.k8s.io/guides/) |
+| image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.repository | string | `"images.opencadc.org/caom2/sc2meta"` |  |
+| image.tag | string | `"0.9.4"` |  |
+| imagePullSecrets | list | `[]` |  |
+| ingress.annotations | object | `{}` |  |
+| ingress.className | string | `""` |  |
+| ingress.enabled | bool | `false` |  |
+| ingress.hosts[0].host | string | `"chart-example.local"` |  |
+| ingress.hosts[0].paths[0].path | string | `"/"` |  |
+| ingress.hosts[0].paths[0].pathType | string | `"ImplementationSpecific"` |  |
+| ingress.tls | list | `[]` |  |
+| livenessProbe.httpGet.path | string | `"/meta/availability?detail=min"` |  |
+| livenessProbe.httpGet.port | string | `"http"` |  |
+| nameOverride | string | `""` |  |
+| nodeSelector | object | `{}` |  |
+| podAnnotations | object | `{}` |  |
+| podLabels | object | `{}` |  |
+| podSecurityContext.fsGroup | int | `8675309` |  |
+| readinessProbe.httpGet.path | string | `"/meta/availability"` |  |
+| readinessProbe.httpGet.port | string | `"http"` |  |
+| registryURL[0] | string | `"https://ws-uv.canfar.net/reg"` |  |
+| replicaCount | int | `1` |  |
+| resources.limits.cpu | string | `"500m"` |  |
+| resources.limits.memory | string | `"2500Mi"` |  |
+| resources.requests.cpu | string | `"250m"` |  |
+| resources.requests.memory | string | `"256Mi"` |  |
+| securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| securityContext.readOnlyRootFilesystem | bool | `true` |  |
+| securityContext.runAsNonRoot | bool | `true` |  |
+| securityContext.runAsUser | int | `8675309` |  |
+| service.port | int | `8080` |  |
+| service.type | string | `"ClusterIP"` |  |
+| serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.automount | bool | `true` |  |
+| serviceAccount.create | bool | `true` |  |
+| serviceAccount.name | string | `""` |  |
+| tolerations | list | `[]` |  |
+| uws.maxActive | string | `nil` |  |
+| uws.password | string | `nil` |  |
+| uws.url | string | `nil` |  |
+| uws.username | string | `nil` |  |
+| volumeMounts | list | `[]` |  |
+| volumes | list | `[]` |  |

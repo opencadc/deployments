@@ -4,7 +4,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.2.1<!-- x-release-please-version --> | 1.1.2 | application |
+|1.3.1<!-- x-release-please-version --> | 1.1.6 | application |
 
 ## Requirements
 
@@ -21,7 +21,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.apiVersion | string | `"v1"` |  |
 | deployment.skaha.defaultQuotaGB | string | `"10"` |  |
 | deployment.skaha.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.skaha.image | string | `"images.opencadc.org/platform/skaha:1.1.3"` |  |
+| deployment.skaha.image | string | `"images.opencadc.org/platform/skaha:1.1.6"` |  |
 | deployment.skaha.imageCache.refreshSchedule | string | `"*/30 * * * *"` |  |
 | deployment.skaha.imagePullPolicy | string | `"Always"` |  |
 | deployment.skaha.init.image | string | `"busybox:1.37.0"` |  |
@@ -42,16 +42,21 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` |  |
 | deployment.skaha.sessions.minEphemeralStorage | string | `"20Gi"` |  |
 | deployment.skaha.sessions.nodeLabelSelector | string | `nil` |  |
-| deployment.skaha.sessions.persistentVolumeClaimName | string | `"skaha-workload-cavern-pvc"` |  |
 | deployment.skaha.sessions.tls | object | `{}` |  |
 | deployment.skaha.sessions.tolerations | list | `[]` |  |
+| deployment.skaha.sessions.userStorage.admin.auth | string | `nil` |  |
+| deployment.skaha.sessions.userStorage.homeDirectory | string | `"home"` |  |
+| deployment.skaha.sessions.userStorage.persistentVolumeClaimName | string | `"skaha-workload-cavern-pvc"` |  |
+| deployment.skaha.sessions.userStorage.projectsDirectory | string | `"projects"` |  |
+| deployment.skaha.sessions.userStorage.topLevelDirectory | string | `"/cavern"` |  |
 | experimentalFeatures.enabled | bool | `false` |  |
-| experimentalFeatures.sessionLimitRange.rbac.create | bool | `true` |  |
 | experimentalFeatures.sessionLimitRange.enabled | bool | `false` |  |
 | experimentalFeatures.sessionLimitRange.limitSpec | object | `{}` |  |
+| experimentalFeatures.sessionLimitRange.rbac.create | bool | `true` |  |
 | ingress.enabled | bool | `true` |  |
 | ingress.path | string | `"/skaha"` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
+| podSecurityContext | object | `{}` |  |
 | redis.architecture | string | `"standalone"` |  |
 | redis.auth.enabled | bool | `false` |  |
 | redis.image.repository | string | `"redis"` |  |
@@ -66,6 +71,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | redis.master.persistence.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
+| securityContext | object | `{}` |  |
 | service.port | int | `8080` |  |
 | skahaWorkload.namespace | string | `"skaha-workload"` |  |
 | tolerations | list | `[]` |  |

@@ -149,7 +149,7 @@ deployment:
         admin:
           auth:
             # Authenticate with an agreed API Key between Skaha and Cavern.  This is used to create new user home directories (allocations).
-            # Generate Key: 
+            # Generate Key:
             #   $ openssl rand -base64 32
             #   $ jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I=
             # Example:
@@ -160,7 +160,7 @@ deployment:
             # If both this and the OIDC Client are specified, Helm will throw an error.
             # Default key is "cadcproxy.pem", but you can override it.
             # Example:
-            #   certificateSecret: 
+            #   certificateSecret:
             #     name: "science-platform-user-storage-admin-certificate"
             #     key: "certificate.pem"  # The key in the Secret that contains the PEM certificate
             # certificateSecret:

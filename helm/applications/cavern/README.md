@@ -4,7 +4,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.8.0<!-- x-release-please-version --> | 0.9.0 | application |
+|0.9.0<!-- x-release-please-version --> | 0.9.2 | application |
 
 ## Requirements
 
@@ -48,6 +48,5 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | readinessProbe | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
-| skaha.namespace | string | `"skaha-system"` |  |
 | storage.service.spec | string | `nil` |  |
 | tolerations | list | `[]` |  |

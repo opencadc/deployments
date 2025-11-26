@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-config
   namespace: {{ .Release.Namespace }}
-binaryData: 
+binaryData:
   # Should be put into a secret
   RsaSignaturePub.key: {{ .Values.rsaPublicKey }}
 data:
@@ -41,4 +41,3 @@ data:
     sc2meta.db.url = {{ .Values.uws.url }}
     sc2meta.db.username = {{ required "Set the username for UWS" .Values.uws.username }}
     sc2meta.db.password = {{ .Values.uws.password }}
-  
