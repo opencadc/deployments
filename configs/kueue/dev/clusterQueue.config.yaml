@@ -3,10 +3,18 @@
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
-  name: default
+  name: worker-flavor
 spec:
   nodeLabels:
     skaha.opencadc.org/node-type: worker-node
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: gpu-flavor
+spec:
+  nodeLabels:
+    skaha.opencadc.org/node-type: gpu-node
 ---
 # ClusterQueue
 apiVersion: kueue.x-k8s.io/v1beta1
@@ -22,9 +30,9 @@ spec:
   queueingStrategy: BestEffortFIFO
   cohort: skaha-cohort
   resourceGroups:
-    - coveredResources: ["cpu", "memory", "ephemeral-storage"]
+    - coveredResources: ["cpu", "memory", "ephemeral-storage", "nvidia.com/gpu"]
       flavors:
-        - name: "default"
+        - name: "worker-flavor"
           # Cluster Hardware Configuration
           # Does not include
           #   - skaha.opencadc.org/node-type=service-node (p-nodes)
@@ -45,6 +53,34 @@ spec:
               nominalQuota:   "700Gi"
               borrowingLimit: "200Gi"
               lendingLimit:   "200Gi"
+            - name: "nvidia.com/gpu"
+              nominalQuota: "0"
+              borrowingLimit: "0"
+              lendingLimit: "0"
+        - name: "gpu-flavor"
+          # Cluster Hardware Configuration
+          # Does not include
+          #   - skaha.opencadc.org/node-type=service-node (p-nodes)
+          #   - skaha.opencadc.org/node-type=worker-node (p-nodes)
+          #   - node-role.kubernetes.io/control-plane
+          # No GPUs.  Here for testing only.
+          resources:
+            - name: "cpu"
+              nominalQuota:   "1"
+              borrowingLimit: "0"
+              lendingLimit:   "0"
+            - name: "memory"
+              nominalQuota:   "4Gi"
+              borrowingLimit: "0"
+              lendingLimit:   "0"
+            - name: "ephemeral-storage"
+              nominalQuota:   "10Gi"
+              borrowingLimit: "0"
+              lendingLimit:   "0"
+            - name: "nvidia.com/gpu"
+              nominalQuota: "0"
+              borrowingLimit: "0"
+              lendingLimit: "0"
   preemption:
     reclaimWithinCohort: LowerPriority
     borrowWithinCohort:

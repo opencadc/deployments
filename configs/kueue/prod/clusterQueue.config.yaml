@@ -3,10 +3,19 @@
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
-  name: default
+  name: worker-flavor
 spec:
   nodeLabels:
     skaha.opencadc.org/node-type: worker-node
+---
+# Resource Flavors
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: gpu-flavor
+spec:
+  nodeLabels:
+    skaha.opencadc.org/node-type: gpu-node
 ---
 # ClusterQueue
 apiVersion: kueue.x-k8s.io/v1beta1
@@ -24,23 +33,22 @@ spec:
   resourceGroups:
     - coveredResources: ["cpu", "memory", "ephemeral-storage", "nvidia.com/gpu"]
       flavors:
-        - name: "default"
+        - name: "worker-flavor"
           # Cluster Hardware Configuration
           # Does not include
           #   - skaha.opencadc.org/node-type=service-node (p-nodes)
+          #   - skaha.opencadc.org/node-type=gpu-node (p-nodes)
           #   - node-role.kubernetes.io/control-plane
           # Compute Nodes: 40 x [64 cores, 241Gi memory, 2048Gi ephemeral-storage]
-          # GPU Nodes A: 3 x [8 cores, 40Gi memory, 140Gi ephemeral-storage, GRID-V100D-16C]
-          # GPU Nodes B: 6 x [4 cores, 20Gi memory, 80Gi ephemeral-storage, GRID-V100D-8C]
           # nominalQuota = count * size - 2% overhead
           # borrowing / lending = size * 25%
           resources:
             - name: "cpu"
-              nominalQuota:   "2189" # 80% of cluster minus 2%
+              nominalQuota:   "2189" # 80% of worker nodes minus 2%
               borrowingLimit: "420"
               lendingLimit:   "420"
             - name: "memory"
-              nominalQuota:   "9063Gi" # 80% of cluster minus 2%
+              nominalQuota:   "9063Gi" # 80% of worker nodes minus 2%
               borrowingLimit: "1640Gi"
               lendingLimit:   "1640Gi"
               # 40 nodes * 2048Gi = 81920Gi
@@ -49,7 +57,36 @@ spec:
               borrowingLimit: "13159Gi"
               lendingLimit:   "13159Gi"
             - name: "nvidia.com/gpu"
-              nominalQuota: "18"
+              nominalQuota: "0"
+              borrowingLimit: "0"
+              lendingLimit: "0"
+        - name: "gpu-flavor"
+          # Cluster Hardware Configuration
+          # Does not include
+          #   - skaha.opencadc.org/node-type=service-node (p-nodes)
+          #   - skaha.opencadc.org/node-type=worker-node (p-nodes)
+          #   - node-role.kubernetes.io/control-plane
+          # Remaining GPU Node 01: 78 cores, 738Gi memory, 2950Gi ephemeral-storage, NVIDIA-A100-PCIE-40GB-MIG-3g.20gb]
+          # Remaining GPU Node 02: 18 cores, 84Gi memory, 84Gi ephemeral-storage, Tesla-V100-PCIE-32GB]
+          # nominalQuota = count * size - 2% overhead
+          # borrowing / lending = size * 25%
+
+          # Realistically the GPU 01 node will get used more, but smaller Jobs may get scheduled on 02.
+          resources:
+            - name: "cpu"
+              nominalQuota:   "60" # 80% of GPU Node 01
+              borrowingLimit: "0"
+              lendingLimit:   "0"
+            - name: "memory"
+              nominalQuota:   "585Gi" # 80% of GPU Node 01
+              borrowingLimit: "0Gi"
+              lendingLimit:   "0Gi"
+            - name: "ephemeral-storage"
+              nominalQuota:   "2361Gi"
+              borrowingLimit: "0Gi"
+              lendingLimit:   "0Gi"
+            - name: "nvidia.com/gpu"
+              nominalQuota: "8"
               borrowingLimit: "0"
               lendingLimit: "0"
   preemption:
