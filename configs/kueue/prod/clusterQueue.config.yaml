@@ -37,10 +37,9 @@ spec:
           # Cluster Hardware Configuration
           # Does not include
           #   - skaha.opencadc.org/node-type=service-node (p-nodes)
+          #   - skaha.opencadc.org/node-type=gpu-node (p-nodes)
           #   - node-role.kubernetes.io/control-plane
           # Compute Nodes: 40 x [64 cores, 241Gi memory, 2048Gi ephemeral-storage]
-          # GPU Nodes A: 3 x [8 cores, 40Gi memory, 140Gi ephemeral-storage, GRID-V100D-16C]
-          # GPU Nodes B: 6 x [4 cores, 20Gi memory, 80Gi ephemeral-storage, GRID-V100D-8C]
           # nominalQuota = count * size - 2% overhead
           # borrowing / lending = size * 25%
           resources:
@@ -65,12 +64,14 @@ spec:
           # Cluster Hardware Configuration
           # Does not include
           #   - skaha.opencadc.org/node-type=service-node (p-nodes)
+          #   - skaha.opencadc.org/node-type=worker-node (p-nodes)
           #   - node-role.kubernetes.io/control-plane
-          # Compute Nodes: 40 x [64 cores, 241Gi memory, 2048Gi ephemeral-storage]
-          # GPU Nodes A: 3 x [8 cores, 40Gi memory, 140Gi ephemeral-storage, GRID-V100D-16C]
-          # GPU Nodes B: 6 x [4 cores, 20Gi memory, 80Gi ephemeral-storage, GRID-V100D-8C]
+          # Remaining GPU Node 01: 78 cores, 738Gi memory, 2950Gi ephemeral-storage, NVIDIA-A100-PCIE-40GB-MIG-3g.20gb]
+          # Remaining GPU Node 02: 18 cores, 84Gi memory, 84Gi ephemeral-storage, Tesla-V100-PCIE-32GB]
           # nominalQuota = count * size - 2% overhead
           # borrowing / lending = size * 25%
+
+          # Realistically the GPU 01 node will get used more, but smaller Jobs may get scheduled on 02.
           resources:
             - name: "cpu"
               nominalQuota:   "60" # 80% of GPU Nodes minus 2%
