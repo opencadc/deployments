@@ -4,7 +4,7 @@ A Library Helm Chart for grouping common logic between charts. This chart is not
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.0.0<!-- x-release-please-version --> | 1.0.0 | library |
+|1.1.0<!-- x-release-please-version --> | 1.0.0 | library |
 
 **Homepage:** <https://opencadc.org>
 
