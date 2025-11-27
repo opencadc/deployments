@@ -1,5 +1,24 @@
 # Skaha User Session API Helm Chart
 
+## [1.2.2](https://github.com/opencadc/deployments/compare/skaha-1.2.1...skaha-1.2.2) (2025-11-27)
+
+
+### Bug Fixes
+
+* chart version bump ([da79b5b](https://github.com/opencadc/deployments/commit/da79b5bf26e148bf3546db3be8581a51041c6e13))
+* chart version updates ([106330d](https://github.com/opencadc/deployments/commit/106330d3da2b72395fefd5243b44968bb70c2987))
+* chart versions ([ad90b90](https://github.com/opencadc/deployments/commit/ad90b9058136bcf79bbbc60e0d129414f724f6c7))
+* chart versions ([d9c8052](https://github.com/opencadc/deployments/commit/d9c8052f00fc408442d506407c8c6c3d1fe96939))
+* cluster queue usability change ([860410b](https://github.com/opencadc/deployments/commit/860410b41dec6ddd3ea1eacaba2ef5e8fe9bb38d))
+* cluster queue usability change ([11aaeaf](https://github.com/opencadc/deployments/commit/11aaeaf5bb27f5a243b3e09cf52e898d7cef44d5))
+* doc update and small fixes ([21f3bed](https://github.com/opencadc/deployments/commit/21f3bed462e2e63691c230484aaf3cd272c216d5))
+* **docs:** fixed deployment docs ([4ce4c9d](https://github.com/opencadc/deployments/commit/4ce4c9d6dcba36b7e5fae47b073f2f75f26529ff))
+* fix for client cert writing ([9c7d55e](https://github.com/opencadc/deployments/commit/9c7d55e3f1db2aaf49ed0e8eec7d7436c1a86231))
+* fix for client cert writing ([0b8f24c](https://github.com/opencadc/deployments/commit/0b8f24c42c3418adc560631304ced8fe6d54c92d))
+* fix for skaha top level dir property ([1335dae](https://github.com/opencadc/deployments/commit/1335dae0e30394560232567e83a7351c9186357f))
+* fix for skaha top level dir property ([f04b919](https://github.com/opencadc/deployments/commit/f04b919daa7be8e52db5155a0631664c974af2d6))
+* make rbac creation configurable ([f85a12e](https://github.com/opencadc/deployments/commit/f85a12eecd8117ba7f486e814da604d2aeaf97ec))
+
 ## [1.2.1](https://github.com/opencadc/deployments/compare/skaha-1.2.0...skaha-1.2.1) (2025-11-13)
 
 
