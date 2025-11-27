@@ -3,19 +3,7 @@
 apiVersion: kueue.x-k8s.io/v1beta1
 kind: ResourceFlavor
 metadata:
-  name: worker-flavor
-spec:
-  nodeLabels:
-    skaha.opencadc.org/node-type: worker-node
----
-# Resource Flavors
-apiVersion: kueue.x-k8s.io/v1beta1
-kind: ResourceFlavor
-metadata:
-  name: gpu-flavor
-spec:
-  nodeLabels:
-    skaha.opencadc.org/node-type: gpu-node
+  name: default
 ---
 # ClusterQueue
 apiVersion: kueue.x-k8s.io/v1beta1
@@ -31,9 +19,9 @@ spec:
   queueingStrategy: BestEffortFIFO
   cohort: skaha-cohort
   resourceGroups:
-    - coveredResources: ["cpu", "memory", "ephemeral-storage"]
+    - coveredResources: ["cpu", "memory", "ephemeral-storage", "nvidia.com/gpu"]
       flavors:
-        - name: "worker-flavor"
+        - name: "default"
           # Cluster Hardware Configuration
           # Does not include
           #   - skaha.opencadc.org/node-type=service-node (p-nodes)
@@ -56,27 +44,6 @@ spec:
               nominalQuota:   "52636Gi"
               borrowingLimit: "13159Gi"
               lendingLimit:   "13159Gi"
-    - coveredResources: ["cpu", "memory", "ephemeral-storage", "nvidia.com/gpu"]
-      flavors:
-        - name: "gpu-flavor"
-          # Cluster Hardware Configuration
-          # Does not include
-          #   - skaha.opencadc.org/node-type=service-node (p-nodes)
-          #   - skaha.opencadc.org/node-type=worker-node (p-nodes)
-          #   - node-role.kubernetes.io/control-plane
-          # Remaining GPU Node 01: 78 cores, 738Gi memory, 2950Gi ephemeral-storage, NVIDIA-A100-PCIE-40GB-MIG-3g.20gb]
-          # Remaining GPU Node 02: 18 cores, 84Gi memory, 84Gi ephemeral-storage, Tesla-V100-PCIE-32GB]
-          # nominalQuota = count * size - 2% overhead
-          # borrowing / lending = size * 25%
-
-          # Realistically the GPU 01 node will get used more, but smaller Jobs may get scheduled on 02.
-          resources:
-            - name: "cpu"
-              nominalQuota:   "60" # 80% of GPU Node 01
-            - name: "memory"
-              nominalQuota:   "585Gi" # 80% of GPU Node 01
-            - name: "ephemeral-storage"
-              nominalQuota:   "2361Gi"
             - name: "nvidia.com/gpu"
               nominalQuota: "9"
   preemption:
