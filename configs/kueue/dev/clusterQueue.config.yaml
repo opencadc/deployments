@@ -30,7 +30,7 @@ spec:
   queueingStrategy: BestEffortFIFO
   cohort: skaha-cohort
   resourceGroups:
-    - coveredResources: ["cpu", "memory", "ephemeral-storage", "nvidia.com/gpu"]
+    - coveredResources: ["cpu", "memory", "ephemeral-storage"]
       flavors:
         - name: "worker-flavor"
           # Cluster Hardware Configuration
@@ -53,10 +53,8 @@ spec:
               nominalQuota:   "700Gi"
               borrowingLimit: "200Gi"
               lendingLimit:   "200Gi"
-            - name: "nvidia.com/gpu"
-              nominalQuota: "0"
-              borrowingLimit: "0"
-              lendingLimit: "0"
+    - coveredResources: ["cpu", "memory", "ephemeral-storage", "nvidia.com/gpu"]
+      flavors:
         - name: "gpu-flavor"
           # Cluster Hardware Configuration
           # Does not include
@@ -67,20 +65,12 @@ spec:
           resources:
             - name: "cpu"
               nominalQuota:   "1"
-              borrowingLimit: "0"
-              lendingLimit:   "0"
             - name: "memory"
               nominalQuota:   "4Gi"
-              borrowingLimit: "0"
-              lendingLimit:   "0"
             - name: "ephemeral-storage"
               nominalQuota:   "10Gi"
-              borrowingLimit: "0"
-              lendingLimit:   "0"
             - name: "nvidia.com/gpu"
               nominalQuota: "0"
-              borrowingLimit: "0"
-              lendingLimit: "0"
   preemption:
     reclaimWithinCohort: LowerPriority
     borrowWithinCohort:

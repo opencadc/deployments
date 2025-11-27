@@ -153,6 +153,13 @@ The init containers for the launch scripts.
           capabilities:
             drop:
               - ALL
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "100m"
+          limits:
+            memory: "64Mi"
+            cpu: "200m"
       - name: init-users-groups
         image: {{ .Values.deployment.skaha.sessions.initContainerImage | default "redis:8.2.2-bookworm" }}
         command: ["/init-users-groups/init-users-groups.sh"]
@@ -174,6 +181,13 @@ The init containers for the launch scripts.
           capabilities:
             drop:
               - ALL
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "100m"
+          limits:
+            memory: "64Mi"
+            cpu: "200m"
 {{- with .Values.deployment.extraHosts }}
       hostAliases:
 {{- range $extraHost := . }}
