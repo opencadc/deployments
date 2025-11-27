@@ -1,5 +1,15 @@
 # CHANGELOG for Cavern User Storage
 
+## [0.8.1](https://github.com/opencadc/deployments/compare/cavern-0.8.0...cavern-0.8.1) (2025-11-27)
+
+
+### Bug Fixes
+
+* chart versions ([ad90b90](https://github.com/opencadc/deployments/commit/ad90b9058136bcf79bbbc60e0d129414f724f6c7))
+* chart versions ([d9c8052](https://github.com/opencadc/deployments/commit/d9c8052f00fc408442d506407c8c6c3d1fe96939))
+* **docs:** fixed deployment docs ([4ce4c9d](https://github.com/opencadc/deployments/commit/4ce4c9d6dcba36b7e5fae47b073f2f75f26529ff))
+* use release namespace ([131fc11](https://github.com/opencadc/deployments/commit/131fc11226fe66422e7c2048b755539b503df528))
+
 ## [0.8.0](https://github.com/opencadc/deployments/compare/cavern-0.7.1...cavern-0.8.0) (2025-11-05)
 
 
