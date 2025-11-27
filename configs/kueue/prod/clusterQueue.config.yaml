@@ -78,7 +78,7 @@ spec:
             - name: "ephemeral-storage"
               nominalQuota:   "2361Gi"
             - name: "nvidia.com/gpu"
-              nominalQuota: "8"
+              nominalQuota: "9"
   preemption:
     reclaimWithinCohort: LowerPriority
     borrowWithinCohort:
