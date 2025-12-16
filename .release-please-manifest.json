@@ -6,6 +6,6 @@
   "helm/applications/skaha": "1.2.1",
   "helm/applications/sshd": "1.0.1",
   "helm/applications/storage-ui": "0.7.0",
-  "helm/applications/utils": "0.1.1",
+  "helm/applications/utils": "0.1.2",
   "helm/common": "1.0.0"
 }
