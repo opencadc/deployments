@@ -1,0 +1,13 @@
+{{- /*
+Post-installation notes for the Science Portal
+*/ -}}
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+Check the deployment:
+https://{{ .Values.deployment.hostname }}/science-portal
+{{ if .Values.deployment.sciencePortal.themeName }}
+Issue(s):
+- Using the .Values.deployment.sciencePortal.themeName property is deprecated and will be removed.  Please use .Values.deployment.sciencePortal.theme instead.
+{{ end }}
