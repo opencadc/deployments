@@ -57,6 +57,15 @@ repos:
     hooks:
       - id: gitleaks
         name: check for secrets
+  - repo: local
+    hooks:
+      - id: update-helm-dependencies
+        name: update helm dependencies
+        entry: ./src/scripts/helm-dependency-update.sh
+        language: script
+        pass_filenames: false
+        # Optional: restrict to specific file changes if needed, e.g., only run if Chart.yaml changes
+        files: 'Chart\.yaml$'
   - repo: https://github.com/gruntwork-io/pre-commit
     rev: v0.1.30
     hooks:
