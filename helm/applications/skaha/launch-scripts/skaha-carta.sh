@@ -15,7 +15,7 @@ fi
 ROOT=$1
 FOLDER=$2
 URL_PREFIX=$3
-COMMAND="carta --no_browser --top_level_folder=${ROOT} --port=6901 --idle_timeout=100000 --debug_no_auth --http_url_prefix=${URL_PREFIX} ${FOLDER}"
+COMMAND="carta --no_browser --top_level_folder=${ROOT} --enable_scripting --port=6901 --idle_timeout=100000 --debug_no_auth --http_url_prefix=${URL_PREFIX} ${FOLDER}"
 echo "root: $ROOT"
 echo "folder: $FOLDER"
 echo "url_prefix: $URL_PREFIX"
