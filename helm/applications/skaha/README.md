@@ -4,7 +4,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.3.1<!-- x-release-please-version --> | 1.1.6 | application |
+|1.3.3<!-- x-release-please-version --> | 1.2.0 | application |
 
 ## Requirements
 
@@ -21,7 +21,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.apiVersion | string | `"v1"` |  |
 | deployment.skaha.defaultQuotaGB | string | `"10"` |  |
 | deployment.skaha.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.skaha.image | string | `"images.opencadc.org/platform/skaha:1.1.6"` |  |
+| deployment.skaha.image | string | `"images.opencadc.org/platform/skaha:1.1.7"` |  |
 | deployment.skaha.imageCache.refreshSchedule | string | `"*/30 * * * *"` |  |
 | deployment.skaha.imagePullPolicy | string | `"Always"` |  |
 | deployment.skaha.init.image | string | `"busybox:1.37.0"` |  |
