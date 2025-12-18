@@ -36,19 +36,28 @@ data:
     ca.nrc.cadc.auth.IdentityManager=ca.nrc.cadc.ac.ACIdentityManager
 
     {{- with .Values.application.uws }}
-    org.opencadc.bifrost.uws.maxActive = {{ .maxActive | default 2 }}
-    org.opencadc.bifrost.uws.url = {{ required "Set the URL for the UWS database" .url }}
-    org.opencadc.bifrost.uws.username = {{ required "Set the username for the UWS database" .username }}
-    org.opencadc.bifrost.uws.password = {{ required "Set the password for the UWS database" .password }}
+    org.opencadc.argus.uws.maxActive = {{ .maxActive | default 2 }}
+    org.opencadc.argus.uws.url = {{ required "Set the URL for the UWS database" .url }}
+    org.opencadc.argus.uws.username = {{ required "Set the username for the UWS database" .username }}
+    org.opencadc.argus.uws.password = {{ required "Set the password for the UWS database" .password }}
     {{- end }}
-  bifrost.properties: |
-    {{- with .Values.application }}
-    # CAOM TAP service
-    org.opencadc.bifrost.queryService = {{ required "Set the queryService for the CAOM TAP service." .queryService }}
 
-    # artifact locator service
-    org.opencadc.bifrost.locatorService = {{ required "Set the locatorService for the artifact locator service." .locatorService }}
+    {{- with .Values.application.tapadm }}
+    org.opencadc.argus.tapadm.maxActive = {{ .maxActive | default 2 }}
+    org.opencadc.argus.tapadm.username = {{ required "Set the username for the TAPADM database" .username }}
+    org.opencadc.argus.tapadm.password = {{ required "Set the password for the TAPADM database" .password }}
+    org.opencadc.argus.tapadm.url = {{ required "Set the URL for the TAPADM database" .url }}
+    {{- end }}
 
-    # read grant providers (optional)
-    org.opencadc.bifrost.readGrantProvider = {{ .readGrantProvider }}
+    {{- with .Values.application.query }}
+    org.opencadc.argus.query.maxActive = {{ .maxActive | default 2 }}
+    org.opencadc.argus.query.username = {{ required "Set the username for the QUERY database" .username }}
+    org.opencadc.argus.query.password = {{ required "Set the password for the QUERY database" .password }}
+    org.opencadc.argus.query.url = {{ required "Set the URL for the QUERY database" .url }}
+    {{- end }}
+  argus.properties: |
+    {{- with .Values.application.materializedViews }}
+    {{- if .enabled }}
+    org.opencadc.argus.enableMaterializedViews = {{ .enabled }}
+    {{- end }}
     {{- end }}
