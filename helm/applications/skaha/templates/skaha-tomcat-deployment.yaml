@@ -108,7 +108,7 @@ spec:
         {{- end }}
         - name: skaha.adminsgroup
           value: "{{ .Values.deployment.skaha.adminsGroup }}"
-        - name: skaha.posixmapper.resourceid
+        - name: SKAHA_POSIX_MAPPER_RESOURCE_ID
           value: "{{ .Values.deployment.skaha.posixMapperResourceID }}"
         - name: REDIS_HOST
           value: "{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesClusterDomain }}"
