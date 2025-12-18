@@ -10,7 +10,7 @@ An SSHD service with SSSD to get users from LDAP
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../../common | common | ^1.0.0 |
+| file://../utils | utils | ^0.1.0 |
 
 ## Values
 

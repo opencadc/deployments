@@ -1,6 +1,6 @@
 dependencies:
-- name: common
-  repository: file://../../common
-  version: 1.0.0
-digest: sha256:002240b61dab8d637689129ba617df79c1ee616902bfa8c05ec39fdf0a7ee8ac
-generated: "2025-10-22T16:51:20.730686-07:00"
+- name: utils
+  repository: file://../utils
+  version: 0.1.2
+digest: sha256:98ec11c0ba13f64e79481985688c2e0354c5eeb3fca6b65b3e4953a08644710a
+generated: "2025-12-17T10:52:33.038213-08:00"

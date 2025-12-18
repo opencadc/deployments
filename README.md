@@ -34,7 +34,6 @@ This section is automatically generated. Do not edit manually.
 | [sshd](helm/applications/sshd) | An SSHD service with SSSD to get users from LDAP |
 | [storageui](helm/applications/storage-ui) | A Helm chart to install the User Storage UI |
 | [utils](helm/applications/utils) | A library Helm chart for common tasks |
-| [common](helm/common) | A Library Helm Chart for grouping common logic between charts. This chart is not deployable. |
 <!-- CHART-INVENTORY:END -->
 
 Charts are managed via [`.release-please-manifest.json`](.release-please-manifest.json) for automated versioning and releases.
