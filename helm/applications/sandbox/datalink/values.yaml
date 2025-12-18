@@ -175,5 +175,30 @@ tolerations: []
 
 affinity: {}
 
-# Database
-uws: {}
+application:
+  # Database settings for the IVOA Universal Worker Service (UWS)
+  # Example
+  #   uws:
+  #     url: "jdbc:postgresql://dbhost:5432/uwsdb"
+  #     username: "uwsuser"
+  #     password: "uwspassword"
+  #     maxActive: 10
+  uws: {}
+
+  # IVOA TAP (Table Access Protocol) service resource ID to use for querying CAOM-2 Metadata.
+  # This is an IVOA Identifier (ivo://...) that references the TAP service in the registry.
+  # Example:
+  #   queryService: "ivo://cadc.nrc.ca/argus"
+  queryService:
+
+  # Artifact locator service resource ID to use for locating data artifacts.
+  # This is an IVOA Identifier (ivo://...) that references the locator service in the registry.
+  # Example:
+  #   locatorService: "ivo://cadc.nrc.ca/transfer-negotiation"
+  locatorService:
+
+  # Read grant provider resource ID to use for read grants (optional).
+  # This is an IVOA Identifier (ivo://...) that references the Read Grant Provider service in the registry.
+  # Example:
+  #   readGrantProvider: "ivo://cadc.nrc.ca/read-grant-provider"
+  readGrantProvider:

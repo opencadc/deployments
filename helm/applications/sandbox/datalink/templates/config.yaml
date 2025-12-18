@@ -35,16 +35,20 @@ data:
     # (default: ca.nrc.cadc.auth.NoOpIdentityManager)
     ca.nrc.cadc.auth.IdentityManager=ca.nrc.cadc.ac.ACIdentityManager
 
-    org.opencadc.bifrost.uws.maxActive = {{ .Values.uws.maxActive | default 2 }}
-    org.opencadc.bifrost.uws.url = {{ required "Set the URL for the UWS database" .Values.uws.url }}
-    org.opencadc.bifrost.uws.username = {{ required "Set the username for the UWS database" .Values.uws.username }}
-    org.opencadc.bifrost.uws.password = {{ required "Set the password for the UWS database" .Values.uws.password }}
+    {{- with .Values.application.uws }}
+    org.opencadc.bifrost.uws.maxActive = {{ .maxActive | default 2 }}
+    org.opencadc.bifrost.uws.url = {{ required "Set the URL for the UWS database" .url }}
+    org.opencadc.bifrost.uws.username = {{ required "Set the username for the UWS database" .username }}
+    org.opencadc.bifrost.uws.password = {{ required "Set the password for the UWS database" .password }}
+    {{- end }}
   bifrost.properties: |
+    {{- with .Values.application }}
     # CAOM TAP service
-    org.opencadc.bifrost.queryService = ivo://cadc.nrc.ca/argus
+    org.opencadc.bifrost.queryService = {{ required "Set the queryService for the CAOM TAP service." .queryService }}
 
     # artifact locator service
-    org.opencadc.bifrost.locatorService = {resourceID of global transfer negotiation service}
+    org.opencadc.bifrost.locatorService = {{ required "Set the locatorService for the artifact locator service." .locatorService }}
 
     # read grant providers (optional)
-    org.opencadc.bifrost.readGrantProvider = {resourceID of a grant provider}
+    org.opencadc.bifrost.readGrantProvider = {{ .readGrantProvider }}
+    {{- end }}
