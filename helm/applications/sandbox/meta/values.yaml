@@ -2,24 +2,24 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  hostname: ""
+  # Define the common registry configuration.
+  # Example:
+  # registryURL: 
+  #   - "http://registry-1.example.com/registry"
+  #   - "http://registry-2.example.com/registry"
+  #
+  # registryURL: "http://registry.example.com/registry"
+  registryURL: ""
+
+  cdpID:
+  gmsID:
+  posixMapperResourceID:
+  rsaPubliKey:
+
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
-
-# This is the PostgreSQL UWS database connection information.
-# Examples:
-#   maxActive: 10
-#   url: jdbc:postgresql://postgresql-sandbox:5432/cadcmeta
-#   username: cadcmeta
-#   password: cadcmeta_password
-uws:
-  maxActive:
-  url:
-  username:
-  password:
-
-# What IVOA Registries to use for service discovery.
-registryURL:
-  - https://ws-uv.canfar.net/reg
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
@@ -142,11 +142,11 @@ resources:
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /meta/availability?detail=min
+    path: /meta
     port: http
 readinessProbe:
   httpGet:
-    path: /meta/availability
+    path: /meta/availability?detail=min
     port: http
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
@@ -175,3 +175,15 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+application:
+  # See https://github.com/opencadc/caom2sandbox/tree/main/sc2meta#catalinaproperties for details around database connection pools.
+  #
+  # Database settings for the IVOA Universal Worker Service (UWS)
+  # Example
+  #   uws:
+  #     url: "jdbc:postgresql://dbhost:5432/uwsdb"
+  #     username: "uwsuser"
+  #     password: "uwspassword"
+  #     maxActive: 10
+  uws: {}

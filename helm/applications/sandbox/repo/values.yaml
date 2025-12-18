@@ -2,16 +2,32 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  hostname: ""
+  # Define the common registry configuration.
+  # Example:
+  # registryURL: 
+  #   - "http://registry-1.example.com/registry"
+  #   - "http://registry-2.example.com/registry"
+  #
+  # registryURL: "http://registry.example.com/registry"
+  registryURL: ""
+
+  cdpID:
+  gmsID:
+  posixMapperResourceID:
+  rsaPubliKey:
+
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: nginx
+  repository: images.opencadc.org/caom2/torkeep
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "0.1.6"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -159,3 +175,32 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+application:
+  # See https://github.com/opencadc/caom2/tree/main/torkeep#catalinaproperties for details around database connection pools.
+  #
+  # Database settings for the CAOM-2 Metadata
+  # Example
+  #   caom2:
+  #     url: "jdbc:postgresql://dbhost:5432/caom2db"
+  #     username: "caom2user"
+  #     password: "caom2password"
+  #     maxActive: 10
+  caom2Metadata: {}
+
+  # Read and write grant provider resource IDs to use for read grants (optional).
+  # This is an IVOA Identifier (ivo://...) that references the Read/Write Grant Provider services in the registry.
+  # Example:
+  #   grantProviders: 
+  #     - "ivo://cadc.nrc.ca/grant-provider"
+  #     - "ivo://cadc.nrc.ca/grant-provider-alt"
+  grantProviders: []
+
+  # CAOM-2 collection configurations.
+  # Example:
+  #   collections:
+  #     - name: "MyCollection"
+  #       basePublisherID: "ivo://myorg/mycollection"
+  #       computeMetadata: true
+  #       proposalGroup: false
+  collections: []

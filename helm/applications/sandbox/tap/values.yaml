@@ -13,10 +13,10 @@ global:
   # registryURL: "http://registry.example.com/registry"
   registryURL: ""
 
-  cdpID: "ivo://cadc.nrc.ca/cred"
-  gmsID: "ivo://cadc.nrc.ca/gms"
-  posixMapperResourceID: "ivo://cadc.nrc.ca/gms"
-  rsaPubliKey: ""
+  cdpID:
+  gmsID:
+  posixMapperResourceID:
+  rsaPubliKey:
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1

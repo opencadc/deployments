@@ -35,9 +35,26 @@ data:
     # (default: ca.nrc.cadc.auth.NoOpIdentityManager)
     ca.nrc.cadc.auth.IdentityManager=ca.nrc.cadc.ac.ACIdentityManager
 
-    {{- with .Values.application.uws }}
-    sc2meta.uws.maxActive = {{ .maxActive | default 2 }}
-    sc2meta.uws.url = {{ required "Set the URL for the UWS database" .url }}
-    sc2meta.uws.username = {{ required "Set the username for the UWS database" .username }}
-    sc2meta.uws.password = {{ required "Set the password for the UWS database" .password }}
+    {{- with .Values.application.caom2Metadata }}
+    org.opencadc.torkeep.caom2.maxActive = {{ .maxActive | default 2 }}
+    org.opencadc.torkeep.caom2.url = {{ required "Set the URL for the CAOM-2 database" .url }}
+    org.opencadc.torkeep.caom2.username = {{ required "Set the username for the CAOM-2 database" .username }}
+    org.opencadc.torkeep.caom2.password = {{ required "Set the password for the CAOM-2 database" .password }}
+    {{- end }}
+  torkeep.properties: |
+    # permission services (one per line) that provide read and write grants
+    {{- with .Values.application.grantProviders }}
+    {{- range . }}
+    org.opencadc.torkeep.grantProvider = {{ . }}
+    {{- end }}
+    {{- end }}
+
+    # collection name and one or more collection properties
+    {{- with .Values.application.collections }}
+    {{- range . }}
+    org.opencadc.torkeep.collection = {{ required "Set the collection name" .name }}
+    {{ .name }}.basePublisherID = {{ required (printf "Set the basePublisherID for collection %s" .name) .basePublisherID }}
+    {{ .name }}.computeMetadata = {{ required (printf "Set the computeMetadata flag {true | false} for collection %s" .name) .computeMetadata }}
+    {{ .name }}.proposalGroup = {{ required (printf "Set the proposalGroup flag {true | false} for collection %s" .name) .proposalGroup }}
+    {{- end }}
     {{- end }}
