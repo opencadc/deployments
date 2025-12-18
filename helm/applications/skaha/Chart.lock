@@ -4,6 +4,6 @@ dependencies:
   version: 18.19.4
 - name: utils
   repository: file://../utils
-  version: 0.1.1
-digest: sha256:bee4865b79686ce802f8e425a43b3e208b38f5ed1c27f5413294e41ceda1e539
-generated: "2025-10-31T13:44:35.94863-07:00"
+  version: 0.1.2
+digest: sha256:c9298980b7bd3b789db6cea7fe2ec4555489815c1fc8f4d141327ace4ff72d4d
+generated: "2025-12-17T11:05:06.292909-08:00"

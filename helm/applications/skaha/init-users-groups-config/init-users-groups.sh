@@ -12,7 +12,7 @@
 SAVEIFS=$IFS
 IFS='\n'
 
-if [[ -z "${REDIS_URL}" ]]; then
+if [ -z "${REDIS_URL}" ]; then
     echo "Required argument REDIS_URL is missing."
     exit 1
 else

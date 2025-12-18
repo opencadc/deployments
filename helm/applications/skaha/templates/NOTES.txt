@@ -7,6 +7,9 @@ Namespace: {{ .Release.Namespace }}
 
 Skaha workload namespace: {{ .Values.skahaWorkload.namespace | default "skaha-workload" }}
 
+Sessions:
+- Ensure CARTA images being used are at version 5.0.3 or higher.
+
 Kueue:
 {{- if .Values.deployment.skaha.sessions.kueue }}
   - It's expected that the Kueue CRDs and controllers to be present if you set session queues.

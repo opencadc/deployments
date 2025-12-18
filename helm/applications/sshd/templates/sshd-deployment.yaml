@@ -36,7 +36,7 @@ spec:
       {{- end }}
       {{- end }}
       containers:
-      - image: {{ include "common.image" ( dict "imageObject" .Values.image ) }}
+      - image: {{ include "utils.image" ( dict "imageObject" .Values.image ) }}
         imagePullPolicy: Always
         name: {{ .Release.Name }}-process
         env:
