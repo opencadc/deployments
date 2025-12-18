@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+binaryData:
+  # Should be put into a secret
+  RsaSignaturePub.key: {{ .Values.rsaPublicKey }}
+data:
+  cadc-registry.properties: |
+    ivo://ivoa.net/std/GMS#search-1.0 = {{ .Values.global.gmsID }}
+    http://www.opencadc.org/std/UMS#users-1.0 = {{ .Values.global.gmsID }}
+
+    # Here to support the ACIdentityManager.  Not used by any other IdentityManager.
+    ivo://ivoa.net/std/CDP#proxy-1.0 = {{ .Values.global.cdpID }}
+
+    http://www.opencadc.org/std/posix#group-mapping-0.1 = {{ .Values.global.posixMapperResourceID }}
+    http://www.opencadc.org/std/posix#user-mapping-0.1 = {{ .Values.global.posixMapperResourceID }}
+
+    {{- $raw := .Values.global.registryURL -}}
+    {{- $urls := ternary (list $raw) $raw (kindIs "string" $raw) -}}
+    {{- range $urls }}
+    ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ . }}
+    {{- end }}
+  cadc-log.properties:
+    {{ range .Values.loggingGroups }}
+    group = {{ . }}
+    {{ end }}
+  catalina.properties: |
+    tomcat.connector.scheme=https
+    tomcat.connector.proxyName={{ .Values.global.hostname }}
+    tomcat.connector.proxyPort=443
+    ca.nrc.cadc.auth.PrincipalExtractor.enableClientCertHeader=true
+    ca.nrc.cadc.util.Log4jInit.messageOnly=true
+    # (default: ca.nrc.cadc.auth.NoOpIdentityManager)
+    ca.nrc.cadc.auth.IdentityManager=ca.nrc.cadc.ac.ACIdentityManager
+
+    org.opencadc.bifrost.uws.maxActive = {{ .Values.uws.maxActive | default 2 }}
+    org.opencadc.bifrost.uws.url = {{ required "Set the URL for the UWS database" .Values.uws.url }}
+    org.opencadc.bifrost.uws.username = {{ required "Set the username for the UWS database" .Values.uws.username }}
+    org.opencadc.bifrost.uws.password = {{ required "Set the password for the UWS database" .Values.uws.password }}
+  bifrost.properties: |
+    # CAOM TAP service
+    org.opencadc.bifrost.queryService = ivo://cadc.nrc.ca/argus
+
+    # artifact locator service
+    org.opencadc.bifrost.locatorService = {resourceID of global transfer negotiation service}
+
+    # read grant providers (optional)
+    org.opencadc.bifrost.readGrantProvider = {resourceID of a grant provider}
