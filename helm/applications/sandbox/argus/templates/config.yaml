@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+binaryData:
+  # Should be put into a secret
+  RsaSignaturePub.key: {{ .Values.global.rsaPublicKey }}
+data:
+  cadc-registry.properties: |
+    ivo://ivoa.net/std/GMS#search-1.0 = {{ .Values.global.gmsID }}
+    http://www.opencadc.org/std/UMS#users-1.0 = {{ .Values.global.gmsID }}
+    ivo://ivoa.net/std/UMS#users-0.1 = {{ .Values.global.gmsID }}
+
+    # Here to support the ACIdentityManager.  Not used by any other IdentityManager.
+    ivo://ivoa.net/std/CDP#proxy-1.0 = {{ .Values.global.cdpID }}
+
+    http://www.opencadc.org/std/posix#group-mapping-0.1 = {{ .Values.global.posixMapperID }}
+    http://www.opencadc.org/std/posix#user-mapping-0.1 = {{ .Values.global.posixMapperID }}
+
+    {{- $raw := .Values.global.registryURL -}}
+    {{- $urls := ternary (list $raw) $raw (kindIs "string" $raw) -}}
+    {{- range $urls }}
+    ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ . }}
+    {{- end }}
+  cadc-log.properties:
+    {{ range .Values.global.loggingGroups }}
+    group = {{ . }}
+    {{ end }}
+  catalina.properties: |
+    tomcat.connector.scheme=https
+    tomcat.connector.proxyName={{ .Values.global.hostname }}
+    tomcat.connector.proxyPort=443
+    ca.nrc.cadc.auth.PrincipalExtractor.enableClientCertHeader=true
+    ca.nrc.cadc.util.Log4jInit.messageOnly=true
+    # (default: ca.nrc.cadc.auth.NoOpIdentityManager)
+    ca.nrc.cadc.auth.IdentityManager=ca.nrc.cadc.ac.ACIdentityManager
+
+    {{- with .Values.application.uws }}
+    org.opencadc.argus.uws.maxActive = {{ .maxActive | default 2 }}
+    org.opencadc.argus.uws.url = {{ required "Set the URL for the UWS database" .url }}
+    org.opencadc.argus.uws.username = {{ required "Set the username for the UWS database" .username }}
+    org.opencadc.argus.uws.password = {{ required "Set the password for the UWS database" .password }}
+    {{- end }}
+
+    {{- with .Values.application.tapadm }}
+    org.opencadc.argus.tapadm.maxActive = {{ .maxActive | default 2 }}
+    org.opencadc.argus.tapadm.username = {{ required "Set the username for the TAPADM database" .username }}
+    org.opencadc.argus.tapadm.password = {{ required "Set the password for the TAPADM database" .password }}
+    org.opencadc.argus.tapadm.url = {{ required "Set the URL for the TAPADM database" .url }}
+    {{- end }}
+
+    {{- with .Values.application.query }}
+    org.opencadc.argus.query.maxActive = {{ .maxActive | default 2 }}
+    org.opencadc.argus.query.username = {{ required "Set the username for the QUERY database" .username }}
+    org.opencadc.argus.query.password = {{ required "Set the password for the QUERY database" .password }}
+    org.opencadc.argus.query.url = {{ required "Set the URL for the QUERY database" .url }}
+    {{- end }}
+  argus.properties: |
+    {{- with .Values.application.materializedViews }}
+    {{- if .enabled }}
+    org.opencadc.argus.enableMaterializedViews = {{ .enabled }}
+    {{- end }}
+    {{- end }}
+  cadc-tap-tmp.properties: |
+    # specify implementation in case the DelegatingStorageManager is used
+    org.opencadc.tap.tmp.StorageManager = org.opencadc.tap.tmp.TempStorageManager
+
+    # TempStorageManager config
+    org.opencadc.tap.tmp.TempStorageManager.baseURL = https://{{ .Values.global.hostname }}/argus/results
+    org.opencadc.tap.tmp.TempStorageManager.baseStorageDir = /tmp
