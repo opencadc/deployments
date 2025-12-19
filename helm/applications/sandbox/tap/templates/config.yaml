@@ -61,3 +61,10 @@ data:
     org.opencadc.argus.enableMaterializedViews = {{ .enabled }}
     {{- end }}
     {{- end }}
+  cadc-tap-tmp.properties: |
+    # specify implementation in case the DelegatingStorageManager is used
+    org.opencadc.tap.tmp.StorageManager = org.opencadc.tap.tmp.TempStorageManager
+
+    # TempStorageManager config
+    org.opencadc.tap.tmp.TempStorageManager.baseURL = https://{{ .Values.global.hostname }}/argus/results
+    org.opencadc.tap.tmp.TempStorageManager.baseStorageDir = /tmp

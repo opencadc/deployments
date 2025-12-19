@@ -55,15 +55,15 @@ podAnnotations: {}
 podLabels: {}
 
 podSecurityContext:
-  fsGroup: 8675309
+  # fsGroup: 8675309
 
 securityContext:
   capabilities:
     drop:
     - ALL
-  readOnlyRootFilesystem: true
-  runAsNonRoot: true
-  runAsUser: 8675309
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 8675309
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
@@ -140,14 +140,8 @@ resources:
     memory: 256Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-livenessProbe:
-  httpGet:
-    path: /meta
-    port: http
-readinessProbe:
-  httpGet:
-    path: /meta/availability?detail=min
-    port: http
+livenessProbe: {}
+readinessProbe: {}
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
