@@ -243,12 +243,19 @@ deployment:
       #   hostname: myhost.example.org
       # hostname:
 
-      # Optionally set the TLS configiuration that contains the certificate information for the alternate hostname for User Sessions.  This will go into the Traefik IngressRoute spec.
-      # @see https://doc.traefik.io/traefik/v2.3/routing/providers/kubernetes-crd/#kind-ingressroute
-      # Example:
-      #   tls:
-      #     secretName: myhost-tls-secret
-      tls: {}
+      ingress:
+        # Optionally set the TLS configiuration that contains the certificate information for the alternate hostname for User Sessions.  This will go into the Traefik IngressRoute spec.
+        # @see https://doc.traefik.io/traefik/v2.3/routing/providers/kubernetes-crd/#kind-ingressroute
+        # Example:
+        #   tls:
+        #     secretName: myhost-tls-secret
+        tls: {}
+
+        # Add custom response headers to User Sessions.  This is useful for Science Gateway embedding support.
+        # Example:
+        #   customResponseHeaders:
+        #     content-security-policy: "frame-ancestors 'self' https://gateway.example.org"
+        customResponseHeaders: {}
 
       # Declare extra volume mounts in User Sessions.  The "type: parameter in volume section is constant.
       # extraVolumes:
