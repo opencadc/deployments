@@ -1,5 +1,21 @@
 # CHANGELOG for Cavern User Storage
 
+## [0.9.0](https://github.com/opencadc/deployments/compare/cavern-0.8.0...cavern-0.9.0) (2026-01-07)
+
+
+### Features
+
+* remove carta legacy and add scripting support ([b7128f5](https://github.com/opencadc/deployments/commit/b7128f5ee08b7620dbe2c666c44d7255662da692))
+
+
+### Bug Fixes
+
+* chart versions ([ad90b90](https://github.com/opencadc/deployments/commit/ad90b9058136bcf79bbbc60e0d129414f724f6c7))
+* chart versions ([d9c8052](https://github.com/opencadc/deployments/commit/d9c8052f00fc408442d506407c8c6c3d1fe96939))
+* **docs:** fixed deployment docs ([4ce4c9d](https://github.com/opencadc/deployments/commit/4ce4c9d6dcba36b7e5fae47b073f2f75f26529ff))
+* fix pre commit ([fc24792](https://github.com/opencadc/deployments/commit/fc247922894c09d6343fa75a34fb3fb352ccf257))
+* use release namespace ([131fc11](https://github.com/opencadc/deployments/commit/131fc11226fe66422e7c2048b755539b503df528))
+
 ## [0.8.0](https://github.com/opencadc/deployments/compare/cavern-0.7.1...cavern-0.8.0) (2025-11-05)
 
 
