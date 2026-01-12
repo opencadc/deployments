@@ -23,6 +23,9 @@ spec:
     match: Host(`${skaha.sessions.hostname}`) && PathPrefix(`/session/firefly/${skaha.sessionid}/`)
     middlewares:
       - name: {{ .Release.Name }}-firefly-set-x-forwarded-proto
+{{- if .Values.deployment.skaha.sessions.ingress.customResponseHeaders }}
+      - name: {{ .Release.Name }}-custom-response-headers
+{{- end }}
     services:
     - kind: Service
       name: skaha-firefly-svc-${skaha.sessionid}

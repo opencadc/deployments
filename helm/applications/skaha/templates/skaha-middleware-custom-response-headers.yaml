@@ -7,12 +7,12 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: {{ .Release.Name }}-gateway-support-middleware
+  name: {{ .Release.Name }}-custom-response-headers
   namespace: {{ .Values.skahaWorkload.namespace }}
 spec:
   headers:
     customResponseHeaders:
-{{- with .Values.deployment.skaha.sessions.ingress.customResponseHeaders -}}
+{{- with .Values.deployment.skaha.sessions.ingress.customResponseHeaders }}
 {{ toYaml . | indent 6 }}
-{{- end -}}
+{{- end }}
 {{- end -}}
