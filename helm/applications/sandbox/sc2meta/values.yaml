@@ -6,7 +6,7 @@ global:
   hostname: ""
   # Define the common registry configuration.
   # Example:
-  # registryURL: 
+  # registryURL:
   #   - "http://registry-1.example.com/registry"
   #   - "http://registry-2.example.com/registry"
   #
