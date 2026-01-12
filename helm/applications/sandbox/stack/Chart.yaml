@@ -26,16 +26,16 @@ appVersion: "0.1.0"
 dependencies:
   - name: datalink
     version: "0.1.0"
-    repository: "file://../datalink"
+    repository: "file://../bifrost"
   - name: meta
     version: "0.1.0"
-    repository: "file://../meta"
+    repository: "file://../sc2meta"
   - name: repo
     version: "0.1.0"
-    repository: "file://../repo"
+    repository: "file://../torkeep"
   - name: search
     version: "0.1.0"
     repository: "file://../search"
   - name: tap
     version: "0.1.0"
-    repository: "file://../tap"
+    repository: "file://../argus"
