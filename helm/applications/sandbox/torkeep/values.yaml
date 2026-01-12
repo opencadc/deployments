@@ -6,7 +6,7 @@ global:
   hostname: ""
   # Define the common registry configuration.
   # Example:
-  # registryURL: 
+  # registryURL:
   #   - "http://registry-1.example.com/registry"
   #   - "http://registry-2.example.com/registry"
   #
@@ -185,7 +185,7 @@ application:
   # Read and write grant provider resource IDs to use for read grants (optional).
   # This is an IVOA Identifier (ivo://...) that references the Read/Write Grant Provider services in the registry.
   # Example:
-  #   grantProviders: 
+  #   grantProviders:
   #     - "ivo://cadc.nrc.ca/grant-provider"
   #     - "ivo://cadc.nrc.ca/grant-provider-alt"
   grantProviders: []
