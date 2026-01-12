@@ -1,17 +1,33 @@
-# Default values for search.
+# Default values for datalink.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+
+global:
+  hostname: ""
+  # Define the common registry configuration.
+  # Example:
+  # registryURL: 
+  #   - "http://registry-1.example.com/registry"
+  #   - "http://registry-2.example.com/registry"
+  #
+  # registryURL: "http://registry.example.com/registry"
+  registryURL: ""
+
+  cdpID:
+  gmsID:
+  posixMapperID:
+  rsaPublicKey:
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: images.opencadc.org/caom2/search
+  repository: images.opencadc.org/caom2/bifrost
   # This sets the pull policy for images.
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "0.5.8"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -54,7 +70,7 @@ service:
   # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
+  port: 8080
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -124,14 +140,8 @@ resources: {}
   #   memory: 128Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+livenessProbe: {}
+readinessProbe: {}
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -159,3 +169,31 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+application:
+  # Database settings for the IVOA Universal Worker Service (UWS)
+  # Example
+  #   uws:
+  #     url: "jdbc:postgresql://dbhost:5432/uwsdb"
+  #     username: "uwsuser"
+  #     password: "uwspassword"
+  #     maxActive: 10
+  uws: {}
+
+  # IVOA TAP (Table Access Protocol) service resource ID to use for querying CAOM-2 Metadata.
+  # This is an IVOA Identifier (ivo://...) that references the TAP service in the registry.
+  # Example:
+  #   queryService: "ivo://cadc.nrc.ca/argus"
+  queryService:
+
+  # Artifact locator service resource ID to use for locating data artifacts.
+  # This is an IVOA Identifier (ivo://...) that references the locator service in the registry.
+  # Example:
+  #   locatorService: "ivo://cadc.nrc.ca/transfer-negotiation"
+  locatorService:
+
+  # Read grant provider resource ID to use for read grants (optional).
+  # This is an IVOA Identifier (ivo://...) that references the Read Grant Provider service in the registry.
+  # Example:
+  #   readGrantProvider: "ivo://cadc.nrc.ca/read-grant-provider"
+  readGrantProvider:
