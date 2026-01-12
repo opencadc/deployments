@@ -124,7 +124,7 @@ deployment:
 
     # Supported themes (src or canfar), and optionally a logo URL.
     # Example:
-    # theme: 
+    # theme:
     #   name: canfar
     #   logoURL: https://example.org/mylogo.png
     theme: {}

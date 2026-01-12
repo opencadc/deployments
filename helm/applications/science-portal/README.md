@@ -4,7 +4,7 @@ A Helm chart to install the Science Portal UI
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.1.2<!-- x-release-please-version --> | 1.2.5 | application |
+|1.1.3<!-- x-release-please-version --> | 1.2.6 | application |
 
 ## Requirements
 
@@ -30,8 +30,7 @@ A Helm chart to install the Science Portal UI
 | deployment.sciencePortal.skahaResourceID | string | `nil` |  |
 | deployment.sciencePortal.tabLabels[0] | string | `"Standard"` |  |
 | deployment.sciencePortal.tabLabels[1] | string | `"Advanced"` |  |
-| deployment.sciencePortal.theme.name | string | `nil` |  |
-| deployment.sciencePortal.theme.logoURL | string | `nil` |  |
+| deployment.sciencePortal.theme | object | `{}` |  |
 | experimentalFeatures.enabled | bool | `false` |  |
 | experimentalFeatures.slider.enabled | bool | `false` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
