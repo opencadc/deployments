@@ -24,18 +24,18 @@ version: 0.1.0
 appVersion: "0.1.0"
 
 dependencies:
-  - name: datalink
+  - name: bifrost
     version: "0.1.0"
-    repository: "file://../datalink"
-  - name: meta
+    repository: "file://../bifrost"
+  - name: sc2meta
     version: "0.1.0"
-    repository: "file://../meta"
-  - name: repo
+    repository: "file://../sc2meta"
+  - name: torkeep
     version: "0.1.0"
-    repository: "file://../repo"
+    repository: "file://../torkeep"
   - name: search
     version: "0.1.0"
     repository: "file://../search"
-  - name: tap
+  - name: argus
     version: "0.1.0"
-    repository: "file://../tap"
+    repository: "file://../argus"
