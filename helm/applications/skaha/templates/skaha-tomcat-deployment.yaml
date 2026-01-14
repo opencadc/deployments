@@ -106,6 +106,25 @@ spec:
           value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.deployment.skaha.sessions.kueue.%s.priorityClass" $queueConfigKey) }}"
         {{- end }}
         {{- end }}
+
+
+        # Flex Resource Requests are a way of setting default resource requests for new User Sessions based on type.
+        # The LimitRange will be enforced still, and will take precedence for any missing values (cpu or memory).
+        # This configuration ONLY applies when the "flex" resource profile is requested, and only for resource requests (not limits).
+        # See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#how-pod-priority-affects-resource-allocation
+        {{- with .Values.deployment.skaha.sessions.flexResourceRequests }}
+        {{- range $sessionTypeKey, $sessionTypeConfig := . }}
+        {{- if $sessionTypeConfig.memory }}
+        - name: SKAHA_FLEX_RESOURCE_REQUEST_{{ $sessionTypeKey | upper }}_MEMORY
+          value: "{{ $sessionTypeConfig.memory }}"
+        {{- end }}
+        {{- if $sessionTypeConfig.cpu }}
+        - name: SKAHA_FLEX_RESOURCE_REQUEST_{{ $sessionTypeKey | upper }}_CPU
+          value: "{{ $sessionTypeConfig.cpu }}"
+        {{- end }}
+        {{- end }}
+        {{- end }}
+
         - name: skaha.adminsgroup
           value: "{{ .Values.deployment.skaha.adminsGroup }}"
         - name: skaha.posixmapper.resourceid
