@@ -40,7 +40,7 @@ A&A is handle by caching the Token Set server side and issuing a cookie to the b
 
 The system will be available at the `/science-portal` endpoint, (i.e. https://example.com/science-portal).  Authenticating to the system is mandatory.
 
-<!-- 
+<!--
 Include the generated README from the Helm chart for reference.
 -->
 --8<-- "helm/applications/science-portal/README.md"
