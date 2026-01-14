@@ -32,13 +32,17 @@ REVISION: 7
 TEST SUITE: None
 ```
 
-## Authentication & Authorization
+## Configuration
+
+### Authentication & Authorization
 
 A&A is handle by caching the Token Set server side and issuing a cookie to the browser to enable secure retrieval.  See the [Application Authentication Documentation](../../../docs/authentication/).
 
-## Endpoints
+### Endpoints
 
 The system will be available at the `/science-portal` endpoint, (i.e. https://example.com/science-portal).  Authenticating to the system is mandatory.
+
+### Values Reference
 
 <!--
 Include the generated README from the Helm chart for reference.
