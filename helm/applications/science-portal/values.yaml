@@ -139,11 +139,6 @@ deployment:
 experimentalFeatures:
   enabled: false
 
-  # Enable the slider experimental feature.
-  # This feature allows users to dynamically adjust the resource limits of their jobs with a different User Interface experience.
-  slider:
-    enabled: false
-
 # This is a list of tolerations that will be added to the Pod spec of the Science Portal UI.
 # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 #
