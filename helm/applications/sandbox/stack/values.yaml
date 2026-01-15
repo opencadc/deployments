@@ -3,16 +3,16 @@
 # Declare variables to be passed into your templates.
 
 # DataLink configuration
-datalink:
+bifrost:
 
 # CAOM-2 Metadata service configuration
-meta:
+sc2meta:
 
 # CAOM-2 Repository service configuration
-repo:
+torkeep:
 
 # CAOM-2 TAP query service configuration
-tap:
+argus:
 
 # User Interface search configuration
 search:

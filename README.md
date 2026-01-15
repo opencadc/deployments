@@ -23,12 +23,12 @@ This section is automatically generated. Do not edit manually.
 | [science-portal](helm/applications/canfar-next/science-portal) | A Helm chart for Science Portal Next.js application |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
 | [posixmapper](helm/applications/posix-mapper) | A Helm chart to install the UID/GID POSIX Mapper |
-| [datalink](helm/applications/sandbox/datalink) | A Helm chart for Kubernetes |
-| [meta](helm/applications/sandbox/meta) | A Helm chart for Kubernetes |
-| [repo](helm/applications/sandbox/repo) | A Helm chart for Kubernetes |
-| [search](helm/applications/sandbox/search) | A Helm chart for Kubernetes |
+| [argus](helm/applications/sandbox/argus) | An IVAO TAP Helm chart |
+| [bifrost](helm/applications/sandbox/bifrost) | A Helm chart for Kubernetes |
+| [sc2meta](helm/applications/sandbox/sc2meta) | A Helm chart for Kubernetes |
+| [search](helm/applications/sandbox/search) | A Helm chart for the Search User Interface browser application |
 | [stack](helm/applications/sandbox/stack) | A Helm chart for the SC2 Sandbox Stack |
-| [tap](helm/applications/sandbox/tap) | A Helm chart for Kubernetes |
+| [torkeep](helm/applications/sandbox/torkeep) | A CAOM-2 Metadata Repository Helm Chart |
 | [scienceportal](helm/applications/science-portal) | A Helm chart to install the Science Portal UI |
 | [skaha](helm/applications/skaha) | A Helm chart to install the Skaha web service of the CANFAR Science Platform |
 | [sshd](helm/applications/sshd) | An SSHD service with SSSD to get users from LDAP |

@@ -1,18 +1,18 @@
 dependencies:
-- name: datalink
-  repository: file://../datalink
+- name: bifrost
+  repository: file://../bifrost
   version: 0.1.0
-- name: meta
-  repository: file://../meta
+- name: sc2meta
+  repository: file://../sc2meta
   version: 0.1.0
-- name: repo
-  repository: file://../repo
+- name: torkeep
+  repository: file://../torkeep
   version: 0.1.0
 - name: search
   repository: file://../search
   version: 0.1.0
-- name: tap
-  repository: file://../tap
+- name: argus
+  repository: file://../argus
   version: 0.1.0
-digest: sha256:85fea7358ccf7b431d01404865b8bc113f456918025f0cc0bac8850bb9e8d6e5
-generated: "2025-11-08T17:08:18.985627-08:00"
+digest: sha256:221bac0f7ab96a9c2a90be028393944b09618c680f3f1a157586fe0f6f08f76c
+generated: "2026-01-12T13:07:06.605774-08:00"
