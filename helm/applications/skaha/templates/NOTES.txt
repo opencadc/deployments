@@ -12,13 +12,12 @@ User Sessions:
 
 {{- with .Values.deployment.skaha.sessions.ingress }}
 User Sessions Ingress Configurations:
-{{- if .customResponseHeaders }}
 {{- with .customResponseHeaders }}
+- Custom Response Headers:
 {{ toYaml . | indent 6 }}
 {{- end }}
 {{- with .tls }}
-- TLS configured
-{{- end }}
+- TLS configured:
 {{- end }}
 {{- end }}
 
