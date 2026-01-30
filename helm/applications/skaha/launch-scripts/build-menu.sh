@@ -206,6 +206,7 @@ build_menu_item () {
   sed -i -e "s#(VERSION)#${version}#g" $tmp_desktop
   sed -i -e "s#(EXECUTABLE)#${EXECUTABLE_DIR}#g" $tmp_desktop
   sed -i -e "s#(CATEGORY)#${category}#g" $tmp_desktop
+  chmod +x $tmp_executable
   cp $tmp_executable $executable
   cp $tmp_start_executable ${start_executable}
   cp $tmp_desktop $desktop
