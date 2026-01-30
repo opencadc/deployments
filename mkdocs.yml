@@ -133,10 +133,10 @@ markdown_extensions:
 
 nav:
   - Helm Charts:
-    - helm/index.md
+    - Home: helm/index.md
     - Science Platform: helm/science-platform/index.md
   - Home: index.md
   - Operations:
-    - operations/index.md
+    - Home: operations/index.md
     - CI/CD Pipelines: operations/ci-cd.md
     - Release Process: operations/release-process.md

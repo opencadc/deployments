@@ -35,6 +35,13 @@ If user Jobs remain Pending:
 - Verify ClusterQueue quotas are sufficient.
 - Confirm priority classes referenced by sessions exist or are created.
 
+!! ISSUES !!:
+{{- if and .Values.experimentalFeatures .Values.experimentalFeatures.sessionLimitRange }}
+The experimentalFeatures.sessionLimitRange value is deprecated.  Please use the now released deployment.skaha.sessions.limitRange instead.
+{{- else }}
+None.
+{{- end}}
+
 Experimental Features Configured:
 {{- if and .Values.experimentalFeatures .Values.experimentalFeatures.enabled }}
 {{ include "skaha.experimentalFeatureGates" $ }}
