@@ -4,7 +4,7 @@ A Helm chart to install the User Storage UI
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.8.0<!-- x-release-please-version --> | 1.4.3 | application |
+|0.9.0<!-- x-release-please-version --> | 1.4.3 | application |
 
 ## Requirements
 
