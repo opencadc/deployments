@@ -4,7 +4,7 @@ A Helm chart to install the Science Portal UI
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.1.2<!-- x-release-please-version --> | 1.2.5 | application |
+|1.2.0<!-- x-release-please-version --> | 1.2.5 | application |
 
 ## Requirements
 
