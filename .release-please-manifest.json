@@ -1,6 +1,6 @@
 {
   "helm/applications/base": "0.4.1",
-  "helm/applications/cavern": "0.8.0",
+  "helm/applications/cavern": "0.9.0",
   "helm/applications/posix-mapper": "0.5.0",
   "helm/applications/science-portal": "1.1.2",
   "helm/applications/skaha": "1.4.0",
