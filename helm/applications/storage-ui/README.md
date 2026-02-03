@@ -4,7 +4,7 @@ A Helm chart to install the User Storage UI
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.8.0<!-- x-release-please-version --> | 1.4.1 | application |
+|0.9.0<!-- x-release-please-version --> | 1.4.3 | application |
 
 ## Requirements
 
@@ -20,7 +20,7 @@ A Helm chart to install the User Storage UI
 | deployment.hostname | string | `"example.host.com"` |  |
 | deployment.storageUI.gmsID | string | `nil` |  |
 | deployment.storageUI.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.storageUI.image | string | `"images.opencadc.org/client/storage-ui:1.4.1"` |  |
+| deployment.storageUI.image | string | `"images.opencadc.org/client/storage-ui:1.4.3"` |  |
 | deployment.storageUI.imagePullPolicy | string | `"IfNotPresent"` |  |
 | deployment.storageUI.resources.limits.cpu | string | `"750m"` |  |
 | deployment.storageUI.resources.limits.memory | string | `"1Gi"` |  |
