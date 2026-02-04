@@ -18,7 +18,7 @@ replicaCount: 1
 deployment:
   hostname: example.host.com    # Change this!
   storageUI:
-    image: images.opencadc.org/client/storage-ui:1.4.1
+    image: images.opencadc.org/client/storage-ui:1.4.3
     imagePullPolicy: IfNotPresent
 
     # Optionally set the DEBUG port.
