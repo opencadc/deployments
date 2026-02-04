@@ -159,7 +159,7 @@ deployment:
       flexResourceRequests:
         # The headless session type resource requests get slightly more resources.
         headless:
-          memoryInGB: "2"
+          memoryInGB: "4"
           cpuCores: "1"
 
       # Storage setings to be passed into the User Session Kubernetes Job spec.
