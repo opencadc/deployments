@@ -1,18 +1,18 @@
 {{- $limitRange := dict}}
 {{- $spec := dict }}
 {{- if .Values.experimentalFeatures.sessionLimitRange }}
-{{- $limitRange := .Values.experimentalFeatures.sessionLimitRange }}
-{{- $spec := $limitRange.limitSpec }}
+{{- $limitRange = .Values.experimentalFeatures.sessionLimitRange }}
+{{- $spec = $limitRange.limitSpec }}
 {{ else }}
-{{- $limitRange := .Values.deployment.skaha.sessions.limitRange }}
-{{- $spec := $limitRange.spec }}
+{{- $limitRange = .Values.deployment.skaha.sessions.limitRange }}
+{{- $spec = $limitRange.spec }}
 {{- end }}
 ---
 apiVersion: v1
 kind: LimitRange
 metadata:
-    name: {{ $.Release.Name }}-session-limit-range
-    namespace: {{ $.Values.skahaWorkload.namespace }}
+  name: {{ $.Release.Name }}-session-limit-range
+  namespace: {{ $.Values.skahaWorkload.namespace }}
 spec:
 {{- with $spec }}
   limits:
