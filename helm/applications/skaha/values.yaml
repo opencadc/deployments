@@ -118,6 +118,7 @@ deployment:
       #
       # Example:
       # limitRange:
+      #   enabled: true
       #   rbac:
       #     create: true
       #   spec:
@@ -133,7 +134,8 @@ deployment:
       #       memory: "4Gi"
       #       cpu: "1"
       #       "nvidia.com/gpu": "0"
-      limitRange: {}
+      limitRange:
+        enabled: false
 
       # Resource requests and limits for different session types for resource allocation when a "Flex" resource profile is used.
       # This is used to set resource requests for new User Sesssions based on type.  The LimitRange will be enforced still, and this

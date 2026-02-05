@@ -37,7 +37,7 @@ If user Jobs remain Pending:
 
 !! ISSUES !!:
 {{- if and .Values.experimentalFeatures .Values.experimentalFeatures.sessionLimitRange }}
-The experimentalFeatures.sessionLimitRange value is deprecated.  Please use the now released deployment.skaha.sessions.limitRange instead.
+The experimentalFeatures.sessionLimitRange value is deprecated and will be removed in 2026.2.  Please use the now released deployment.skaha.sessions.limitRange instead.
 {{- else }}
 None.
 {{- end}}

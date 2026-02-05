@@ -106,8 +106,10 @@ spec:
           value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.deployment.skaha.sessions.kueue.%s.priorityClass" $queueConfigKey) }}"
         {{- end }}
         {{- end }}
-
-
+        {{- if or .Values.deployment.skaha.sessions.limitRange.enabled (and .Values.experimentalFeatures.enabled .Values.experimentalFeatures.sessionLimitRange.enabled) }}
+        - name: SKAHA_SESSION_LIMIT_RANGE_ENABLED
+          value: "true"
+        {{- end }}
         # Flex Resource Requests are a way of setting default resource requests for new User Sessions based on type.
         # The LimitRange will be enforced still, and will take precedence for any missing values (cpu or memory).
         # This configuration ONLY applies when the "flex" resource profile is requested, and only for resource requests (not limits).
@@ -124,6 +126,8 @@ spec:
         {{- end }}
         {{- end }}
         {{- end }}
+
+
 
         - name: skaha.adminsgroup
           value: "{{ .Values.deployment.skaha.adminsGroup }}"
