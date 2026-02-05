@@ -20,6 +20,10 @@ spec:
   routes:
   - kind: Rule
     match: Host(`${skaha.sessions.hostname}`) && PathPrefix(`/session/notebook/${skaha.sessionid}/`)
+{{- if .Values.deployment.skaha.sessions.ingress.customResponseHeaders }}
+    middlewares:
+      - name: {{ .Release.Name }}-custom-response-headers
+{{- end }}
     services:
     - kind: Service
       name: skaha-notebook-svc-${skaha.sessionid}
