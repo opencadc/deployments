@@ -19,7 +19,6 @@ MERGED_DIR="/etc/xdg/menus/applications-merged"
 ASTROSOFTWARE_MENU="${MERGED_DIR}/astrosoftware.menu"
 declare -A app_version
 
-
 # generate a list of candidate icon names
 generate_candidates () {
   current_dir=${PWD}
@@ -207,6 +206,7 @@ build_menu_item () {
   sed -i -e "s#(VERSION)#${version}#g" $tmp_desktop
   sed -i -e "s#(EXECUTABLE)#${EXECUTABLE_DIR}#g" $tmp_desktop
   sed -i -e "s#(CATEGORY)#${category}#g" $tmp_desktop
+  chmod +x $tmp_executable
   cp $tmp_executable $executable
   cp $tmp_start_executable ${start_executable}
   cp $tmp_desktop $desktop
@@ -246,7 +246,19 @@ else
         project_array=(${project_array[@]} ${project})
         build_menu ${project} ${name}
       fi
+
+      # Start time in nanoseconds
+      start=$(date +%s%N)
+      # Execute the build_menu_item function
       build_menu_item ${image_id} ${name} ${project}
+      # End time in nanoseconds
+      end=$(date +%s%N)
+
+      # Calculate duration in milliseconds using shell arithmetic
+      # Note: Bash handles large integers automatically
+      duration_ms=$(((end - start) / 1000000))
+
+      echo "Execution time for ${name}: ${duration_ms} ms"
     fi
   done
 fi

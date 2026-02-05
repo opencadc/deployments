@@ -90,6 +90,10 @@ spec:
           name: templates
         - mountPath: "/skaha-system"
           name: start-desktop
+        - name: supervisor-log
+          mountPath: /var/log/supervisor
+        - name: supervisor-run
+          mountPath: /var/run/supervisor
         {{ template "skaha.session.commonVolumeMounts" . }}
       {{- with .Values.deployment.skaha.sessions.tolerations }}
       tolerations:
@@ -100,6 +104,16 @@ spec:
         emptyDir: { }
       - name: etc-passwd
         emptyDir: { }
+
+      # Force the Supervisor logs and run directories to be empty dirs to let Kubernetes 
+      # set the fsGroup write permissions
+      # jenkinsd 2026.01.05
+      #
+      - name: supervisor-log
+        emptyDir: {}
+      - name: supervisor-run
+        emptyDir: {}
+
       - name: start-desktop
         configMap:
           name: {{ .Release.Name }}-launch-scripts
