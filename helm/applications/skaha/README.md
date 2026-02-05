@@ -35,11 +35,14 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.resources.requests.memory | string | `"2Gi"` |  |
 | deployment.skaha.serviceAccountName | string | `"skaha"` |  |
 | deployment.skaha.sessions.expirySeconds | string | `"345600"` |  |
+| deployment.skaha.sessions.flexResourceRequests.headless.cpuCores | string | `"1"` |  |
+| deployment.skaha.sessions.flexResourceRequests.headless.memoryInGB | string | `"2"` |  |
 | deployment.skaha.sessions.imagePullPolicy | string | `"Always"` |  |
 | deployment.skaha.sessions.ingress.customResponseHeaders | object | `{}` |  |
 | deployment.skaha.sessions.ingress.tls | object | `{}` |  |
 | deployment.skaha.sessions.initContainerImage | string | `"redis:8.2.2-bookworm"` |  |
 | deployment.skaha.sessions.kueue | object | `{}` |  |
+| deployment.skaha.sessions.limitRange | object | `{}` |  |
 | deployment.skaha.sessions.maxCount | string | `"5"` |  |
 | deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` |  |
 | deployment.skaha.sessions.minEphemeralStorage | string | `"20Gi"` |  |
@@ -51,9 +54,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.userStorage.projectsDirectory | string | `"projects"` |  |
 | deployment.skaha.sessions.userStorage.topLevelDirectory | string | `"/cavern"` |  |
 | experimentalFeatures.enabled | bool | `false` |  |
-| experimentalFeatures.sessionLimitRange.enabled | bool | `false` |  |
-| experimentalFeatures.sessionLimitRange.limitSpec | object | `{}` |  |
-| experimentalFeatures.sessionLimitRange.rbac.create | bool | `true` |  |
+| experimentalFeatures.sessionLimitRange | object | `{}` |  |
 | ingress.enabled | bool | `true` |  |
 | ingress.path | string | `"/skaha"` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
