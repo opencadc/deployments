@@ -33,7 +33,7 @@ spec:
 
 # RBAC for LimitRange.  If created outside this installation, set rbac.create to false.
 {{- with $limitRange.rbac }}
-{{- if eq .create true }}
+{{- if .create }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
