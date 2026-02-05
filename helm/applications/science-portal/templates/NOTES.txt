@@ -1,0 +1,24 @@
+{{- /*
+Post-installation notes for the Science Portal
+*/ -}}
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+Check the deployment:
+https://{{ .Values.deployment.hostname }}/science-portal
+
+!! Issues !!:
+{{- if .Values.deployment.sciencePortal.themeName }}
+- Using the .Values.deployment.sciencePortal.themeName property is deprecated and will be removed.  Please use .Values.deployment.sciencePortal.theme instead.
+{{- end }}
+{{- if and .Values.experimentalFeatures .Values.experimentalFeatures.slider }}
+- The Slider feature is released now and no longer experimental.  The .experimentalFeatures.slider is ignored.
+{{- end }}
+
+Experimental Features Configured:
+{{- if and .Values.experimentalFeatures .Values.experimentalFeatures.enabled }}
+{{ include "sciencePortal.experimentalFeatureGates" $ }}
+{{- else }}
+None
+{{- end }}

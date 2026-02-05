@@ -32,13 +32,25 @@ REVISION: 7
 TEST SUITE: None
 ```
 
-## Authentication & Authorization
+## Configuration
+
+### Theme
+
+The Science Portal supports minimal theming via configuration options.  The following options are available under the `deployment.sciencePortal.theme` object:
+- `name`: The name of the theme to use.  Options are `canfar` and `src`.  These simply modify the header menu options.
+- `logoURL`: A URL to a logo image to use in the header (far left).  This overrides the default logo for the selected theme.
+
+The previous `deployment.sciencePortal.themeName` is deprecated in favour of the new `theme` object.
+
+### Authentication & Authorization
 
 A&A is handle by caching the Token Set server side and issuing a cookie to the browser to enable secure retrieval.  See the [Application Authentication Documentation](../../../docs/authentication/).
 
-## Endpoints
+### Endpoints
 
 The system will be available at the `/science-portal` endpoint, (i.e. https://example.com/science-portal).  Authenticating to the system is mandatory.
+
+### Values Reference
 
 <!--
 Include the generated README from the Helm chart for reference.
