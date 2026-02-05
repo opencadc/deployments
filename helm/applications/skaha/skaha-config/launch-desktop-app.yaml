@@ -53,7 +53,7 @@ spec:
         - name: HOME
           value: "${SKAHA_USER_HOME_DIR}"
         - name: DISPLAY
-          value: "${software.targetip}:1"
+          value: "${software.targetip}"
         - name: GDK_SYNCHRONIZE
           value: "1"
         - name: SHELL
