@@ -13,12 +13,12 @@ The base install also installs the Traefik proxy, which is needed by the Ingress
 ```sh
 $ git clone https://github.com/opencadc/science-platform.git
 $ cd science-platform/deployment/helm
-$ helm install --dependency-update --values ./base/values.yaml <name> ./base
+$ helm --namespace traefik upgrade --install --dependency-update --values ./base/values.yaml <name> ./base
 ```
 
 Where `<name>` is the name of this installation.  Example:
 ```sh
-$ helm install --dependency-update --values ./base/values.yaml base ./base
+$ helm --namespace traefik upgrade --install --dependency-update --values ./base/values.yaml base ./base
 ```
 This will create the core namespace (`skaha-system`), and install the Traefik proxy dependency.  Expected output:
 ```
@@ -37,7 +37,7 @@ The Helm repository contains the current stable version as well.
 ```sh
 $ helm repo add canfar-skaha-system https://images.opencadc.org/chartrepo/platform
 $ helm repo update
-$ helm -n traefik upgrade --install --dependency-update --values canfar-skaha-system/base/values.yaml canfar-science-platform-base canfar-skaha-system/base
+$ helm --namespace traefik upgrade --install --dependency-update --values canfar-skaha-system/base/values.yaml canfar-science-platform-base canfar-skaha-system/base
 ```
 
 ## Verification
@@ -81,7 +81,7 @@ Shared Storage is handled by the `local` Persistent Volume types.
 The Docker VM on macOS cannot mount the NFS by default as it cannot do name resolution in the cluster.  It first needs to know about the `kube-dns` IP.  e.g.:
 
 ```sh
-$ kubectl -n kube-system get service kube-dns
+$ kubectl --namespace kube-system get service kube-dns
 NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE
 kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   4d23h
 ```
@@ -89,7 +89,7 @@ kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   4d23h
 The `ClusterIP` needs to be known to the Docker VM's name resolution.  A simple way to do this is to mount the Docker VM root and modify it.  It will take effect immediately:
 
 ```sh
-$ docker run --rm -it -v /:/vm-root alpine sh
+$ docker run --rm --interactive --tty --volume /:/vm-root alpine sh
 $ echo "nameserver 10.96.0.10" >> /vm-root/etc/resolv.conf
 $ cat /vm-root/etc/resolv.conf
 # DNS requests are forwarded to the host. DHCP DNS options are ignored.
