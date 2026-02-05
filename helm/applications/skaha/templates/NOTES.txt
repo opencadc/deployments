@@ -7,8 +7,19 @@ Namespace: {{ .Release.Namespace }}
 
 Skaha workload namespace: {{ .Values.skahaWorkload.namespace | default "skaha-workload" }}
 
-Sessions:
+User Sessions:
 - Ensure CARTA images being used are at version 5.0.3 or higher.
+
+{{- with .Values.deployment.skaha.sessions.ingress }}
+User Sessions Ingress Configurations:
+{{- with .customResponseHeaders }}
+- Custom Response Headers:
+{{ toYaml . | indent 6 }}
+{{- end }}
+{{- with .tls }}
+- TLS configured:
+{{- end }}
+{{- end }}
 
 Kueue:
 {{- if .Values.deployment.skaha.sessions.kueue }}

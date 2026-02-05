@@ -28,3 +28,6 @@ spec:
       scheme: http
     middlewares:
       - name: {{ .Release.Name }}-workload-enable-compression
+{{- if .Values.deployment.skaha.sessions.ingress.customResponseHeaders }}
+      - name: {{ .Release.Name }}-custom-response-headers
+{{- end }}
