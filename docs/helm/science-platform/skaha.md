@@ -5,7 +5,7 @@ The Skaha Helm chart facilitates the deployment of the Skaha application within 
 ## Prerequisites
 Before deploying the Skaha Helm chart, ensure that the following conditions are met:
 
-- **Kubernetes Cluster**: A running Kubernetes cluster, version 1.27 or higher.
+- **Kubernetes Cluster**: A running Kubernetes cluster, version 1.29 or higher.
 - **Helm**: Helm package manager, version 3, installed on your machine. Refer to the [official Helm documentation](https://helm.sh/docs/) for installation instructions.
 - **Kueue**: Kueue is recommended to be installed in your cluster, as Skaha optionally integrates with Kueue for job queueing. Follow the [Kueue installation guide](https://kueue.sigs.k8s.io/docs/) to set it up.
 

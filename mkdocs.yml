@@ -135,6 +135,7 @@ nav:
   - Helm Charts:
     - Home: helm/index.md
     - Science Platform: helm/science-platform/index.md
+    - Core Services: helm/core/index.md
   - Home: index.md
   - Operations:
     - Home: operations/index.md
