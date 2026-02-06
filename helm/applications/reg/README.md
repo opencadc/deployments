@@ -4,7 +4,7 @@ IVOA Registry Service Helm Chart
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.1.0<!-- x-release-please-version --> | 1.2.1 | application |
+|1.0.0<!-- x-release-please-version --> | 1.2.1 | application |
 
 ## Values
 
