@@ -357,6 +357,8 @@
       
         
       
+        
+      
     
     
     
@@ -637,10 +639,10 @@
 <p>The base install also installs the Traefik proxy, which is needed by the Ingress when the Science Platform services are installed.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/science-platform.git
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>science-platform/deployment/helm
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>$<span class="w"> </span>helm<span class="w"> </span>install<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>./base/values.yaml<span class="w"> </span>&lt;name&gt;<span class="w"> </span>./base
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>$<span class="w"> </span>helm<span class="w"> </span>--namespace<span class="w"> </span>traefik<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>./base/values.yaml<span class="w"> </span>&lt;name&gt;<span class="w"> </span>./base
 </span></code></pre></div>
 <p>Where <code>&lt;name&gt;</code> is the name of this installation.  Example:
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>helm<span class="w"> </span>install<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>./base/values.yaml<span class="w"> </span>base<span class="w"> </span>./base
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>helm<span class="w"> </span>--namespace<span class="w"> </span>traefik<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>./base/values.yaml<span class="w"> </span>base<span class="w"> </span>./base
 </span></code></pre></div>
 This will create the core namespace (<code>skaha-system</code>), and install the Traefik proxy dependency.  Expected output:
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>NAME: base
@@ -654,7 +656,7 @@ This will create the core namespace (<code>skaha-system</code>), and install the
 <p>The Helm repository contains the current stable version as well.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$<span class="w"> </span>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>canfar-skaha-system<span class="w"> </span>https://images.opencadc.org/chartrepo/platform
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>$<span class="w"> </span>helm<span class="w"> </span>repo<span class="w"> </span>update
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>$<span class="w"> </span>helm<span class="w"> </span>-n<span class="w"> </span>traefik<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>canfar-skaha-system/base/values.yaml<span class="w"> </span>canfar-science-platform-base<span class="w"> </span>canfar-skaha-system/base
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>$<span class="w"> </span>helm<span class="w"> </span>--namespace<span class="w"> </span>traefik<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>canfar-skaha-system/base/values.yaml<span class="w"> </span>canfar-science-platform-base<span class="w"> </span>canfar-skaha-system/base
 </span></code></pre></div>
 <h2 id="verification">Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h2>
 <p>After the install, there should exist the necessary Namespaces and Objects.  See the Namespaces:</p>
@@ -683,12 +685,12 @@ the values.</p>
 </span></code></pre></div>
 <h3 id="dns-on-macos">DNS on macOS<a class="headerlink" href="#dns-on-macos" title="Permanent link">&para;</a></h3>
 <p>The Docker VM on macOS cannot mount the NFS by default as it cannot do name resolution in the cluster.  It first needs to know about the <code>kube-dns</code> IP.  e.g.:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$<span class="w"> </span>kubectl<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>get<span class="w"> </span>service<span class="w"> </span>kube-dns
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$<span class="w"> </span>kubectl<span class="w"> </span>--namespace<span class="w"> </span>kube-system<span class="w"> </span>get<span class="w"> </span>service<span class="w"> </span>kube-dns
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>NAME<span class="w">       </span>TYPE<span class="w">        </span>CLUSTER-IP<span class="w">   </span>EXTERNAL-IP<span class="w">   </span>PORT<span class="o">(</span>S<span class="o">)</span><span class="w">                  </span>AGE
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>kube-dns<span class="w">   </span>ClusterIP<span class="w">   </span><span class="m">10</span>.96.0.10<span class="w">   </span>&lt;none&gt;<span class="w">        </span><span class="m">53</span>/UDP,53/TCP,9153/TCP<span class="w">   </span>4d23h
 </span></code></pre></div>
 <p>The <code>ClusterIP</code> needs to be known to the Docker VM's name resolution.  A simple way to do this is to mount the Docker VM root and modify it.  It will take effect immediately:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-v<span class="w"> </span>/:/vm-root<span class="w"> </span>alpine<span class="w"> </span>sh
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--interactive<span class="w"> </span>--tty<span class="w"> </span>--volume<span class="w"> </span>/:/vm-root<span class="w"> </span>alpine<span class="w"> </span>sh
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;nameserver 10.96.0.10&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/vm-root/etc/resolv.conf
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>$<span class="w"> </span>cat<span class="w"> </span>/vm-root/etc/resolv.conf
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># DNS requests are forwarded to the host. DHCP DNS options are ignored.</span>
@@ -759,7 +761,7 @@ the values.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 24, 2025 12:07:57 PST"><span class="timeago" datetime="2025-11-24T12:07:57-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 24, 2025 12:07:57 PST">2025-11-24</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="January 14, 2026 10:26:11 PST"><span class="timeago" datetime="2026-01-14T10:26:11-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="January 14, 2026 10:26:11 PST">2026-01-14</span>
   </span>
 
     

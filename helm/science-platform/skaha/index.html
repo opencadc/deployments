@@ -357,6 +357,8 @@
       
         
       
+        
+      
     
     
     
@@ -533,9 +535,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#supported-configuration-options" class="md-nav__link">
+  <a href="#limitrange" class="md-nav__link">
     <span class="md-ellipsis">
-      Supported Configuration Options
+      LimitRange
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flexible-session-pods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flexible Session Pods
     </span>
   </a>
   
@@ -588,6 +599,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#values-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Values Reference
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -625,7 +645,7 @@
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>Before deploying the Skaha Helm chart, ensure that the following conditions are met:</p>
 <ul>
-<li><strong>Kubernetes Cluster</strong>: A running Kubernetes cluster, version 1.27 or higher.</li>
+<li><strong>Kubernetes Cluster</strong>: A running Kubernetes cluster, version 1.29 or higher.</li>
 <li><strong>Helm</strong>: Helm package manager, version 3, installed on your machine. Refer to the <a href="https://helm.sh/docs/">official Helm documentation</a> for installation instructions.</li>
 <li><strong>Kueue</strong>: Kueue is recommended to be installed in your cluster, as Skaha optionally integrates with Kueue for job queueing. Follow the <a href="https://kueue.sigs.k8s.io/docs/">Kueue installation guide</a> to set it up.</li>
 </ul>
@@ -644,348 +664,61 @@
 </li>
 <li>
 <p><strong>Install the Skaha Chart</strong>:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>helm<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>&lt;your-skaha-values.yaml&gt;<span class="w"> </span>skaha-release<span class="w"> </span>skaha-repo/skaha
-</span></code></pre></div></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>&lt;your-skaha-values.yaml&gt;<span class="w"> </span>skaha-release<span class="w"> </span>skaha-repo/skaha
+</span></code></pre></div>
+Replace <code>skaha-release</code> with your desired release name.</p>
 </li>
 </ol>
-<p>Replace <code>skaha-release</code> with your desired release name.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <p>The Skaha Helm chart comes with a default configuration suitable for most deployments. However, you can customize the installation by providing your own <code>values.yaml</code> file. This allows you to override default settings such as resource allocations, environment variables, and other parameters.</p>
 <p>To customize the installation:</p>
 <ul>
 <li><strong>Create a <code>values.yaml</code> File</strong>: Define your custom configurations in this file.</li>
 <li><strong>Install the Chart with Custom Values</strong>:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>helm<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>values.yaml<span class="w"> </span>skaha-release<span class="w"> </span>skaha-repo/skaha
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>values.yaml<span class="w"> </span>skaha-release<span class="w"> </span>skaha-repo/skaha
 </span></code></pre></div></li>
 </ul>
-<h3 id="supported-configuration-options">Supported Configuration Options<a class="headerlink" href="#supported-configuration-options" title="Permanent link">&para;</a></h3>
-<p>The following table lists the configurable parameters for the Skaha Helm chart:</p>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>kubernetesClusterDomain</code></td>
-<td>Kubernetes cluster domain used to find internal hosts</td>
-<td><code>cluster.local</code></td>
-</tr>
-<tr>
-<td><code>replicaCount</code></td>
-<td>Number of Skaha replicas to deploy</td>
-<td><code>1</code></td>
-</tr>
-<tr>
-<td><code>tolerations</code></td>
-<td>Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the <code>skaha</code> API</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>skahaWorkload.namespace</code></td>
-<td>Namespace where Skaha Workload (User Sesssion space) is deployed</td>
-<td><code>skaha-workload</code></td>
-</tr>
-<tr>
-<td><code>experimentalFeatures.enabled</code></td>
-<td>Enable/Disable all feature flags for unreleased or experimental features.</td>
-<td><code>false</code></td>
-</tr>
-<tr>
-<td><code>experimentalFeatures.sessionLimitRange.enabled</code></td>
-<td>Enable/Disable per-session <code>LimitRange</code> enforcement for User Sessions.</td>
-<td><code>false</code></td>
-</tr>
-<tr>
-<td><code>experimentalFeatures.sessionLimitRange.rbac.create</code></td>
-<td>Whether to create RBAC resources for session LimitRange enforcement.</td>
-<td><code>false</code></td>
-</tr>
-<tr>
-<td><code>experimentalFeatures.sessionLimitRange.limitSpec</code></td>
-<td>List of resource limits to enforce in User Sessions. See <a href="https://kubernetes.io/docs/concepts/policy/limit-range/">Kubernetes LimitRange</a> for details.</td>
-<td><code>{}</code></td>
-</tr>
-<tr>
-<td><code>deployment.hostname</code></td>
-<td>Hostname for the Skaha deployment</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.image</code></td>
-<td>Skaha Docker image</td>
-<td><code>images.opencadc.org/platform/skaha:&lt;current release version&gt;</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.imagePullPolicy</code></td>
-<td>Image pull policy for the Skaha container</td>
-<td><code>IfNotPresent</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.imageCache.refreshSchedule</code></td>
-<td>Schedule for refreshing the Skaha image cache in <code>cron</code> format</td>
-<td><code>@daily</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.defaultQuotaGB</code></td>
-<td>Default quota for Skaha in GB.  Used when allocating first-time users into the system.</td>
-<td><code>10</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.registryHosts</code></td>
-<td>Space delimited list of Docker (Harbor) registry hosts</td>
-<td><code>images.canfar.net</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.usersGroup</code></td>
-<td>GMS style Group URI for Skaha users to belong to</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.adminsGroup</code></td>
-<td>GMS style Group URI for Skaha admins to belong to</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.headlessGroup</code></td>
-<td>GMS style Group URI whose members can submit headless jobs</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.headlessPriorityGroup</code></td>
-<td>GMS style Group URI whose member's headless jobs can pre-empt other's.  Useful fortight deadlines in processing</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.headlessPriorityClass</code></td>
-<td>Name of the <code>priorityClass</code> for headless jobs to allow some pre-emption</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.loggingGroups</code></td>
-<td>List of GMS style Group URIs whose members can alter the log level.  See <a href="https://github.com/opencadc/core/tree/main/cadc-log">cadc-log</a> regarding the <code>/logControl</code> endpoint.</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.posixMapperResourceID</code></td>
-<td>Resource ID (URI) for the POSIX Mapper service containing the UIDs and GIDs</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.oidcURI</code></td>
-<td>URI (or URL) for the OIDC service</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.gmsID</code></td>
-<td>Resource ID (URI) for the IVOA Group Management Service</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.registryURL</code></td>
-<td>URL for the IVOA registry containing service locations</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.nodeAffinity</code></td>
-<td>Kubernetes Node affinity for the Skaha API Pod</td>
-<td><code>{}</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.extraEnv</code></td>
-<td>List of extra environment variables to be set in the Skaha service.  See the <code>values.yaml</code> file for examples.</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.resources</code></td>
-<td>Resource requests and limits for the Skaha API</td>
-<td><code>{}</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.extraPorts</code></td>
-<td>List of extra ports to expose in the Skaha service.  See the <code>values.yaml</code> file for examples.</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.extraVolumeMounts</code></td>
-<td>List of extra volume mounts to be mounted in the Skaha deployment.  See the <code>values.yaml</code> file for examples.</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.extraVolumes</code></td>
-<td>List of extra volumes to be mounted in the Skaha deployment.  See the <code>values.yaml</code> file for examples.</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.priorityClassName</code></td>
-<td>Name of the <code>priorityClass</code> for the Skaha API Pod used for pre-emption</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.serviceAccountName</code></td>
-<td>Name of the Service Account for the Skaha API Pod</td>
-<td><code>"skaha"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.identityManagerClass</code></td>
-<td>Java Class name for the <a href="https://github.com/opencadc/core/blob/main/cadc-util/src/main/java/ca/nrc/cadc/auth/IdentityManager.java">IdentityManager</a> to use.  Defaults to <a href="https://github.com/opencadc/ac/blob/main/cadc-gms/src/main/java/org/opencadc/auth/StandardIdentityManager.java"><code>org.opencadc.auth.StandardIdentityManager</code></a> for use with bearer tokens (OIDC)</td>
-<td><code>"org.opencadc.auth.StandardIdentityManager"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.apiVersion</code></td>
-<td>API version used to match the Ingress path (e.g. <code>/skaha/v0</code>)</td>
-<td><code>"v0"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.registryURL</code></td>
-<td>(list OR string) IVOA Registry array of IVOA Registry locations or single IVOA Registry location</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.expirySeconds</code></td>
-<td>Expiry time, in seconds, for interactive sessions.  Defaults to four (4) days.</td>
-<td><code>"345600"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.imagePullPolicy</code></td>
-<td>Image pull policy for all User Sessions.</td>
-<td><code>"Always"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.maxCount</code></td>
-<td>Maximum number of interactive sessions per user.  Defaults to three (3).</td>
-<td><code>"3"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.minEphemeralStorage</code></td>
-<td>Minimum ephemeral storage, in <a href="https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/quantity/">Kubernetes quantity</a>, for interactive sessions.  Defaults to 20Gi.</td>
-<td><code>"20Gi"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.maxEphemeralStorage</code></td>
-<td>Maximum ephemeral storage, in <a href="https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/quantity/">Kubernetes quantity</a>, for interactive sessions.  Defaults to 200Gi.</td>
-<td><code>"200Gi"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.initContainerImage</code></td>
-<td>Init container image for Skaha User Sessions.</td>
-<td><code>redis-7.4.2-alpine3.21</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.kueue.default.queueName</code></td>
-<td>Name of the default <code>LocalQueue</code> instance from Kueue for all types</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.kueue.default.priorityClass</code></td>
-<td>Name of the <code>priorityClass</code> for the all types to allow some pre-emption</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.kueue.&lt;typename&gt;.queueName</code></td>
-<td>Name of the <code>LocalQueue</code> instance from Kueue for the given type</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.kueue.&lt;typename&gt;.priorityClass</code></td>
-<td>Name of the <code>priorityClass</code> for the given type to allow some pre-emption</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.hostname</code></td>
-<td>Hostname to access user sessions on.  Defaults to <code>deployment.hostname</code></td>
-<td><code>deployment.hostname</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.tls</code></td>
-<td>TLS configuration for the User Sessions IngressRoute.</td>
-<td><code>{}</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.topLevelDirectory</code></td>
-<td><strong>Absolute</strong> mount point where <code>/home</code> and <code>/projects</code> directories exist.</td>
-<td><code>"/cavern"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.homeDirectory</code></td>
-<td><strong>Relative</strong> path under <code>topLevelDirectory</code> used for user home directories.</td>
-<td><code>"home"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.projectsDirectory</code></td>
-<td><strong>Relative</strong> path where project/shared directories exist (used in CARTA sessions).</td>
-<td><code>"projects"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.persistentVolumeClaimName</code></td>
-<td>PVC name used for user storage mounting inside sessions.</td>
-<td><code>"skaha-workload-cavern-pvc"</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.serviceURI</code></td>
-<td>VOSpace service URI (ivo://). Required when enabled.</td>
-<td><em>None</em></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.nodeURIPrefix</code></td>
-<td>VOSpace Node URI prefix (vos://).</td>
-<td><em>None</em></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.admin</code></td>
-<td>Admin credentials block used to create allocations in Cavern.</td>
-<td><em>N/A (object)</em></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.admin.auth.apiKey</code></td>
-<td>API key used between Skaha and Cavern for home directory (allocation) creation.</td>
-<td><em>None</em></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.userStorage.admin.auth.certificateSecret</code></td>
-<td>Optional Kubernetes Secret containing PEM client certificate for storage admin operations.  Only used by the CADC.</td>
-<td><em>None</em></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.extraVolumes</code></td>
-<td>List of extra <code>volume</code> and <code>volumeMount</code> to be mounted in User Sessions.  See the <code>values.yaml</code> file for examples.</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.gpuEnabled</code></td>
-<td>Enable GPU support for User Sessions.  Defaults to <code>false</code></td>
-<td><code>false</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.nodeAffinity</code></td>
-<td>Kubernetes Node affinity for the Skaha User Session Pods</td>
-<td><code>{}</code></td>
-</tr>
-<tr>
-<td><code>deployment.skaha.sessions.tolerations</code></td>
-<td>Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the <code>skaha</code> User Sessions</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>secrets</code></td>
-<td>List of secrets to be mounted in the Skaha API defined as objects (i.e <code>secretName: {cert.pem: xxx}</code>)</td>
-<td><code>[]</code></td>
-</tr>
-<tr>
-<td><code>storage.service.spec</code></td>
-<td>Storage class specification for the Skaha API.  Can be <code>persistentVolumeClaim</code> or a dynamic instantiation like <code>hostPath</code>.  See <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/">Volumes</a>.</td>
-<td><code>{}</code></td>
-</tr>
-<tr>
-<td><code>redis</code></td>
-<td><a href="https://github.com/bitnami/charts/tree/main/bitnami/redis">Redis sub-chart configuration</a> for Skaha's caching of Harbor Docker image metadata.</td>
-<td>See <a href="https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml"><code>values.yaml</code></a> for available configuration values.</td>
-</tr>
-</tbody>
-</table>
+<h3 id="limitrange">LimitRange<a class="headerlink" href="#limitrange" title="Permanent link">&para;</a></h3>
+<p>You can define a <code>LimitRange</code> for User Session Pods by modifying the <code>deployment.skaha.sessions.limitRange</code> section in your <code>values.yaml</code> file. This configuration allows you to set resource limits and requests for different session types.  The <code>min</code> clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  This will go directly into a <code>LimitRange</code> object created in the Skaha workload Namespace, and, as such, supports the Kubernetes
+units.</p>
+<p>The <code>rbac</code> section allows you to create the necessary Role and RoleBinding for the LimitRange object.  If your organization does not permit the creation of RBAC objects, you can set <code>create</code> to <code>false</code> and manage the RBAC externally.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">deployment</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">limitRange</span><span class="p">:</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">          </span><span class="nt">create</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">        </span><span class="nt">limitSpec</span><span class="p">:</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">          </span><span class="nt">max</span><span class="p">:</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">            </span><span class="c1"># maximum resource limit to grow to, also used by the UI to limit selectable resources</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;96Gi&quot;</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;12&quot;</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">          </span><span class="nt">default</span><span class="p">:</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">            </span><span class="c1"># actually refers to default limit</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;32Gi&quot;</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;8&quot;</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">          </span><span class="nt">defaultRequest</span><span class="p">:</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">            </span><span class="c1"># default resource requests</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;4Gi&quot;</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+</span></code></pre></div>
+<h3 id="flexible-session-pods">Flexible Session Pods<a class="headerlink" href="#flexible-session-pods" title="Permanent link">&para;</a></h3>
+<p>You can customize the User Session Pods by modifying the <code>deployment.skaha.sessions</code> section in your <code>values.yaml</code> file. This includes settings for resource requests, storage allocation, and more.</p>
+<p>Flexible User sessions are created with a small amount of CPU and memory by default and are allowed to grow to a specified limit in the <code>LimitRange</code> configuration. You can adjust these minimum (request) settings as needed:
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">deployment</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">flexResourceRequests</span><span class="p">:</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="c1"># The headless session type resource requests get slightly more resources to start.</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">        </span><span class="nt">headless</span><span class="p">:</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">          </span><span class="nt">memoryInGB</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">          </span><span class="nt">cpuCores</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">        </span><span class="nt">notebook</span><span class="p">:</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">          </span><span class="nt">memoryInGB</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">          </span><span class="nt">cpuCores</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.5&quot;</span>
+</span></code></pre></div></p>
+<p>The <code>headless</code>, <code>notebook</code>, <code>desktop</code>, <code>contributed</code>, and <code>firefly</code> session types can all be customized individually.  Any session type not specified will use the values defined in the <code>LimitRange</code> configuration.</p>
+<p><strong>Note</strong> that Kubernetes resource units are not supported in this configuration; only floating point or integer numbers as strings are valid.  For example, for 100m of CPU, use <code>"0.1"</code>.</p>
 <h4 id="notes-on-tolerations-and-nodeaffinity">Notes on tolerations and nodeAffinity<a class="headerlink" href="#notes-on-tolerations-and-nodeaffinity" title="Permanent link">&para;</a></h4>
 <p>Ensure that <code>tolerations</code> and <code>nodeAffinity</code> are at the expected indentation!  These are YAML configurations passed directly to Kubernetes, and the base <code>.tolerations</code> and <code>.deployment.skaha.nodeAffinity</code> values apply to the <code>skaha</code> API <strong>only</strong>, whereas the <code>.deployment.skaha.sessions.tolerations</code> and <code>.deployment.skaha.sessions.nodeAffinity</code> apply to <em>all</em> User Session Pods.</p>
 <h2 id="kueue">Kueue<a class="headerlink" href="#kueue" title="Permanent link">&para;</a></h2>
@@ -993,35 +726,449 @@
 <h3 id="installation_1">Installation<a class="headerlink" href="#installation_1" title="Permanent link">&para;</a></h3>
 <p><a href="https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version">https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version</a></p>
 <p>Will install the Kueue Chart, with a default <code>ClusterQueue</code>, and whatever defined <code>LocalQueues</code> were declared in the <code>deployment.skaha.sessions.kueue</code> section:
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">deployment</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">kueue</span><span class="p">:</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">notebook</span><span class="p">:</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">          </span><span class="nt">queueName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">some-local-queue</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">          </span><span class="nt">priorityClass</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">med</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">deployment</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span><span class="nt">kueue</span><span class="p">:</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="nt">notebook</span><span class="p">:</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">          </span><span class="nt">queueName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">some-local-queue</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">          </span><span class="nt">priorityClass</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">med</span>
 </span></code></pre></div></p>
 <p>To determine your cluster's allocatable resources, checkout a small Python utility (requires <a href="https://github.com/astral-sh/uv?tab=readme-ov-file#installation"><code>uv</code></a>):
 <a href="https://github.com/opencadc/deployments/tree/main/configs/kueue/kueuer">https://github.com/opencadc/deployments/tree/main/configs/kueue/kueuer</a></p>
 <p>Then run:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/deployments.git
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">cd</span><span class="w"> </span>deployments/configs/kueue/kueuer
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># if not using the default ~/.kube/config</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span>/home/user/.kube/my-config
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># 60% of cluster resources</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>uv<span class="w"> </span>run<span class="w"> </span>kr<span class="w"> </span>cluster<span class="w"> </span>resources<span class="w"> </span>-f<span class="w"> </span>allocatable<span class="w"> </span>-s<span class="w"> </span><span class="m">0</span>.6
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1"># 80% of cluster resources</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>uv<span class="w"> </span>run<span class="w"> </span>kr<span class="w"> </span>cluster<span class="w"> </span>resources<span class="w"> </span>-f<span class="w"> </span>allocatable<span class="w"> </span>-s<span class="w"> </span><span class="m">0</span>.8
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/deployments.git
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nb">cd</span><span class="w"> </span>deployments/configs/kueue/kueuer
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># if not using the default ~/.kube/config</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span>/home/user/.kube/my-config
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># 60% of cluster resources</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>uv<span class="w"> </span>run<span class="w"> </span>kr<span class="w"> </span>cluster<span class="w"> </span>resources<span class="w"> </span>-f<span class="w"> </span>allocatable<span class="w"> </span>-s<span class="w"> </span><span class="m">0</span>.6
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="c1"># 80% of cluster resources</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>uv<span class="w"> </span>run<span class="w"> </span>kr<span class="w"> </span>cluster<span class="w"> </span>resources<span class="w"> </span>-f<span class="w"> </span>allocatable<span class="w"> </span>-s<span class="w"> </span><span class="m">0</span>.8
 </span></code></pre></div></p>
 <h2 id="uninstallation">Uninstallation<a class="headerlink" href="#uninstallation" title="Permanent link">&para;</a></h2>
 <p>To remove the Skaha application from your cluster:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>helm<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>uninstall<span class="w"> </span>skaha-release
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>uninstall<span class="w"> </span>skaha-release
 </span></code></pre></div>
 <p>This command will delete all resources associated with the Skaha release.</p>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <p>This project is licensed under the MIT License. For more information, refer to the LICENSE file in the repository.</p>
+<h2 id="values-reference">Values Reference<a class="headerlink" href="#values-reference" title="Permanent link">&para;</a></h2>
+<h1 id="skaha">skaha<a class="headerlink" href="#skaha" title="Permanent link">&para;</a></h1>
+<p>A Helm chart to install the Skaha web service of the CANFAR Science Platform</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Chart</th>
+<th style="text-align: center;">AppVersion</th>
+<th style="text-align: center;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1.4.0<!-- x-release-please-version --></td>
+<td style="text-align: center;">1.2.0</td>
+<td style="text-align: center;">application</td>
+</tr>
+</tbody>
+</table>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Repository</th>
+<th>Name</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>file://../utils</td>
+<td>utils</td>
+<td>^0.1.0</td>
+</tr>
+<tr>
+<td>oci://registry-1.docker.io/bitnamicharts</td>
+<td>redis</td>
+<td>^18.19.0</td>
+</tr>
+</tbody>
+</table>
+<h2 id="values">Values<a class="headerlink" href="#values" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>deployment.hostname</td>
+<td>string</td>
+<td><code>"myhost.example.com"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.apiVersion</td>
+<td>string</td>
+<td><code>"v1"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.defaultQuotaGB</td>
+<td>string</td>
+<td><code>"10"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.identityManagerClass</td>
+<td>string</td>
+<td><code>"org.opencadc.auth.StandardIdentityManager"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.image</td>
+<td>string</td>
+<td><code>"images.opencadc.org/platform/skaha:1.1.7"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.imageCache.refreshSchedule</td>
+<td>string</td>
+<td><code>"*/30 * * * *"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.imagePullPolicy</td>
+<td>string</td>
+<td><code>"Always"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.init.image</td>
+<td>string</td>
+<td><code>"busybox:1.37.0"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.init.imagePullPolicy</td>
+<td>string</td>
+<td><code>"IfNotPresent"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.posixMapperCacheTTLSeconds</td>
+<td>string</td>
+<td><code>"86400"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.priorityClassName</td>
+<td>string</td>
+<td><code>"uber-user-preempt-high"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.registryHosts</td>
+<td>string</td>
+<td><code>"images.canfar.net"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.resources.limits.cpu</td>
+<td>string</td>
+<td><code>"2000m"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.resources.limits.memory</td>
+<td>string</td>
+<td><code>"3Gi"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.resources.requests.cpu</td>
+<td>string</td>
+<td><code>"1000m"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.resources.requests.memory</td>
+<td>string</td>
+<td><code>"2Gi"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.serviceAccountName</td>
+<td>string</td>
+<td><code>"skaha"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.expirySeconds</td>
+<td>string</td>
+<td><code>"345600"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.flexResourceRequests.headless.cpuCores</td>
+<td>string</td>
+<td><code>"1"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.flexResourceRequests.headless.memoryInGB</td>
+<td>string</td>
+<td><code>"2"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.imagePullPolicy</td>
+<td>string</td>
+<td><code>"Always"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.ingress.customResponseHeaders</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.ingress.tls</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.initContainerImage</td>
+<td>string</td>
+<td><code>"redis:8.2.2-bookworm"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.kueue</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.limitRange</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.maxCount</td>
+<td>string</td>
+<td><code>"5"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.maxEphemeralStorage</td>
+<td>string</td>
+<td><code>"200Gi"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.minEphemeralStorage</td>
+<td>string</td>
+<td><code>"20Gi"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.nodeLabelSelector</td>
+<td>string</td>
+<td><code>nil</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.tolerations</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.userStorage.admin.auth</td>
+<td>string</td>
+<td><code>nil</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.userStorage.homeDirectory</td>
+<td>string</td>
+<td><code>"home"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.userStorage.persistentVolumeClaimName</td>
+<td>string</td>
+<td><code>"skaha-workload-cavern-pvc"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.userStorage.projectsDirectory</td>
+<td>string</td>
+<td><code>"projects"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.userStorage.topLevelDirectory</td>
+<td>string</td>
+<td><code>"/cavern"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>experimentalFeatures.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td></td>
+</tr>
+<tr>
+<td>experimentalFeatures.sessionLimitRange</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ingress.enabled</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ingress.path</td>
+<td>string</td>
+<td><code>"/skaha"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>kubernetesClusterDomain</td>
+<td>string</td>
+<td><code>"cluster.local"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>podSecurityContext</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.architecture</td>
+<td>string</td>
+<td><code>"standalone"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.auth.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.image.repository</td>
+<td>string</td>
+<td><code>"redis"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.image.tag</td>
+<td>string</td>
+<td><code>"8.2.2-bookworm"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.master.containerSecurityContext.allowPrivilegeEscalation</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.master.containerSecurityContext.capabilities.drop[0]</td>
+<td>string</td>
+<td><code>"ALL"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.master.containerSecurityContext.readOnlyRootFilesystem</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.master.containerSecurityContext.runAsGroup</td>
+<td>int</td>
+<td><code>1001</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.master.containerSecurityContext.runAsNonRoot</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.master.containerSecurityContext.runAsUser</td>
+<td>int</td>
+<td><code>1001</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.master.containerSecurityContext.seccompProfile.type</td>
+<td>string</td>
+<td><code>"RuntimeDefault"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>redis.master.persistence.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td></td>
+</tr>
+<tr>
+<td>replicaCount</td>
+<td>int</td>
+<td><code>1</code></td>
+<td></td>
+</tr>
+<tr>
+<td>secrets</td>
+<td>string</td>
+<td><code>nil</code></td>
+<td></td>
+</tr>
+<tr>
+<td>securityContext</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>service.port</td>
+<td>int</td>
+<td><code>8080</code></td>
+<td></td>
+</tr>
+<tr>
+<td>skahaWorkload.namespace</td>
+<td>string</td>
+<td><code>"skaha-workload"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>tolerations</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -1044,7 +1191,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 24, 2025 12:07:57 PST"><span class="timeago" datetime="2025-11-24T12:07:57-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 24, 2025 12:07:57 PST">2025-11-24</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="January 14, 2026 10:26:11 PST"><span class="timeago" datetime="2026-01-14T10:26:11-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="January 14, 2026 10:26:11 PST">2026-01-14</span>
   </span>
 
     
