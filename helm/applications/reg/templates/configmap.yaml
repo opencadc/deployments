@@ -1,0 +1,67 @@
+{{- if empty .Values.application.serviceEntries }}
+{{- fail "Service entries must be provided in reg application values." }}
+{{- end }}
+{{- if empty .Values.application.authority }}
+{{- fail "Authority must be provided in reg application values." }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "reg.fullname" . }}-config
+  labels:
+    {{- include "reg.labels" . | nindent 4 }}
+data:
+  catalina.properties: |-
+    tomcat.connector.scheme=https
+    tomcat.connector.proxyName={{ .Values.global.hostname | required "Set global.hostname in values.yaml" }}
+    tomcat.connector.proxyPort=443
+    ca.nrc.cadc.util.Log4jInit.messageOnly=true
+
+  reg.properties: |
+{{ with .Values.application.authority }}
+    org.opencadc.reg.authority = {{ . -}}
+{{ end }}
+
+  reg-resource-caps.properties:
+{{ with .Values.application.serviceEntries }}
+{{ range $index, $element := . }}
+    {{ $element.id }} = {{ $element.url }}
+{{ end }}
+{{ end }}
+
+{{ with .Values.application.userInterfaceEntries }}
+  reg-applications.properties:
+    {{- range $index, $element := . }}
+    {{ $element.id }} = {{ $element.url }}
+    {{- end }}
+{{ end }}
+
+{{- with .Values.application.logging }}
+  cadc-log.properties:
+{{ with .userDistinguishedNames }}
+    {{- range $index, $element := . }}
+    user = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .usernames }}
+    {{- range $index, $element := . }}
+    username = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .groups }}
+    {{- range $index, $element := . }}
+    group = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ end }}
+{{ with .Values.application.vosi }}
+  cadc-vosi.properties:
+  {{- with .adminUserDistinguishedNames }}
+    {{- range $index, $element := . }}
+    user = {{ $element }}
+    {{- end }}
+  {{- end }}
+    {{- if .startupMode }}
+    startupMode = {{ .startupMode }}
+    {{- end }}
+{{ end }}
