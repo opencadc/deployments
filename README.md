@@ -23,6 +23,7 @@ This section is automatically generated. Do not edit manually.
 | [science-portal](helm/applications/canfar-next/science-portal) | A Helm chart for Science Portal Next.js application |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
 | [posixmapper](helm/applications/posix-mapper) | A Helm chart to install the UID/GID POSIX Mapper |
+| [reg](helm/applications/reg) | IVOA Registry Service Helm Chart |
 | [argus](helm/applications/sandbox/argus) | An IVAO TAP Helm chart |
 | [bifrost](helm/applications/sandbox/bifrost) | A Helm chart for Kubernetes |
 | [sc2meta](helm/applications/sandbox/sc2meta) | A Helm chart for Kubernetes |
