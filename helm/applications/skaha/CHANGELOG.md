@@ -1,5 +1,17 @@
 # Skaha User Session API Helm Chart
 
+## [1.5.0](https://github.com/opencadc/deployments/compare/skaha-1.4.0...skaha-1.5.0) (2026-02-09)
+
+
+### Features
+
+* new reg helm chart ([713bdb9](https://github.com/opencadc/deployments/commit/713bdb9a0fe0919f259d1c3b0db74a943154f300))
+
+
+### Bug Fixes
+
+* hush the linter ([8869d9b](https://github.com/opencadc/deployments/commit/8869d9b5de6e7bb959a71e86e91b0c64af56a415))
+
 ## [1.4.0](https://github.com/opencadc/deployments/compare/skaha-1.3.3...skaha-1.4.0) (2025-12-18)
 
 
