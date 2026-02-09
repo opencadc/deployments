@@ -4,7 +4,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.4.0<!-- x-release-please-version --> | 1.2.0 | application |
+|1.5.0<!-- x-release-please-version --> | 1.2.0 | application |
 
 ## Requirements
 
