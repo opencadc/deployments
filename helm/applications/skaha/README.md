@@ -36,13 +36,14 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.serviceAccountName | string | `"skaha"` |  |
 | deployment.skaha.sessions.expirySeconds | string | `"345600"` |  |
 | deployment.skaha.sessions.imagePullPolicy | string | `"Always"` |  |
+| deployment.skaha.sessions.ingress.customResponseHeaders | object | `{}` |  |
+| deployment.skaha.sessions.ingress.tls | object | `{}` |  |
 | deployment.skaha.sessions.initContainerImage | string | `"redis:8.2.2-bookworm"` |  |
 | deployment.skaha.sessions.kueue | object | `{}` |  |
 | deployment.skaha.sessions.maxCount | string | `"5"` |  |
 | deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` |  |
 | deployment.skaha.sessions.minEphemeralStorage | string | `"20Gi"` |  |
 | deployment.skaha.sessions.nodeLabelSelector | string | `nil` |  |
-| deployment.skaha.sessions.tls | object | `{}` |  |
 | deployment.skaha.sessions.tolerations | list | `[]` |  |
 | deployment.skaha.sessions.userStorage.admin.auth | string | `nil` |  |
 | deployment.skaha.sessions.userStorage.homeDirectory | string | `"home"` |  |

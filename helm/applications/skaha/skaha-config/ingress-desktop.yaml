@@ -44,3 +44,6 @@ spec:
       scheme: http
     middlewares:
       - name: skaha-desktop-middleware-${skaha.sessionid}
+{{- if .Values.deployment.skaha.sessions.ingress.customResponseHeaders }}
+      - name: {{ .Release.Name }}-custom-response-headers
+{{- end }}
