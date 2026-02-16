@@ -221,7 +221,7 @@ deployment:
             #     key: "certificate.pem"  # The key in the Secret that contains the PEM certificate
             # certificateSecret:
 
-      # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Deafults to Always.
+      # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Defaults to Always.
       # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
       # Example:
       #   imagePullPolicy: IfNotPresent
