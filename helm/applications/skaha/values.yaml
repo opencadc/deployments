@@ -108,6 +108,62 @@ deployment:
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
 
+      # YAML to pass to a LimitRange object called "{{ .Release.Name }}-session-limit-range" in the workload Namespace to define the resource limits.
+      # These limits will be applied to Container objects (User Sessions).
+      # This replaces the previously feature gated "experimentalFeatures.sessionLimitRange" configuration.
+      # **NOTE**: Pay attention to the deployment.skaha.sessions.flexResourceRequests above as these two features can conflict.
+      # **NOTE**: This requires the experimentalFeatures.enabled to be true as well as the sessionLimitRange.enabled to be true.
+      # **NOTE**: The min clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  The `defaultRequest` is used instead for these session types.
+      # See https://kubernetes.io/docs/concepts/policy/limit-range/
+      #
+      # Example:
+      # limitRange:
+      #   enabled: true
+      #   rbac:
+      #     create: true
+      #   spec:
+      #     max:
+      #       memory: "96Gi"
+      #       cpu: "12"
+      #       "nvidia.com/gpu": "4" # Can request up to 4 GPUs, though
+      #     default:  # actually refers to default limit
+      #       memory: "32Gi"
+      #       cpu: "8"
+      #       "nvidia.com/gpu": "0"
+      #     defaultRequest:
+      #       memory: "4Gi"
+      #       cpu: "1"
+      #       "nvidia.com/gpu": "0"
+      limitRange:
+        enabled: false
+
+      # Resource requests and limits for different session types for resource allocation when a "Flex" resource profile is used.
+      # This is used to set resource requests for new User Sesssions based on type.  The LimitRange will be enforced still, and this
+      # configuration ONLY applies when the "flex" resource profile is requested, and only for resource requests (not limits).
+      # Sensible defaults are provided, but can be overridden as needed.
+      #
+      # Omit this entire object to use the LimitRange values for all session types.
+      #
+      # Important:
+      # Use memoryInGB and cpuCores to specify resources, valid values are floating point or integer numbers as strings.  The Kubernetes units
+      # will be applied by the service and are not supported in this specification.  Any session type not specified here will use the values from the LimitRange.
+      #
+      # Example:
+      # flexResourceRequests:
+      #   # Default resource requests applied to all session types if not overridden below.
+      #   notebook:
+      #     memoryInGB: "2"
+      #     cpuCores: "0.1"
+      #   # The headless session type resource requests get slightly more resources.
+      #   headless:
+      #     memoryInGB: "2"
+      #     cpuCores: "1"
+      flexResourceRequests:
+        # The headless session type resource requests get slightly more resources.
+        headless:
+          memoryInGB: "4"
+          cpuCores: "1"
+
       # Storage setings to be passed into the User Session Kubernetes Job spec.
       userStorage:
         # Required.  ABSOLUTE path mount point to where the top level directory is mounted in the User Sessions.  For most, this can be set to "/cavern", and
@@ -165,7 +221,7 @@ deployment:
             #     key: "certificate.pem"  # The key in the Secret that contains the PEM certificate
             # certificateSecret:
 
-      # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Deafults to Always.
+      # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Defaults to Always.
       # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
       # Example:
       #   imagePullPolicy: IfNotPresent
@@ -243,12 +299,19 @@ deployment:
       #   hostname: myhost.example.org
       # hostname:
 
-      # Optionally set the TLS configiuration that contains the certificate information for the alternate hostname for User Sessions.  This will go into the Traefik IngressRoute spec.
-      # @see https://doc.traefik.io/traefik/v2.3/routing/providers/kubernetes-crd/#kind-ingressroute
-      # Example:
-      #   tls:
-      #     secretName: myhost-tls-secret
-      tls: {}
+      ingress:
+        # Optionally set the TLS configiuration that contains the certificate information for the alternate hostname for User Sessions.  This will go into the Traefik IngressRoute spec.
+        # @see https://doc.traefik.io/traefik/v2.3/routing/providers/kubernetes-crd/#kind-ingressroute
+        # Example:
+        #   tls:
+        #     secretName: myhost-tls-secret
+        tls: {}
+
+        # Add custom response headers to User Sessions.  This is useful for Science Gateway embedding support.
+        # Example:
+        #   customResponseHeaders:
+        #     content-security-policy: "frame-ancestors 'self' https://gateway.example.org"
+        customResponseHeaders: {}
 
       # Declare extra volume mounts in User Sessions.  The "type: parameter in volume section is constant.
       # extraVolumes:
@@ -376,36 +439,8 @@ ingress:
 experimentalFeatures:
   enabled: false
 
-  # YAML to pass to a LimitRange object called "{{ .Release.Name }}-session-limit-range" in the workload Namespace to define the resource limits.
-  # These limits will be applied to Container objects (User Sessions).
-  # **NOTE**: This requires the experimentalFeatures.enabled to be true as well as the sessionLimitRange.enabled to be true.
-  # **NOTE**: The min clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  The `defaultRequest` is used instead for these session types.
-  # See https://kubernetes.io/docs/concepts/policy/limit-range/
-  #
-  # Example:
-  # sessionLimitRange:
-  #   enabled: true
-  #   rbac:
-  #     create: true
-  #   limitSpec:
-  #     max:
-  #       memory: "96Gi"
-  #       cpu: "12"
-  #       "nvidia.com/gpu": "4"
-  #     default:  # actually refers to default limit
-  #       memory: "32Gi"
-  #       cpu: "8"
-  #       "nvidia.com/gpu": "1"
-  #     defaultRequest:
-  #       memory: "4Gi"
-  #       cpu: "1"
-  sessionLimitRange:
-    enabled: false
-    # Whether to create the RBAC Role and RoleBinding for the LimitRange.  Some organzations may not have the ability to create RBAC objects
-    # in the cluster, so setting this to false allows the LimitRange to be created without the RBAC objects, assuming they are created elsewhere.
-    rbac:
-      create: true
-    limitSpec: {}
+  # @deprecated Use deployment.skaha.sessions.limitRange instead.  Here for backward compatibility.
+  sessionLimitRange: {}
 
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.

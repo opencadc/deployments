@@ -122,10 +122,12 @@ deployment:
     #     defaultMode: 420
     #     secretName: science-portal-cacert-secret
 
-    # Supported theme name (src or canfar).
+    # Supported themes (src or canfar), and optionally a logo URL.
     # Example:
-    # themeName: canfar
-    themeName:
+    # theme:
+    #   name: canfar
+    #   logoURL: https://example.org/mylogo.png
+    theme: {}
 
     # Optional.  The absolute base URL of the /home folder containing the user's home directories.  This is used to query the storage quota
     # information, and display a panel in the Portal UI.
@@ -136,11 +138,6 @@ deployment:
 # Experimental features that can be enabled.  These represent features that are not released and confined behind feature flags.
 experimentalFeatures:
   enabled: false
-
-  # Enable the slider experimental feature.
-  # This feature allows users to dynamically adjust the resource limits of their jobs with a different User Interface experience.
-  slider:
-    enabled: false
 
 # This is a list of tolerations that will be added to the Pod spec of the Science Portal UI.
 # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

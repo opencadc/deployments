@@ -24,9 +24,8 @@ helm repo update
 
 3. **Install the Skaha Chart**:
 ```bash
-helm -n skaha-system upgrade --install --values <your-skaha-values.yaml> skaha-release skaha-repo/skaha
+helm --namespace skaha-system upgrade --install --values <your-skaha-values.yaml> skaha-release skaha-repo/skaha
 ```
-
 Replace `skaha-release` with your desired release name.
 
 ## Configuration
@@ -37,77 +36,58 @@ To customize the installation:
 - **Create a `values.yaml` File**: Define your custom configurations in this file.
 - **Install the Chart with Custom Values**:
 ```bash
-helm -n skaha-system upgrade --install --values values.yaml skaha-release skaha-repo/skaha
+helm --namespace skaha-system upgrade --install --values values.yaml skaha-release skaha-repo/skaha
 ```
 
-### Supported Configuration Options
-The following table lists the configurable parameters for the Skaha Helm chart:
+### LimitRange
+You can define a `LimitRange` for User Session Pods by modifying the `deployment.skaha.sessions.limitRange` section in your `values.yaml` file. This configuration allows you to set resource limits and requests for different session types.  The `min` clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  This will go directly into a `LimitRange` object created in the Skaha workload Namespace, and, as such, supports the Kubernetes
+units.
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `kubernetesClusterDomain` | Kubernetes cluster domain used to find internal hosts | `cluster.local` |
-| `replicaCount` | Number of Skaha replicas to deploy | `1` |
-| `tolerations` | Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the `skaha` API | `[]` |
-| `skahaWorkload.namespace` | Namespace where Skaha Workload (User Sesssion space) is deployed | `skaha-workload` |
-| `experimentalFeatures.enabled`    | Enable/Disable all feature flags for unreleased or experimental features. | `false`       |
-| `experimentalFeatures.sessionLimitRange.enabled` | Enable/Disable per-session `LimitRange` enforcement for User Sessions. | `false` |
-| `experimentalFeatures.sessionLimitRange.rbac.create` | Whether to create RBAC resources for session LimitRange enforcement. | `false` |
-| `experimentalFeatures.sessionLimitRange.limitSpec` | List of resource limits to enforce in User Sessions. See [Kubernetes LimitRange](https://kubernetes.io/docs/concepts/policy/limit-range/) for details. | `{}` |
-| `deployment.hostname` | Hostname for the Skaha deployment | `""` |
-| `deployment.skaha.image` | Skaha Docker image | `images.opencadc.org/platform/skaha:<current release version>` |
-| `deployment.skaha.imagePullPolicy` | Image pull policy for the Skaha container | `IfNotPresent` |
-| `deployment.skaha.imageCache.refreshSchedule` | Schedule for refreshing the Skaha image cache in `cron` format | `@daily` |
-| `deployment.skaha.defaultQuotaGB` | Default quota for Skaha in GB.  Used when allocating first-time users into the system. | `10` |
-| `deployment.skaha.registryHosts` | Space delimited list of Docker (Harbor) registry hosts | `images.canfar.net` |
-| `deployment.skaha.usersGroup` | GMS style Group URI for Skaha users to belong to | `""` |
-| `deployment.skaha.adminsGroup` | GMS style Group URI for Skaha admins to belong to | `""` |
-| `deployment.skaha.headlessGroup` | GMS style Group URI whose members can submit headless jobs | `""` |
-| `deployment.skaha.headlessPriorityGroup` | GMS style Group URI whose member's headless jobs can pre-empt other's.  Useful fortight deadlines in processing | `""` |
-| `deployment.skaha.headlessPriorityClass` | Name of the `priorityClass` for headless jobs to allow some pre-emption | `""` |
-| `deployment.skaha.loggingGroups` | List of GMS style Group URIs whose members can alter the log level.  See [cadc-log](https://github.com/opencadc/core/tree/main/cadc-log) regarding the `/logControl` endpoint. | `[]` |
-| `deployment.skaha.posixMapperResourceID` | Resource ID (URI) for the POSIX Mapper service containing the UIDs and GIDs | `""` |
-| `deployment.skaha.oidcURI` | URI (or URL) for the OIDC service | `""` |
-| `deployment.skaha.gmsID` | Resource ID (URI) for the IVOA Group Management Service | `""` |
-| `deployment.skaha.registryURL` | URL for the IVOA registry containing service locations | `""` |
-| `deployment.skaha.nodeAffinity` | Kubernetes Node affinity for the Skaha API Pod | `{}` |
-| `deployment.skaha.extraEnv` | List of extra environment variables to be set in the Skaha service.  See the `values.yaml` file for examples. | `[]` |
-| `deployment.skaha.resources` | Resource requests and limits for the Skaha API | `{}` |
-| `deployment.skaha.extraPorts` | List of extra ports to expose in the Skaha service.  See the `values.yaml` file for examples. | `[]` |
-| `deployment.skaha.extraVolumeMounts` | List of extra volume mounts to be mounted in the Skaha deployment.  See the `values.yaml` file for examples. | `[]` |
-| `deployment.skaha.extraVolumes` | List of extra volumes to be mounted in the Skaha deployment.  See the `values.yaml` file for examples. | `[]` |
-| `deployment.skaha.priorityClassName` | Name of the `priorityClass` for the Skaha API Pod used for pre-emption | `""` |
-| `deployment.skaha.serviceAccountName` | Name of the Service Account for the Skaha API Pod | `"skaha"` |
-| `deployment.skaha.identityManagerClass` | Java Class name for the [IdentityManager](https://github.com/opencadc/core/blob/main/cadc-util/src/main/java/ca/nrc/cadc/auth/IdentityManager.java) to use.  Defaults to [`org.opencadc.auth.StandardIdentityManager`](https://github.com/opencadc/ac/blob/main/cadc-gms/src/main/java/org/opencadc/auth/StandardIdentityManager.java) for use with bearer tokens (OIDC) | `"org.opencadc.auth.StandardIdentityManager"` |
-| `deployment.skaha.apiVersion` | API version used to match the Ingress path (e.g. `/skaha/v0`) | `"v0"` |
-| `deployment.skaha.registryURL` | (list OR string) IVOA Registry array of IVOA Registry locations or single IVOA Registry location | `[]` |
-| `deployment.skaha.sessions.expirySeconds` | Expiry time, in seconds, for interactive sessions.  Defaults to four (4) days. | `"345600"` |
-| `deployment.skaha.sessions.imagePullPolicy` | Image pull policy for all User Sessions. | `"Always"` |
-| `deployment.skaha.sessions.maxCount` | Maximum number of interactive sessions per user.  Defaults to three (3). | `"3"` |
-| `deployment.skaha.sessions.minEphemeralStorage` | Minimum ephemeral storage, in [Kubernetes quantity](https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/quantity/), for interactive sessions.  Defaults to 20Gi. | `"20Gi"` |
-| `deployment.skaha.sessions.maxEphemeralStorage` | Maximum ephemeral storage, in [Kubernetes quantity](https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/quantity/), for interactive sessions.  Defaults to 200Gi. | `"200Gi"` |
-| `deployment.skaha.sessions.initContainerImage` | Init container image for Skaha User Sessions. | `redis-7.4.2-alpine3.21` |
-| `deployment.skaha.sessions.kueue.default.queueName` | Name of the default `LocalQueue` instance from Kueue for all types | `""` |
-| `deployment.skaha.sessions.kueue.default.priorityClass` | Name of the `priorityClass` for the all types to allow some pre-emption | `""` |
-| `deployment.skaha.sessions.kueue.<typename>.queueName` | Name of the `LocalQueue` instance from Kueue for the given type | `""` |
-| `deployment.skaha.sessions.kueue.<typename>.priorityClass` | Name of the `priorityClass` for the given type to allow some pre-emption | `""` |
-| `deployment.skaha.sessions.hostname` | Hostname to access user sessions on.  Defaults to `deployment.hostname` | `deployment.hostname` |
-| `deployment.skaha.sessions.tls` | TLS configuration for the User Sessions IngressRoute. | `{}` |
-| `deployment.skaha.sessions.userStorage.topLevelDirectory`         | **Absolute** mount point where `/home` and `/projects` directories exist.          | `"/cavern"`                   |
-| `deployment.skaha.sessions.userStorage.homeDirectory`             | **Relative** path under `topLevelDirectory` used for user home directories.        | `"home"`                      |
-| `deployment.skaha.sessions.userStorage.projectsDirectory`         | **Relative** path where project/shared directories exist (used in CARTA sessions). | `"projects"`                  |
-| `deployment.skaha.sessions.userStorage.persistentVolumeClaimName` | PVC name used for user storage mounting inside sessions.                           | `"skaha-workload-cavern-pvc"` |
-| `deployment.skaha.sessions.userStorage.serviceURI`                | VOSpace service URI (ivo://). Required when enabled.                               | *None*                        |
-| `deployment.skaha.sessions.userStorage.nodeURIPrefix`             | VOSpace Node URI prefix (vos://).                                                  | *None*                        |
-| `deployment.skaha.sessions.userStorage.admin`                     | Admin credentials block used to create allocations in Cavern.                      | *N/A (object)*                |
-| `deployment.skaha.sessions.userStorage.admin.auth.apiKey`            | API key used between Skaha and Cavern for home directory (allocation) creation.                         | *None*  |
-| `deployment.skaha.sessions.userStorage.admin.auth.certificateSecret` | Optional Kubernetes Secret containing PEM client certificate for storage admin operations.  Only used by the CADC. | *None*  |
-| `deployment.skaha.sessions.extraVolumes` | List of extra `volume` and `volumeMount` to be mounted in User Sessions.  See the `values.yaml` file for examples. | `[]` |
-| `deployment.skaha.sessions.gpuEnabled` | Enable GPU support for User Sessions.  Defaults to `false` | `false` |
-| `deployment.skaha.sessions.nodeAffinity` | Kubernetes Node affinity for the Skaha User Session Pods | `{}` |
-| `deployment.skaha.sessions.tolerations` | Array of tolerations to pass to Kubernetes for fine-grained Node targeting of the `skaha` User Sessions | `[]` |
-| `secrets` | List of secrets to be mounted in the Skaha API defined as objects (i.e `secretName: {cert.pem: xxx}`) | `[]` |
-| `storage.service.spec` | Storage class specification for the Skaha API.  Can be `persistentVolumeClaim` or a dynamic instantiation like `hostPath`.  See [Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/). | `{}` |
-| `redis` | [Redis sub-chart configuration](https://github.com/bitnami/charts/tree/main/bitnami/redis) for Skaha's caching of Harbor Docker image metadata. | See [`values.yaml`](https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml) for available configuration values. |
+The `rbac` section allows you to create the necessary Role and RoleBinding for the LimitRange object.  If your organization does not permit the creation of RBAC objects, you can set `create` to `false` and manage the RBAC externally.
+
+```yaml
+deployment:
+  skaha:
+    sessions:
+      limitRange:
+        rbac:
+          create: true
+        limitSpec:
+          max:
+            # maximum resource limit to grow to, also used by the UI to limit selectable resources
+            memory: "96Gi"
+            cpu: "12"
+          default:
+            # actually refers to default limit
+            memory: "32Gi"
+            cpu: "8"
+          defaultRequest:
+            # default resource requests
+            memory: "4Gi"
+            cpu: "1"
+```
+
+### Flexible Session Pods
+You can customize the User Session Pods by modifying the `deployment.skaha.sessions` section in your `values.yaml` file. This includes settings for resource requests, storage allocation, and more.
+
+Flexible User sessions are created with a small amount of CPU and memory by default and are allowed to grow to a specified limit in the `LimitRange` configuration. You can adjust these minimum (request) settings as needed:
+```yaml
+deployment:
+  skaha:
+    sessions:
+      flexResourceRequests:
+        # The headless session type resource requests get slightly more resources to start.
+        headless:
+          memoryInGB: "2"
+          cpuCores: "1"
+        notebook:
+          memoryInGB: "2"
+          cpuCores: "0.5"
+```
+
+The `headless`, `notebook`, `desktop`, `contributed`, and `firefly` session types can all be customized individually.  Any session type not specified will use the values defined in the `LimitRange` configuration.
+
+**Note** that Kubernetes resource units are not supported in this configuration; only floating point or integer numbers as strings are valid.  For example, for 100m of CPU, use `"0.1"`.
 
 #### Notes on tolerations and nodeAffinity
 
@@ -152,10 +132,14 @@ uv run kr cluster resources -f allocatable -s 0.8
 To remove the Skaha application from your cluster:
 
 ```bash
-helm -n skaha-system uninstall skaha-release
+helm --namespace skaha-system uninstall skaha-release
 ```
 
 This command will delete all resources associated with the Skaha release.
 
 ## License
 This project is licensed under the MIT License. For more information, refer to the LICENSE file in the repository.
+
+## Values Reference
+
+--8<-- "helm/applications/skaha/README.md"

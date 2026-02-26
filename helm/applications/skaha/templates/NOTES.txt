@@ -7,8 +7,19 @@ Namespace: {{ .Release.Namespace }}
 
 Skaha workload namespace: {{ .Values.skahaWorkload.namespace | default "skaha-workload" }}
 
-Sessions:
+User Sessions:
 - Ensure CARTA images being used are at version 5.0.3 or higher.
+
+{{- with .Values.deployment.skaha.sessions.ingress }}
+User Sessions Ingress Configurations:
+{{- with .customResponseHeaders }}
+- Custom Response Headers:
+{{ toYaml . | indent 6 }}
+{{- end }}
+{{- with .tls }}
+- TLS configured:
+{{- end }}
+{{- end }}
 
 Kueue:
 {{- if .Values.deployment.skaha.sessions.kueue }}
@@ -34,6 +45,13 @@ If user Jobs remain Pending:
 - Ensure LocalQueue exists in {{ .Values.skahaWorkload.namespace }} and references your configured ClusterQueue.
 - Verify ClusterQueue quotas are sufficient.
 - Confirm priority classes referenced by sessions exist or are created.
+
+!! ISSUES !!:
+{{- if and .Values.experimentalFeatures .Values.experimentalFeatures.sessionLimitRange }}
+The experimentalFeatures.sessionLimitRange value is deprecated and will be removed in 2026.2.  Please use the now released deployment.skaha.sessions.limitRange instead.
+{{- else }}
+None.
+{{- end}}
 
 Experimental Features Configured:
 {{- if and .Values.experimentalFeatures .Values.experimentalFeatures.enabled }}

@@ -30,9 +30,8 @@ A Helm chart to install the Science Portal UI
 | deployment.sciencePortal.skahaResourceID | string | `nil` |  |
 | deployment.sciencePortal.tabLabels[0] | string | `"Standard"` |  |
 | deployment.sciencePortal.tabLabels[1] | string | `"Advanced"` |  |
-| deployment.sciencePortal.themeName | string | `nil` |  |
+| deployment.sciencePortal.theme | object | `{}` |  |
 | experimentalFeatures.enabled | bool | `false` |  |
-| experimentalFeatures.slider.enabled | bool | `false` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
 | podSecurityContext | object | `{}` |  |
 | redis.architecture | string | `"standalone"` |  |

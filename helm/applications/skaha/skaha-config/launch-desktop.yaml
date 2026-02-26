@@ -72,6 +72,24 @@ spec:
             memory: "4Gi"
             cpu: "1"
             ephemeral-storage: "10Gi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 6901
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /?password=${skaha.sessionid}&path=session/desktop/${skaha.sessionid}
+            port: 6901
+          periodSeconds: 15
+        startupProbe:
+          httpGet:
+            path: /
+            port: 6901
+          initialDelaySeconds: 10
+          timeoutSeconds: 300
+          periodSeconds: 10
+          failureThreshold: 30
         ports:
         - containerPort: 5901
           protocol: TCP
