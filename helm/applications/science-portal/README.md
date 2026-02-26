@@ -21,7 +21,7 @@ A Helm chart to install the Science Portal UI
 | deployment.sciencePortal.defaultProjectName | string | `"skaha"` |  |
 | deployment.sciencePortal.gmsID | string | `nil` |  |
 | deployment.sciencePortal.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.sciencePortal.image | string | `"images.opencadc.org/platform/science-portal:1.2.6"` |  |
+| deployment.sciencePortal.image | string | `"images.opencadc.org/platform/science-portal:1.3.0"` |  |
 | deployment.sciencePortal.imagePullPolicy | string | `"Always"` |  |
 | deployment.sciencePortal.resources.limits.cpu | string | `"1"` |  |
 | deployment.sciencePortal.resources.limits.memory | string | `"1000Mi"` |  |
