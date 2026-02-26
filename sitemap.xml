@@ -2,70 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://www.opencadc.org/deployments/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/core/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/core/reg/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/base/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/browser-authentication/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/cavern/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/deployment/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/posix-mapper/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/science-portal/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/skaha/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/storage-ui/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/helm/science-platform/utils/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/operations/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/operations/ci-cd/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
     <url>
          <loc>https://www.opencadc.org/deployments/operations/release-process/</loc>
-         <lastmod>2026-02-06</lastmod>
+         <lastmod>2026-02-26</lastmod>
     </url>
 </urlset>

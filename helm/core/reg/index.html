@@ -682,7 +682,7 @@ Replace <code>registry-release</code> with your desired release name.</p>
 </span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="w">  </span><span class="c1"># If not set and create is true, a name is generated using the fullname template</span>
 </span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-registry-service-account&quot;</span>
 </span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a>
-</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="c1"># Ingress is an quick way to get up and running, but httpRoute is preferred to make use of the Kubernetes Gateway API.  </span>
+</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="c1"># Ingress is an quick way to get up and running, but httpRoute is preferred to make use of the Kubernetes Gateway API.</span>
 </span><span id="__span-4-38"><a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="c1"># If using Ingress, ensure that your cluster has an Ingress controller installed and configured to handle the specified className.</span>
 </span><span id="__span-4-39"><a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="nt">ingress</span><span class="p">:</span>
 </span><span id="__span-4-40"><a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
@@ -706,7 +706,277 @@ Replace <code>registry-release</code> with your desired release name.</p>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <p>This project is licensed under the MIT License. For more information, refer to the LICENSE file in the repository.</p>
 <h2 id="values-reference">Values Reference<a class="headerlink" href="#values-reference" title="Permanent link">&para;</a></h2>
-<!-- --8<-- "helm/applications/registry/README.md" -->
+<h1 id="reg">reg<a class="headerlink" href="#reg" title="Permanent link">&para;</a></h1>
+<p>IVOA Registry Service Helm Chart</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Chart</th>
+<th style="text-align: center;">AppVersion</th>
+<th style="text-align: center;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1.0.0<!-- x-release-please-version --></td>
+<td style="text-align: center;">1.2.1</td>
+<td style="text-align: center;">application</td>
+</tr>
+</tbody>
+</table>
+<h2 id="values">Values<a class="headerlink" href="#values" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>affinity</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>application.authority</td>
+<td>string</td>
+<td><code>""</code></td>
+<td></td>
+</tr>
+<tr>
+<td>application.logging</td>
+<td>string</td>
+<td><code>nil</code></td>
+<td></td>
+</tr>
+<tr>
+<td>application.serviceEntries</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>application.vosi</td>
+<td>string</td>
+<td><code>nil</code></td>
+<td></td>
+</tr>
+<tr>
+<td>autoscaling.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td></td>
+</tr>
+<tr>
+<td>autoscaling.maxReplicas</td>
+<td>int</td>
+<td><code>100</code></td>
+<td></td>
+</tr>
+<tr>
+<td>autoscaling.minReplicas</td>
+<td>int</td>
+<td><code>1</code></td>
+<td></td>
+</tr>
+<tr>
+<td>autoscaling.targetCPUUtilizationPercentage</td>
+<td>int</td>
+<td><code>80</code></td>
+<td></td>
+</tr>
+<tr>
+<td>fullnameOverride</td>
+<td>string</td>
+<td><code>""</code></td>
+<td></td>
+</tr>
+<tr>
+<td>global.hostname</td>
+<td>string</td>
+<td><code>""</code></td>
+<td></td>
+</tr>
+<tr>
+<td>httpRoute</td>
+<td>object</td>
+<td><code>{"annotations":{},"enabled":false,"hostnames":["chart-example.local"],"parentRefs":[{"name":"gateway","sectionName":"http"}],"rules":[{"matches":[{"path":{"type":"PathPrefix","value":"/headers"}}]}]}</code></td>
+<td>Expose the service via gateway-api HTTPRoute Requires Gateway API resources and suitable controller installed within the cluster (see: <a href="https://gateway-api.sigs.k8s.io/guides/">https://gateway-api.sigs.k8s.io/guides/</a>)</td>
+</tr>
+<tr>
+<td>image.pullPolicy</td>
+<td>string</td>
+<td><code>"IfNotPresent"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>image.repository</td>
+<td>string</td>
+<td><code>"images.opencadc.org/core/reg"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>image.tag</td>
+<td>string</td>
+<td><code>"1.2.1"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>imagePullSecrets</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ingress.annotations</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ingress.className</td>
+<td>string</td>
+<td><code>""</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ingress.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ingress.hosts</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ingress.tls</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>livenessProbe</td>
+<td>string</td>
+<td><code>nil</code></td>
+<td></td>
+</tr>
+<tr>
+<td>nameOverride</td>
+<td>string</td>
+<td><code>""</code></td>
+<td></td>
+</tr>
+<tr>
+<td>nodeSelector</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>podAnnotations</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>podLabels</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>podSecurityContext</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>readinessProbe</td>
+<td>string</td>
+<td><code>nil</code></td>
+<td></td>
+</tr>
+<tr>
+<td>replicaCount</td>
+<td>int</td>
+<td><code>1</code></td>
+<td></td>
+</tr>
+<tr>
+<td>resources</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>securityContext</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>service.port</td>
+<td>int</td>
+<td><code>8080</code></td>
+<td></td>
+</tr>
+<tr>
+<td>service.type</td>
+<td>string</td>
+<td><code>"ClusterIP"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>serviceAccount.annotations</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>serviceAccount.automount</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td></td>
+</tr>
+<tr>
+<td>serviceAccount.create</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td></td>
+</tr>
+<tr>
+<td>serviceAccount.name</td>
+<td>string</td>
+<td><code>""</code></td>
+<td></td>
+</tr>
+<tr>
+<td>tolerations</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>volumeMounts</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>volumes</td>
+<td>list</td>
+<td><code>[]</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -729,7 +999,7 @@ Replace <code>registry-release</code> with your desired release name.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 6, 2026 09:17:16 PST"><span class="timeago" datetime="2026-02-06T09:17:16-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 6, 2026 09:17:16 PST">2026-02-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 26, 2026 08:57:25 PST"><span class="timeago" datetime="2026-02-26T08:57:25-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 26, 2026 08:57:25 PST">2026-02-26</span>
   </span>
 
     
@@ -739,7 +1009,7 @@ Replace <code>registry-release</code> with your desired release name.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 6, 2026 09:17:16 PST"><span class="timeago" datetime="2026-02-06T09:17:16-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 6, 2026 09:17:16 PST">2026-02-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 6, 2026 09:22:41 PST"><span class="timeago" datetime="2026-02-06T09:22:41-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 6, 2026 09:22:41 PST">2026-02-06</span>
   </span>
 
     
