@@ -1,5 +1,13 @@
 # CHANGELOG for Science Portal UI (Chart 1.1.1)
 
+## [1.2.1](https://github.com/opencadc/deployments/compare/scienceportal-1.2.0...scienceportal-1.2.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* app version update ([866eb7f](https://github.com/opencadc/deployments/commit/866eb7f5fd22b1cc10d2a1523a81b74c0420cee3))
+* updated image versions ([a79638f](https://github.com/opencadc/deployments/commit/a79638fa71a047b18db25ee52757e23b41f958f7))
+
 ## [1.2.0](https://github.com/opencadc/deployments/compare/scienceportal-1.1.2...scienceportal-1.2.0) (2026-01-30)
 
 
