@@ -29,7 +29,7 @@ podSecurityContext: {}
 deployment:
   hostname: example.host.com    # Change this!
   sciencePortal:
-    image: images.opencadc.org/platform/science-portal:1.2.6
+    image: images.opencadc.org/platform/science-portal:1.3.0
     imagePullPolicy: Always
 
     # org.opencadc.science-portal.tabLabels
