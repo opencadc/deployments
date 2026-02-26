@@ -109,4 +109,4 @@ This project is licensed under the MIT License. For more information, refer to t
 
 ## Values Reference
 
---8<-- "helm/applications/registry/README.md"
+--8<-- "helm/applications/reg/README.md"
