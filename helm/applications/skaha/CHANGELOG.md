@@ -1,5 +1,35 @@
 # Skaha User Session API Helm Chart
 
+## [1.5.0](https://github.com/opencadc/deployments/compare/skaha-1.4.0...skaha-1.5.0) (2026-02-26)
+
+
+### Features
+
+* add custom response headers ([08f3550](https://github.com/opencadc/deployments/commit/08f35508ce087ba522f44484894fe9971eb3075b))
+* add probes to desktop sessions ([592ed3b](https://github.com/opencadc/deployments/commit/592ed3b6a0e7c1c6f2ba7f8b56e17df838acc64a))
+* documentation and feature for flex job configuration ([bab8ec0](https://github.com/opencadc/deployments/commit/bab8ec066de78696226da3742639b4e0113d65c2))
+* new reg helm chart ([713bdb9](https://github.com/opencadc/deployments/commit/713bdb9a0fe0919f259d1c3b0db74a943154f300))
+* new reg helm chart ([ae93597](https://github.com/opencadc/deployments/commit/ae935976e820041d696502114f6b00f037bb4969))
+
+
+### Bug Fixes
+
+* compatability for old limitrange spec ([f32713f](https://github.com/opencadc/deployments/commit/f32713fad71628e53010a87b261e39774949e1e9))
+* correct comment in xresources ([5d27f91](https://github.com/opencadc/deployments/commit/5d27f91e7daea8ee856fc62c8e56cd074a8c0622))
+* correct desktop launcher ([ad774c0](https://github.com/opencadc/deployments/commit/ad774c0e95a40bb117b517c42007593ffcd9da8c))
+* default version change ([f09f82c](https://github.com/opencadc/deployments/commit/f09f82ce1a15ac28fc7f2e5f79182fb58e9322a9))
+* fix for notes output ([7192b81](https://github.com/opencadc/deployments/commit/7192b81925cc2c5bd2f66f41f7e554640bf76a63))
+* fix limitrange checking for values ([d072828](https://github.com/opencadc/deployments/commit/d0728283a80fbe0fabe7cdbe1cf05b0d5b72ac5c))
+* fix typo ([a84aadc](https://github.com/opencadc/deployments/commit/a84aadcde414f90b14be3d63a05ad833003a8c40))
+* hush the linter ([8869d9b](https://github.com/opencadc/deployments/commit/8869d9b5de6e7bb959a71e86e91b0c64af56a415))
+* included ingress config in notes ([e4fb9db](https://github.com/opencadc/deployments/commit/e4fb9db8fded0826c3e24d8d8355030c3da1d8ed))
+* inject display in deployment ([8b4d736](https://github.com/opencadc/deployments/commit/8b4d7361f37aae7ea8ffaba234a13cf0d9eb6f71))
+* make desktop launch backward compatible ([1a9b7ca](https://github.com/opencadc/deployments/commit/1a9b7ca4ba957eb308afdb1b8d3154c7b0d687cc))
+* reset default minimum to 1 core and 4gi of ram ([e8e04c3](https://github.com/opencadc/deployments/commit/e8e04c3b885230796d21e512308abc94379a51ae))
+* small executable flag fiox ([4059c8c](https://github.com/opencadc/deployments/commit/4059c8cff1de7a8cb0d96a299b8afffc619fab84))
+* small fix for rbac creation ([743dc55](https://github.com/opencadc/deployments/commit/743dc556553f3da65582470fb542f77cf48145b6))
+* small fixes for desktop ([e1ff9e6](https://github.com/opencadc/deployments/commit/e1ff9e67d04f0389a20cc9d97eab22fd2142eb06))
+
 ## [1.4.0](https://github.com/opencadc/deployments/compare/skaha-1.3.3...skaha-1.4.0) (2025-12-18)
 
 
