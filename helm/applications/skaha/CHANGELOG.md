@@ -1,5 +1,12 @@
 # Skaha User Session API Helm Chart
 
+## [1.5.1](https://github.com/opencadc/deployments/compare/skaha-1.5.0...skaha-1.5.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* updated image versions ([a79638f](https://github.com/opencadc/deployments/commit/a79638fa71a047b18db25ee52757e23b41f958f7))
+
 ## [1.5.0](https://github.com/opencadc/deployments/compare/skaha-1.4.0...skaha-1.5.0) (2026-02-26)
 
 
