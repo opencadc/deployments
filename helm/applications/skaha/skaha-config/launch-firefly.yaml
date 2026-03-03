@@ -48,13 +48,13 @@ spec:
         - name: XDG_CACHE_HOME
           value: "${SKAHA_USER_HOME_DIR}"
         - name: JULIA_NUM_THREADS
-          value: "${software.requests.cores}"
+          value: "${software.thread.count}"
         - name: OPENBLAS_NUM_THREADS
-          value: "${software.requests.cores}"
+          value: "${software.thread.count}"
         - name: MKL_NUM_THREADS
-          value: "${software.requests.cores}"
+          value: "${software.thread.count}"
         - name: OMP_NUM_THREADS
-          value: "${software.requests.cores}"
+          value: "${software.thread.count}"
         - name: DEBUG
           value: "FALSE"
         - name: PROPS_sso__framework__adapter

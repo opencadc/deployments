@@ -48,7 +48,7 @@ spec:
         - name: PWD
           value: "${SKAHA_USER_HOME_DIR}"
         - name: OMP_NUM_THREADS
-          value: "${software.requests.cores}"
+          value: "${software.thread.count}"
         securityContext:
           privileged: false
           allowPrivilegeEscalation: false
