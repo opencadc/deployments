@@ -1,5 +1,14 @@
 # Skaha User Session API Helm Chart
 
+## [1.5.2](https://github.com/opencadc/deployments/compare/skaha-1.5.1...skaha-1.5.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* bug fix to use integers as thread count values ([87d00e7](https://github.com/opencadc/deployments/commit/87d00e77ecf6dee9452e023d26f4c0646ec6c457))
+* let release please update chart version ([c5a15c1](https://github.com/opencadc/deployments/commit/c5a15c1bc13f2fcfdb723c33edc4112ff82d6284))
+* precommit update ([5b2778a](https://github.com/opencadc/deployments/commit/5b2778a4c6bc69838ffe994b56e4b1e0e6994593))
+
 ## [1.5.1](https://github.com/opencadc/deployments/compare/skaha-1.5.0...skaha-1.5.1) (2026-02-26)
 
 
