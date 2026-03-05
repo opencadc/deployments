@@ -1,4 +1,5 @@
-from typing import Dict, Tuple
+from pathlib import Path
+from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,6 +12,16 @@ from kueuer.utils import io
 sns.set(style="whitegrid")
 
 app = typer.Typer(help="Plot Kueue Benchmark Results")
+
+
+def _finalize_plot(filename: str, output_dir: Optional[str], show: bool) -> None:
+    if output_dir:
+        out = Path(output_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        plt.savefig(out / filename, dpi=150, bbox_inches="tight")
+    if show:
+        plt.show()
+    plt.close()
 
 
 # Load CSV into DataFrame
@@ -36,12 +47,16 @@ def compute_throughput(df: pd.DataFrame) -> pd.DataFrame:
 
 # Compute startup and completion latency
 def compute_latency(df: pd.DataFrame) -> pd.DataFrame:
-    df["startup_latency"] = (
+    # Semantically these are turnaround measurements, not true scheduler startup.
+    df["first_job_turnaround_s"] = (
         df["first_completion_time"] - df["first_creation_time"]
     ).dt.total_seconds()
-    df["completion_latency"] = (
+    df["tail_job_turnaround_s"] = (
         df["last_completion_time"] - df["last_creation_time"]
     ).dt.total_seconds()
+    # Backward-compatible aliases.
+    df["startup_latency"] = df["first_job_turnaround_s"]
+    df["completion_latency"] = df["tail_job_turnaround_s"]
     return df
 
 
@@ -82,7 +97,13 @@ def compute_comparative_metrics(df: pd.DataFrame) -> pd.DataFrame:
 
 # Plot metrics
 def plot_metric_comparison(
-    df: pd.DataFrame, metric: str, ylabel: str, title: str
+    df: pd.DataFrame,
+    metric: str,
+    ylabel: str,
+    title: str,
+    filename: str,
+    output_dir: Optional[str],
+    show: bool,
 ) -> None:
     plt.figure(figsize=(8, 6))
     sns.barplot(data=df, x="use_kueue", y=metric)
@@ -90,22 +111,26 @@ def plot_metric_comparison(
     plt.ylabel(ylabel)
     plt.title(title)
     plt.xticks([0, 1], ["No", "Yes"])
-    plt.show()
+    _finalize_plot(filename, output_dir, show)
 
 
 # Plot distributions of job durations
-def plot_duration_distribution(df: pd.DataFrame) -> None:
+def plot_duration_distribution(
+    df: pd.DataFrame, output_dir: Optional[str] = None, show: bool = True
+) -> None:
     plt.figure(figsize=(10, 6))
     sns.histplot(
         df, x="avg_time_from_creation_completion", hue="use_kueue", kde=True, bins=20
     )
     plt.xlabel("Average Job Duration (s)")
     plt.title("Distribution of Average Job Durations")
-    plt.show()
+    _finalize_plot("job_duration_distribution.png", output_dir, show)
 
 
 # Plot completion times with trendlines on log-scale
-def plot_completion_times(df: pd.DataFrame) -> None:
+def plot_completion_times(
+    df: pd.DataFrame, output_dir: Optional[str] = None, show: bool = True
+) -> None:
     plt.figure(figsize=(10, 6))
     df["completion_time_seconds"] = (
         df["last_completion_time"] - df["first_creation_time"]
@@ -118,7 +143,7 @@ def plot_completion_times(df: pd.DataFrame) -> None:
         style="use_kueue",
     )
     sns.regplot(
-        data=df[df["use_kueue"] is False],
+        data=df[df["use_kueue"] == False],
         x="completion_time_seconds",
         y="job_count",
         scatter=False,
@@ -126,7 +151,7 @@ def plot_completion_times(df: pd.DataFrame) -> None:
         label="Trendline (No Kueue)",
     )
     sns.regplot(
-        data=df[df["use_kueue"] is True],
+        data=df[df["use_kueue"] == True],
         x="completion_time_seconds",
         y="job_count",
         scatter=False,
@@ -139,11 +164,13 @@ def plot_completion_times(df: pd.DataFrame) -> None:
     plt.title("Job Completion Times with Trendlines (Log scale)")
     plt.legend()
     plt.tight_layout()
-    plt.show()
+    _finalize_plot("job_completion_times.png", output_dir, show)
 
 
 # Plot scaling efficiency
-def plot_scaling_efficiency(df: pd.DataFrame) -> None:
+def plot_scaling_efficiency(
+    df: pd.DataFrame, output_dir: Optional[str] = None, show: bool = True
+) -> None:
     plt.figure(figsize=(10, 6))
     sns.lineplot(data=df, x="job_count", y="throughput", hue="use_kueue", marker="x")
     plt.xlabel("Number of Jobs")
@@ -151,18 +178,20 @@ def plot_scaling_efficiency(df: pd.DataFrame) -> None:
     plt.title("Efficiency Comparison with Scaling")
     plt.legend(title="Using Kueue", labels=["No", "Yes"])
     plt.tight_layout()
-    plt.show()
+    _finalize_plot("scaling_efficiency.png", output_dir, show)
 
 
 # Visualization function
-def plot_scheduling_overhead(df: pd.DataFrame) -> None:
+def plot_scheduling_overhead(
+    df: pd.DataFrame, output_dir: Optional[str] = None, show: bool = True
+) -> None:
     plt.figure(figsize=(10, 6))
     sns.boxplot(data=df, x="use_kueue", y="scheduling_overhead")
     plt.xticks([0, 1], ["No", "Yes"])
     plt.xlabel("Using Kueue")
     plt.ylabel("Scheduling Overhead (seconds)")
     plt.title("Comparison of Job Scheduling Overhead")
-    plt.show()
+    _finalize_plot("scheduling_overhead.png", output_dir, show)
 
 
 def compute_scheduling_overhead(df: pd.DataFrame) -> pd.DataFrame:
@@ -173,31 +202,75 @@ def compute_scheduling_overhead(df: pd.DataFrame) -> pd.DataFrame:
 
 
 @app.command("performance")
-def performance(filepath: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def performance(
+    filepath: str,
+    output_dir: str = typer.Option(
+        "plots", "-o", "--output-dir", help="Directory where plots are written."
+    ),
+    show: bool = typer.Option(
+        False, "--show/--no-show", help="Display plots interactively."
+    ),
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     df = load_results(filepath)
     df = compute_throughput(df)
     df = compute_latency(df)
     df = compute_cv(df)
     df = compute_scheduling_overhead(df)
     comparative_df = compute_comparative_metrics(df)
-    plot_metric_comparison(df, "throughput", "Jobs per Second", "Throughput Comparison")
     plot_metric_comparison(
-        df, "startup_latency", "Latency (seconds)", "Startup Latency Comparison"
+        df,
+        "throughput",
+        "Jobs per Second",
+        "Throughput Comparison",
+        "throughput_comparison.png",
+        output_dir,
+        show,
     )
     plot_metric_comparison(
-        df, "completion_latency", "Latency (seconds)", "Completion Latency Comparison"
+        df,
+        "first_job_turnaround_s",
+        "Seconds",
+        "First Job Turnaround Comparison",
+        "first_job_turnaround_comparison.png",
+        output_dir,
+        show,
     )
-    plot_metric_comparison(df, "cv", "Coefficient of Variation", "CV of Job Durations")
-    plot_duration_distribution(df)
-    plot_completion_times(df)
-    plot_scaling_efficiency(df)
-    plot_scheduling_overhead(df)
+    plot_metric_comparison(
+        df,
+        "tail_job_turnaround_s",
+        "Seconds",
+        "Tail Job Turnaround Comparison",
+        "tail_job_turnaround_comparison.png",
+        output_dir,
+        show,
+    )
+    plot_metric_comparison(
+        df,
+        "cv",
+        "Coefficient of Variation",
+        "CV of Job Durations",
+        "cv_of_job_durations.png",
+        output_dir,
+        show,
+    )
+    plot_duration_distribution(df, output_dir, show)
+    plot_completion_times(df, output_dir, show)
+    plot_scaling_efficiency(df, output_dir, show)
+    plot_scheduling_overhead(df, output_dir, show)
 
     return df, comparative_df
 
 
 @app.command("evictions")
-def evictions(filepath: str) -> None:
+def evictions(
+    filepath: str,
+    output_dir: str = typer.Option(
+        "plots", "-o", "--output-dir", help="Directory where plots are written."
+    ),
+    show: bool = typer.Option(
+        False, "--show/--no-show", help="Display plots interactively."
+    ),
+) -> None:
     priority_map: Dict[int, str] = {10000: "Low", 100000: "Medium", 1000000: "High"}
     data = io.read_yaml(filepath)
     df = pd.DataFrame.from_dict(data, orient="index")
@@ -256,7 +329,7 @@ def evictions(filepath: str) -> None:
     plt.xlabel("Priority")
     plt.ylabel("Total Evictions")
     plt.tight_layout()
-    plt.show()
+    _finalize_plot("evictions_by_priority.png", output_dir, show)
 
     # Use priority label as y just for grouping (or use a dummy index if preferred)
     plt.figure(figsize=(10, 6))
@@ -274,7 +347,7 @@ def evictions(filepath: str) -> None:
     plt.ylabel("Job Priority")
     plt.legend(title="Priority", loc="upper right")
     plt.tight_layout()
-    plt.show()
+    _finalize_plot("job_start_end_timeline.png", output_dir, show)
 
     if not evict_df.empty:
         # Group by priority and time_bin to count events
@@ -290,7 +363,7 @@ def evictions(filepath: str) -> None:
         plt.ylabel("Job Priority")
         plt.xlabel("Time")
         plt.tight_layout()
-        plt.show()
+        _finalize_plot("evictions_heatmap.png", output_dir, show)
 
     plt.figure(figsize=(6, 4))
     sns.boxplot(
@@ -304,4 +377,4 @@ def evictions(filepath: str) -> None:
     plt.xlabel("Priority")
     plt.ylabel("Number of Requeues")
     plt.tight_layout()
-    plt.show()
+    _finalize_plot("requeues_by_priority.png", output_dir, show)

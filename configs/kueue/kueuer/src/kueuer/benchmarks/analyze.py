@@ -37,8 +37,14 @@ def evictions(workloads: Dict[str, Dict[str, Any]]) -> bool:
 
                 # Find the data for the preempting workload
                 data = workloads.get(preemptor_uid)
+                if not data:
+                    logger.warning(
+                        "⚠️  Missing preemptor metadata for UID '%s'; skipping priority comparison.",
+                        preemptor_uid,
+                    )
+                    continue
                 name = str(data.get("name", preemptor_uid))
-                priority = int(data.get("priority"))  # type: ignore
+                priority = int(data.get("priority", 0))  # type: ignore
 
                 # *** The Core Analysis Logic & Printing ***
                 if priority > preempted_priority:

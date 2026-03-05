@@ -20,8 +20,8 @@ def experiment(
     count: int,
     duration: int,
     cores: int,
-    ram: int,
-    storage: int,
+    ram: float,
+    storage: float,
     namespace: str,
     filepath: str,
     use_kueue: bool = False,
@@ -122,7 +122,8 @@ def experiment(
 
     logger.info("Experiment completed in %.2fs", total_execution_time)
     total = result["total_time_from_first_creation_to_last_completion"]
-    logger.info("Total time from first creation to last completion: %.2fs", total)
+    if total is not None:
+        logger.info("Total time from first creation to last completion: %.2fs", total)
 
     # Cleanup jobs
     logger.info("Cleaning up jobs...")
@@ -134,8 +135,8 @@ def benchmark(
     counts: List[int],
     duration: int,
     cores: int,
-    ram: int,
-    storage: int,
+    ram: float,
+    storage: float,
     namespace: str,
     filepath: str,
     kueue: Optional[str],
@@ -259,14 +260,14 @@ def performance(
             1, "-c", "--cores", help="Number of CPU cores to allocate to each job."
         )
     ),
-    ram: int = (
+    ram: float = (
         typer.Option(
-            1, "-r", "--ram", help="Amount of RAM to allocate to each job in GB."
+            1.0, "-r", "--ram", help="Amount of RAM to allocate to each job in GB."
         )
     ),
-    storage: int = (
+    storage: float = (
         typer.Option(
-            1,
+            1.0,
             "-s",
             "--storage",
             help="Amount of ephemeral-storage to allocate to each job in GB.",
@@ -355,17 +356,17 @@ def eviction(
             help="Total number of CPU cores in the kueue ClusterQueue.",
         )
     ),
-    ram: int = (
+    ram: float = (
         typer.Option(
-            8,
+            8.0,
             "-r",
             "--ram",
             help="Total amount of RAM in the kueue ClusterQueue in GB.",
         )
     ),
-    storage: int = (
+    storage: float = (
         typer.Option(
-            8,
+            8.0,
             "-s",
             "--storage",
             help="Total amount of storage in the kueue ClusterQueue in GB.",
@@ -384,8 +385,14 @@ def eviction(
 ):
     """Run a benchmark to test eviction behavior of Kueue in a packed cluster queue."""
     config.load_kube_config()
-    v1 = client.CoreV1Api()
-    resource_id: str = str(v1.list_namespace(limit=1).metadata.resource_version)  # type: ignore
+    crd = client.CustomObjectsApi()
+    snapshot = crd.list_namespaced_custom_object(  # type: ignore
+        group="kueue.x-k8s.io",
+        version="v1beta1",
+        namespace=namespace,
+        plural="workloads",
+    )
+    resource_id = str(snapshot.get("metadata", {}).get("resourceVersion", ""))
 
     logger.info("Starting eviction benchmarks with the following configuration:")
     logger.info("Template     : %s", filepath)
@@ -407,14 +414,14 @@ def eviction(
 
     prefix: str = "kueue-eviction"
     job_count = jobs
-    job_core: int = math.ceil(cores / job_count)
-    job_ram: int = math.ceil(ram / job_count)
-    job_storage: int = math.ceil(storage / job_count)
+    job_core: int = max(math.ceil(cores / job_count), 1)
+    job_ram: float = max(ram / job_count, 0.1)
+    job_storage: float = max(storage / job_count, 0.1)
 
     for index, priority in enumerate(priorities):
         job_duration = max(int(duration / (2**index)), 1)
         logger.info(
-            "Job Parameters: Cores: %s, RAM: %sGB, Storage: %sGB",
+            "Job Parameters: Cores: %s, RAM: %.3fGB, Storage: %.3fGB",
             job_core,
             job_ram,
             job_storage,
@@ -443,9 +450,10 @@ def eviction(
     results = track.evictions(
         namespace=namespace,
         revision=resource_id,
+        prefix=prefix,
     )
 
-    logger.info("Saving results to %s", filepath)
+    logger.info("Saving results to %s", output)
     io.save_evictions_to_yaml(results=results, filename=output)
     logger.info("Results saved successfully.")
     logger.info("Analyzing eviction results...")

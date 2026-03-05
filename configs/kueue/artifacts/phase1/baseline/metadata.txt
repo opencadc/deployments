@@ -1,0 +1,35 @@
+# Phase1 Baseline Metadata
+timestamp_utc=2026-03-05T06:46:01Z
+context=minikube
+kueue_release=kueue-0.11.6|v0.11.6
+
+## Namespaces
+namespace/canfar-b-workload
+namespace/default
+namespace/kube-node-lease
+namespace/kube-public
+namespace/kube-system
+namespace/kueue-system
+namespace/monitoring
+namespace/skaha-workload
+
+## Kueue Objects
+NAME                  COHORT         PENDING WORKLOADS
+skaha-cluster-queue   skaha-cohort   0
+NAMESPACE           NAME                   CLUSTERQUEUE          PENDING WORKLOADS   ADMITTED WORKLOADS
+canfar-b-workload   canfar-b-local-queue   skaha-cluster-queue   0                   0
+skaha-workload      skaha-local-queue      skaha-cluster-queue   0                   0
+NAME     VALUE
+high     1000000
+low      10000
+medium   100000
+
+## Controller Pod
+NAME                                       READY   STATUS    RESTARTS   AGE   IP            NODE           NOMINATED NODE   READINESS GATES
+kueue-controller-manager-58f449c95-6fkjj   1/1     Running   0          94s   10.244.1.12   minikube-m02   <none>           <none>
+
+## Node Top
+NAME           CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+minikube       202m         3%       1689Mi          8%          
+minikube-m02   176m         2%       1349Mi          6%          
+minikube-m03   102m         1%       1222Mi          6%          

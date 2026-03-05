@@ -1,0 +1,39 @@
+NAMESPACE      NAME                                                        READY   STATUS    RESTARTS        AGE
+kube-system    coredns-7d764666f9-ggpxg                                    1/1     Running   0               43m
+kube-system    etcd-minikube                                               1/1     Running   0               43m
+kube-system    kindnet-7jf97                                               1/1     Running   0               43m
+kube-system    kindnet-drnt8                                               1/1     Running   0               43m
+kube-system    kindnet-l5t4d                                               1/1     Running   0               43m
+kube-system    kube-apiserver-minikube                                     1/1     Running   0               43m
+kube-system    kube-controller-manager-minikube                            1/1     Running   0               43m
+kube-system    kube-proxy-4bns9                                            1/1     Running   0               43m
+kube-system    kube-proxy-4mhts                                            1/1     Running   0               43m
+kube-system    kube-proxy-zrt5v                                            1/1     Running   0               43m
+kube-system    kube-scheduler-minikube                                     1/1     Running   0               43m
+kube-system    metrics-server-9d74bb658-jfpgk                              1/1     Running   4 (7m49s ago)   43m
+kube-system    storage-provisioner                                         1/1     Running   2 (9m18s ago)   43m
+kueue-system   kueue-controller-manager-58f449c95-6fkjj                    1/1     Running   3 (7m48s ago)   25m
+monitoring     beyla-k8s-cache-7764d9b4fc-j58ch                            1/1     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-logs-2gc29                     2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-logs-jm9ch                     2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-logs-z8k6q                     2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-metrics-0                      2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-operator-9dbcd9b6-58d96        1/1     Running   2 (8m6s ago)    37m
+monitoring     grafana-k8s-monitoring-alloy-profiles-5vx82                 2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-profiles-9snwn                 2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-profiles-zv4vl                 2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-receiver-hsd2g                 2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-receiver-wr8bt                 2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-receiver-xj9rb                 2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-alloy-singleton-6cf6589494-kd4t6     2/2     Running   0               37m
+monitoring     grafana-k8s-monitoring-beyla-clvl2                          1/1     Running   0               37m
+monitoring     grafana-k8s-monitoring-beyla-lh24q                          1/1     Running   0               37m
+monitoring     grafana-k8s-monitoring-beyla-wwrmm                          1/1     Running   0               37m
+monitoring     grafana-k8s-monitoring-kepler-4kj2z                         1/1     Running   0               37m
+monitoring     grafana-k8s-monitoring-kepler-xhvfz                         1/1     Running   0               37m
+monitoring     grafana-k8s-monitoring-kepler-z7j72                         1/1     Running   0               37m
+monitoring     grafana-k8s-monitoring-kube-state-metrics-dcf9b985b-jqrhz   1/1     Running   4 (8m5s ago)    37m
+monitoring     grafana-k8s-monitoring-node-exporter-5v7v2                  1/1     Running   1 (8m46s ago)   37m
+monitoring     grafana-k8s-monitoring-node-exporter-rl9dk                  1/1     Running   2 (9m2s ago)    37m
+monitoring     grafana-k8s-monitoring-node-exporter-xfpjr                  1/1     Running   4 (7m56s ago)   37m
+monitoring     grafana-k8s-monitoring-opencost-7c5d597c7-5q6lf             1/1     Running   0               37m

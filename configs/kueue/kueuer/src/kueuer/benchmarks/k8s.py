@@ -178,14 +178,14 @@ def run(
             1, "-c", "--cores", help="Number of CPU cores to allocate to each job."
         )
     ),
-    ram: int = (
+    ram: float = (
         typer.Option(
-            1, "-r", "--ram", help="Amount of RAM to allocate to each job in GB."
+            1.0, "-r", "--ram", help="Amount of RAM to allocate to each job in GB."
         )
     ),
-    storage: int = (
+    storage: float = (
         typer.Option(
-            1,
+            1.0,
             "-s",
             "--storage",
             help="Amount of ephemeral-storage to allocate to each job in GB.",

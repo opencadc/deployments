@@ -1,8 +1,9 @@
 """Track the status of Kubernetes Objects."""
 
+import re
 import statistics
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import logfire
 from kubernetes import client, config, watch
@@ -11,6 +12,8 @@ from kubernetes import client, config, watch
 JobTiming = Tuple[datetime, Optional[datetime], Optional[float]]
 
 logfire.configure(send_to_logfire=False)
+
+_PREEMPTOR_UID_RE = re.compile(r"UID:\s*([0-9a-fA-F-]+)")
 
 
 def status(job: client.V1Job, state: str) -> bool:
@@ -65,15 +68,114 @@ def compute_statistics(data: Dict[str, JobTiming]) -> Dict[str, Any]:
     return stats
 
 
+def _parse_transition_time(value: Optional[str]) -> datetime:
+    if not value:
+        return datetime.now(timezone.utc)
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _extract_preemptor_uid(message: str) -> Optional[str]:
+    match = _PREEMPTOR_UID_RE.search(message or "")
+    if not match:
+        return None
+    return match.group(1).strip()
+
+
+def _ensure_workload_record(
+    workloads: Dict[str, Dict[str, Any]],
+    uid: str,
+    name: str,
+    priority: int,
+) -> Dict[str, Any]:
+    if uid not in workloads:
+        workloads[uid] = {
+            "name": name,
+            "priority": priority,
+            "admitted_at": None,
+            "finished_at": None,
+            "requeues": 0,
+            "preemptors": [],
+            "eviction_reasons": [],
+        }
+    return workloads[uid]
+
+
+def _apply_workload_conditions(
+    workloads: Dict[str, Dict[str, Any]],
+    seen_transitions: Dict[str, Set[Tuple[str, str, str, str, str]]],
+    data: Dict[str, Any],
+) -> bool:
+    """Apply workload conditions once per state transition.
+
+    Returns:
+        bool: True if this update newly marked the workload as finished.
+    """
+    uid: str = str(data["metadata"]["uid"])
+    name: str = str(data["metadata"]["name"])
+    priority_raw = data.get("spec", {}).get("priority", 0)
+    try:
+        priority: int = int(priority_raw)
+    except (TypeError, ValueError):
+        priority = 0
+
+    record = _ensure_workload_record(workloads, uid, name, priority)
+    transitions = seen_transitions.setdefault(uid, set())
+    newly_finished = False
+
+    for condition in data.get("status", {}).get("conditions", []):
+        ctype = str(condition.get("type", ""))
+        cstatus = str(condition.get("status", ""))
+        ctime = str(condition.get("lastTransitionTime", ""))
+        creason = str(condition.get("reason", ""))
+        cmessage = str(condition.get("message", ""))
+        tkey = (ctype, cstatus, ctime, creason, cmessage)
+        if tkey in transitions:
+            continue
+        transitions.add(tkey)
+
+        transition_time = _parse_transition_time(condition.get("lastTransitionTime"))
+
+        if ctype == "Admitted" and cstatus == "True":
+            if record["admitted_at"] is None:
+                record["admitted_at"] = transition_time
+            logfire.info(f"{record.get('name')} admitted with priority {record.get('priority')}")
+
+        elif ctype == "Evicted" and cstatus == "True":
+            preemptor_uid = _extract_preemptor_uid(cmessage)
+            if preemptor_uid:
+                existing = {item[0] for item in record["preemptors"]}
+                if preemptor_uid not in existing:
+                    record["preemptors"].append((preemptor_uid, transition_time))
+                    logfire.info(
+                        f"{record.get('name')} evicted by {preemptor_uid}"
+                    )
+            if creason:
+                record["eviction_reasons"].append(creason)
+
+        elif ctype == "Finished" and cstatus == "True":
+            if record["finished_at"] is None:
+                record["finished_at"] = transition_time
+                newly_finished = True
+            logfire.info(f"{record.get('name')} succeeded.")
+
+        elif ctype == "Requeued" and cstatus == "True":
+            record["requeues"] += 1
+            logfire.info(f"{record.get('name')} requeued.")
+
+    return newly_finished
+
+
 def evictions(
     namespace: str,
-    revision: str,
+    revision: Optional[str] = None,
+    prefix: Optional[str] = None,
 ):
     """Track the status of Kubernetes workloads.
 
     Args:
         namespace (str): Namespace of the workloads.
-        revision (str): K8s resource version to start tracking from.
+        revision (str): Optional starting resource version for watch.
+        prefix (str): Optional name prefix filter for targeted benchmark workloads.
 
     Returns:
         Dict[str, Dict[str, Any]]: Workload information.
@@ -82,7 +184,31 @@ def evictions(
     crd: client.CustomObjectsApi = client.CustomObjectsApi()
     watcher = watch.Watch()
     workloads: Dict[str, Dict[str, Any]] = {}
-    completed: int = 0
+    seen_transitions: Dict[str, Set[Tuple[str, str, str, str, str]]] = {}
+    tracked: Set[str] = set()
+    completed: Set[str] = set()
+
+    initial = crd.list_namespaced_custom_object(  # type: ignore
+        group="kueue.x-k8s.io",
+        version="v1beta1",
+        namespace=namespace,
+        plural="workloads",
+    )
+    watch_version = (
+        revision
+        or str(initial.get("metadata", {}).get("resourceVersion", ""))
+        or None
+    )
+
+    for item in initial.get("items", []):
+        item_name = str(item.get("metadata", {}).get("name", ""))
+        if prefix and prefix not in item_name:
+            continue
+        uid = str(item.get("metadata", {}).get("uid"))
+        tracked.add(uid)
+        if _apply_workload_conditions(workloads, seen_transitions, item):
+            completed.add(uid)
+
     logfire.info(f"Tracking evictions in namespace '{namespace}'")
     for event in watcher.stream(  # type: ignore
         crd.list_namespaced_custom_object,  # type: ignore
@@ -90,50 +216,21 @@ def evictions(
         version="v1beta1",
         namespace=namespace,
         plural="workloads",
-        resource_version=revision,
+        resource_version=watch_version,
         timeout_seconds=600,
     ):
         logfire.debug(f"K8s Event: {event['type']}")
         data: Dict[str, Any] = event["object"]
+        item_name = str(data.get("metadata", {}).get("name", ""))
+        if prefix and prefix not in item_name:
+            continue
+
         uid: str = str(data["metadata"]["uid"])
+        tracked.add(uid)
+        if _apply_workload_conditions(workloads, seen_transitions, data):
+            completed.add(uid)
 
-        for condition in data.get("status", {}).get("conditions", []):
-            if condition["type"] == "Admitted" and condition["status"] == "True":
-                name: str = str(data["metadata"]["name"])
-                priority: str = str(data["spec"]["priority"])
-                workloads[uid] = {
-                    "name": name,
-                    "priority": int(priority),
-                    "admitted_at": datetime.now(),
-                    "finished_at": None,
-                    "requeues": 0,
-                    "preemptors": [],
-                }
-                logfire.info(f"{name} admitted with priority {priority}")
-
-            if condition["type"] == "Evicted" and condition["status"] == "True":
-                preemptor: str = (
-                    condition.get("message", "").split("UID: ")[1].split(")")[0].strip()
-                )
-                details: Tuple[str, datetime] = (preemptor, datetime.now())
-                if details[0] not in [
-                    preemptor[0] for preemptor in workloads[uid]["preemptors"]
-                ]:
-                    workloads[uid]["preemptors"].append(details)
-                    logfire.info(
-                        f"{workloads.get(uid, {}).get('name')} evicted by {preemptor}"
-                    )
-
-            elif condition["type"] == "Finished" and condition["status"] == "True":
-                workloads[uid]["finished_at"] = datetime.now()
-                completed += 1
-                logfire.info(f"{workloads.get(uid, {}).get('name')} succeeded.")
-
-            elif condition["type"] == "Requeued" and condition["status"] == "True":
-                workloads[uid]["requeues"] += 1
-                logfire.info(f"{workloads.get(uid, {}).get('name')} requeued.")
-
-        if workloads and completed == len(workloads):
+        if tracked and tracked.issubset(completed):
             logfire.info("All workloads finished.")
             watcher.stop()
 
