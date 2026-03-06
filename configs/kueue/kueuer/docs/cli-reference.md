@@ -74,8 +74,9 @@ Use plot commands when you already have benchmark outputs and want PNG files.
 
 ### `kr plot performance`
 
-This command reads a `performance.csv` file and renders throughput, turnaround,
-distribution, scaling, and scheduling-overhead plots.
+This command reads a `performance.csv` file and renders the performance
+dashboard plus the primary scale-decision plots: throughput, completion ratio,
+tail turnaround, and non-runtime overhead.
 
 | Option | Meaning |
 | --- | --- |
@@ -85,7 +86,8 @@ distribution, scaling, and scheduling-overhead plots.
 
 ### `kr plot evictions`
 
-This command reads an `evictions.yaml` file and renders eviction summary plots.
+This command reads an `evictions.yaml` file and renders eviction pressure,
+timeline, and heatmap plots.
 
 | Option | Meaning |
 | --- | --- |
@@ -198,7 +200,8 @@ This command collects raw observation samples and writes them under
 
 ### `kr observe plot`
 
-This command renders observation plots from `observe/timeseries.csv`.
+This command renders the observation overview plus controller, API server, and
+queue pressure plots from `observe/timeseries.csv`.
 
 | Option | Meaning |
 | --- | --- |

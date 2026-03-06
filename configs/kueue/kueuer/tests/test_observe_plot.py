@@ -13,6 +13,8 @@ def test_observations_plot_writes_expected_files(tmp_path: Path) -> None:
         "2026-03-05T00:00:05Z,kueue-controller,true,kueue_controller_cpu_cores,0.3,{}\n"
         "2026-03-05T00:00:00Z,apiserver,true,apiserver_non_watch_request_p95_seconds,0.1,{}\n"
         "2026-03-05T00:00:05Z,apiserver,true,apiserver_non_watch_request_p95_seconds,0.2,{}\n"
+        "2026-03-05T00:00:00Z,apiserver,true,apiserver_current_inflight_read_requests,10,{}\n"
+        "2026-03-05T00:00:05Z,apiserver,true,apiserver_current_inflight_write_requests,4,{}\n"
         "2026-03-05T00:00:00Z,queues,true,pending_workloads,5,{}\n"
         "2026-03-05T00:00:05Z,queues,true,pending_workloads,2,{}\n",
         encoding="utf-8",
@@ -25,7 +27,7 @@ def test_observations_plot_writes_expected_files(tmp_path: Path) -> None:
         show=False,
     )
 
-    assert Path(report["kueue_controller_memory_plot"]).exists()
-    assert Path(report["kueue_controller_cpu_plot"]).exists()
-    assert Path(report["apiserver_latency_plot"]).exists()
-    assert Path(report["queue_depth_plot"]).exists()
+    assert Path(report["observation_overview_plot"]).exists()
+    assert Path(report["controller_resource_plot"]).exists()
+    assert Path(report["apiserver_pressure_plot"]).exists()
+    assert Path(report["queue_pressure_plot"]).exists()

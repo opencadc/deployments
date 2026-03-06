@@ -45,7 +45,8 @@ def test_plot_performance_requires_output_dir(tmp_path: Path) -> None:
     result = runner.invoke(app, ["plot", "performance", csv_path.as_posix()])
 
     assert result.exit_code != 0
-    assert "--output-dir" in result.stdout
+    rendered_output = result.stdout + getattr(result, "stderr", "")
+    assert "--output-dir" in rendered_output
 
 
 def test_benchmark_performance_uses_run_scoped_default_output_and_prints_plot_command(

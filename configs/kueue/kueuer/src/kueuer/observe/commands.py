@@ -231,7 +231,7 @@ def plot(
         output_dir=output_dir,
         show=show,
     )
-    typer.echo(f"plot completed for run {effective}: {report['queue_depth_plot']}")
+    typer.echo(f"plot completed for run {effective}: {report['observation_overview_plot']}")
 
 
 @observe_cli.command("report")

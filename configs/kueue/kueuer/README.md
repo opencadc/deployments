@@ -42,6 +42,9 @@ uv run kr plot performance \
   --show
 ```
 
+That plot command writes the performance overview dashboard plus the primary
+scale-decision charts under `artifacts/$RUN_ID/plots/performance/`.
+
 For an end-to-end cluster check with control-plane observations:
 
 ```bash
