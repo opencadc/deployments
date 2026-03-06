@@ -1,25 +1,24 @@
 # Kueue and kueuer documentation
 
-This directory contains implementation, benchmark, and onboarding documents for
-Kueue rollout validation with `kueuer`.
+Use this index for the current developer workflow.
 
-## kueuer docs
+## Start here
 
-- `docs/kueuer/current-state-audit.md`
-- `docs/kueuer/tool-overview.md`
-- `docs/kueuer/improvement-plan-phased.md`
-- `docs/kueuer/phase-1-implementation.md`
-- `docs/kueuer/phase-1-benchmark-results.md`
-- `docs/kueuer/metrics-semantics.md`
+1. `docs/kueuer/benchmark-walkthrough.md`
+2. `docs/kueuer/plot-and-interpretation-guide.md`
+3. `docs/kueuer/cli-reference.md`
 
-## kueue docs
+## Supporting references
 
-- `docs/kueue/kueue-capabilities-deep-dive.md`
+1. `docs/kueuer/tool-overview.md`
+2. `docs/kueuer/metrics-semantics.md`
+3. `docs/kueuer/output-contract.md`
+4. `docs/kueue/kueue-capabilities-deep-dive.md`
 
-## artifacts
+## Historical implementation records
 
-Benchmark artifacts generated during Phase 1 are under:
+Phase-by-phase implementation and benchmark records are archived under:
 
-- `artifacts/phase1/baseline/`
-- `artifacts/phase1/post/`
-- `artifacts/phase1/comparison/`
+- `docs/kueuer/archive/phases/`
+
+They are preserved for traceability and are not required for onboarding.
