@@ -122,3 +122,16 @@ job-b:
     ]
     for name in expected:
         assert (tmp_path / name).exists()
+
+
+def test_plot_duration_distribution_handles_constant_values(tmp_path) -> None:
+    df = pd.DataFrame(
+        {
+            "avg_time_from_creation_completion": [9.0, 9.0, 9.0, 9.0],
+            "use_kueue": [False, True, False, True],
+        }
+    )
+    plot_module.plot_duration_distribution(
+        df, output_dir=tmp_path.as_posix(), show=False
+    )
+    assert (tmp_path / "job_duration_distribution.png").exists()

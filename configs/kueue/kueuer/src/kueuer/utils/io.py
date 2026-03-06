@@ -2,6 +2,7 @@
 
 import csv
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Set
 
 import yaml
@@ -39,6 +40,7 @@ def save_performance_to_csv(results: List[Dict[str, Any]], filename: str) -> Non
 
     # Overwrite on each checkpoint so repeated saves are idempotent.
     # Appending cumulative `results` causes duplicated rows.
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
     with open(filename, mode="w", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -67,6 +69,7 @@ def save_evictions_to_yaml(
         workloads: Dictionary containing workload information
         filename: Path to save YAML file
     """
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
     with open(filename, "w", encoding="utf-8") as fopen:
         yaml.dump(results, fopen, default_flow_style=False)
     fopen.close()

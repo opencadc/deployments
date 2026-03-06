@@ -119,8 +119,14 @@ def plot_duration_distribution(
     df: pd.DataFrame, output_dir: Optional[str] = None, show: bool = True
 ) -> None:
     plt.figure(figsize=(10, 6))
+    distinct = df["avg_time_from_creation_completion"].nunique(dropna=True)
+    use_kde = bool(distinct > 1)
     sns.histplot(
-        df, x="avg_time_from_creation_completion", hue="use_kueue", kde=True, bins=20
+        df,
+        x="avg_time_from_creation_completion",
+        hue="use_kueue",
+        kde=use_kde,
+        bins=20,
     )
     plt.xlabel("Average Job Duration (s)")
     plt.title("Distribution of Average Job Durations")
@@ -205,7 +211,10 @@ def compute_scheduling_overhead(df: pd.DataFrame) -> pd.DataFrame:
 def performance(
     filepath: str,
     output_dir: str = typer.Option(
-        "plots", "-o", "--output-dir", help="Directory where plots are written."
+        ...,
+        "-o",
+        "--output-dir",
+        help="Directory where plots are written.",
     ),
     show: bool = typer.Option(
         False, "--show/--no-show", help="Display plots interactively."
@@ -265,7 +274,10 @@ def performance(
 def evictions(
     filepath: str,
     output_dir: str = typer.Option(
-        "plots", "-o", "--output-dir", help="Directory where plots are written."
+        ...,
+        "-o",
+        "--output-dir",
+        help="Directory where plots are written.",
     ),
     show: bool = typer.Option(
         False, "--show/--no-show", help="Display plots interactively."

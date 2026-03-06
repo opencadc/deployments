@@ -273,6 +273,9 @@ def jobs(  # noqa: C901
         logfire.info("Exiting...")
         return done
 
+    # Track failed jobs as terminal so benchmark runs don't stall for full timeout.
+    failed_count = 0
+
     # There is an edge case, where jobs can finish even before we start tracking them.
     # So, we need to check if any of the jobs are already in the desired state.
     for item in data.items:
@@ -284,6 +287,10 @@ def jobs(  # noqa: C901
             logfire.info(msg)
             done[item.metadata.name] = (creation, completion, duration)
             pending[item.metadata.name] = False
+        elif item.metadata.name in pending and status(item, "Failed"):
+            failed_count += 1
+            pending[item.metadata.name] = False
+            logfire.warning("%s reached terminal state Failed.", item.metadata.name)
 
     logfire.info(f"{len(pending)} jobs need to be tracked.")
     logfire.info(f"Starting to track jobs to state {to_state}...")
@@ -313,6 +320,10 @@ def jobs(  # noqa: C901
                 logfire.info(msg)
                 done[name] = (creation, completion, duration)
                 pending[name] = False
+            elif status(item, "Failed"):
+                failed_count += 1
+                pending[name] = False
+                logfire.warning("%s reached terminal state Failed.", name)
 
             logfire.debug(f"Pending Jobs Left: {sum(pending.values())}")
 
@@ -325,4 +336,10 @@ def jobs(  # noqa: C901
                 logfire.info("Timeout reached. Exiting...")
                 watcher.stop()
                 break
+    if failed_count:
+        logfire.warning(
+            "%s jobs reached Failed state while tracking '%s'.",
+            failed_count,
+            prefix,
+        )
     return done

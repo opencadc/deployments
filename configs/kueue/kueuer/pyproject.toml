@@ -10,15 +10,14 @@ requires-python = ">=3.11"
 dependencies = [
     "aiofiles>=24.1.0",
     "httpx>=0.28.1",
-    "ipython>=8.18.1",
     "kubernetes>=32.0.1",
     "kubernetes-typed[client]>=18.20.2",
     "logfire[httpx]>=3.7.1",
     "nest-asyncio>=1.6.0",
     "pandas>=2.2.3",
+    "pydantic>=2.12.5",
     "pyyaml>=6.0.2",
     "seaborn>=0.13.2",
-    "skaha",
     "typer>=0.15.2",
 ]
 scripts = { kr = "kueuer.cli:app" }
@@ -26,9 +25,6 @@ scripts = { kr = "kueuer.cli:app" }
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.uv.sources]
-skaha = { git = "https://github.com/shinybrar/skaha.git", branch = "main" }
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "C", "N", "B", "I"]
@@ -42,4 +38,5 @@ combine-as-imports = true
 dev = [
     "ipython>=9.0.0",
     "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
 ]
