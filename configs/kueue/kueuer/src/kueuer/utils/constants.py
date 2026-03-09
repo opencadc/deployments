@@ -146,4 +146,3 @@ DEFAULT_APPLY_RETRIES = 3
 # Rationale: 1 second base with exponential backoff (1s, 2s, 4s) provides
 # reasonable retry timing without overwhelming the API server.
 DEFAULT_APPLY_BACKOFF_SECONDS = 1.0
-

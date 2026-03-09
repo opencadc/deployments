@@ -17,10 +17,10 @@ from kueuer.utils.logging import logger
 
 class KubernetesConfig:
     """Singleton Kubernetes configuration manager.
-    
+
     This class ensures that Kubernetes configuration is loaded only once
     and provides cached access to commonly used API clients.
-    
+
     Thread-safe implementation using double-checked locking pattern.
     """
 
@@ -38,7 +38,7 @@ class KubernetesConfig:
     def __init__(self) -> None:
         if self._initialized:
             return
-        
+
         self._initialized = True
         self._config_loaded = False
         self._api_client: Optional[ApiClient] = None
@@ -48,10 +48,10 @@ class KubernetesConfig:
 
     def _load_config(self) -> None:
         """Load Kubernetes configuration.
-        
+
         Attempts to load from kubeconfig first, then falls back to
         in-cluster configuration if running inside a Kubernetes cluster.
-        
+
         Raises:
             Exception: If neither kubeconfig nor in-cluster config is available.
         """
@@ -113,7 +113,7 @@ class KubernetesConfig:
 
     def ensure_loaded(self) -> None:
         """Ensure Kubernetes configuration is loaded.
-        
+
         This is a convenience method for cases where you just need to
         ensure the config is loaded without accessing a specific API client.
         """
@@ -122,7 +122,7 @@ class KubernetesConfig:
     @classmethod
     def reset(cls) -> None:
         """Reset the singleton instance.
-        
+
         This is primarily useful for testing to ensure a clean state
         between test runs.
         """
@@ -133,10 +133,10 @@ class KubernetesConfig:
 # Convenience function for getting the singleton instance
 def get_k8s_config() -> KubernetesConfig:
     """Get the singleton Kubernetes configuration instance.
-    
+
     Returns:
         KubernetesConfig: The singleton configuration instance.
-    
+
     Example:
         >>> from kueuer.utils.k8s_config import get_k8s_config
         >>> k8s = get_k8s_config()
@@ -144,4 +144,3 @@ def get_k8s_config() -> KubernetesConfig:
         >>> namespaces = v1.list_namespace()
     """
     return KubernetesConfig()
-
