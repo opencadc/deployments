@@ -1,4 +1,4 @@
-"""Benchmark suite orchestration for lifecycle workflows."""
+"""Benchmark suite orchestration for internal benchmark workflows."""
 
 from __future__ import annotations
 
@@ -13,8 +13,8 @@ from kueuer.observe.collector import ObservationCollector
 
 
 def _suite_commands(
-    profile: str,
-    counts_csv: str,
+    performance_options: Dict[str, Any],
+    eviction_options: Dict[str, Any],
     namespace: str,
     localqueue: str,
     priority: str,
@@ -24,27 +24,39 @@ def _suite_commands(
     return [
         (
             "kr benchmark performance "
-            f"--profile {profile} --counts {counts_csv} "
+            f"--profile {performance_options['profile']} "
+            f"--counts {performance_options['counts_csv']} "
+            f"--duration {performance_options['duration']} "
+            f"--cores {performance_options['cores']} "
+            f"--ram {performance_options['ram']} "
+            f"--storage {performance_options['storage']} "
+            f"--wait {performance_options['wait']} "
             f"-n {namespace} -k {localqueue} -p {priority} "
             f"-o {artifacts_dir}"
         ),
         (
             "kr benchmark evictions "
-            f"--profile {profile} -n {namespace} -k {localqueue} "
+            f"--profile {eviction_options['profile']} "
+            f"--jobs {eviction_options['jobs']} "
+            f"--duration {eviction_options['duration']} "
+            f"--cores {eviction_options['cores']} "
+            f"--ram {eviction_options['ram']} "
+            f"--storage {eviction_options['storage']} "
+            f"-n {namespace} -k {localqueue} "
             "-p low -p medium -p high "
             f"-o {artifacts_dir}"
         ),
     ]
 
 
-def run_suite(
+def run_benchmark_suite(
     artifacts_dir: str,
     namespace: str,
     localqueue: str,
     priority: str,
+    performance_options: Dict[str, Any],
+    eviction_options: Dict[str, Any],
     clusterqueue: str = "skaha-cluster-queue",
-    profile: str = "local-safe",
-    counts_csv: str = "2,4,8,16,32,64",
     scenario: str = "control",
     observe: bool = False,
     observe_interval_seconds: float = 5.0,
@@ -61,8 +73,8 @@ def run_suite(
     performance_output = (run_root / "performance" / "performance.csv").as_posix()
     evictions_output = (run_root / "evictions" / "evictions.yaml").as_posix()
     commands = _suite_commands(
-        profile=profile,
-        counts_csv=counts_csv,
+        performance_options=performance_options,
+        eviction_options=eviction_options,
         namespace=namespace,
         localqueue=localqueue,
         priority=priority,
@@ -92,8 +104,6 @@ def run_suite(
                 "scenario": scenario_context,
                 "errors": scenario_errors,
             }
-        if scenario_context.get("applied"):
-            commands.insert(0, f"kr lifecycle scenario {scenario}")
         effective_localqueue = str(scenario_context.get("localqueue") or localqueue)
         effective_clusterqueue = str(scenario_context.get("clusterqueue") or clusterqueue)
 
@@ -113,17 +123,17 @@ def run_suite(
                 namespace=namespace,
                 kueue=effective_localqueue,
                 priority=priority,
-                profile=profile,
-                counts_csv=counts_csv,
+                profile=str(performance_options["profile"]),
+                counts_csv=str(performance_options["counts_csv"]),
                 e0=1,
                 exponent=6,
-                duration=None,
-                cores=None,
-                ram=None,
-                storage=None,
+                duration=int(performance_options["duration"]),
+                cores=float(performance_options["cores"]),
+                ram=float(performance_options["ram"]),
+                storage=float(performance_options["storage"]),
                 output_dir=artifacts_dir,
                 run_id="",
-                wait=None,
+                wait=int(performance_options["wait"]),
                 apply_chunk_size=25,
                 apply_retries=2,
                 apply_backoff=2.0,
@@ -133,12 +143,12 @@ def run_suite(
                 namespace=namespace,
                 kueue=effective_localqueue,
                 priorities=["low", "medium", "high"],
-                profile=profile,
-                jobs=None,
-                cores=None,
-                ram=None,
-                storage=None,
-                duration=None,
+                profile=str(eviction_options["profile"]),
+                jobs=int(eviction_options["jobs"]),
+                cores=float(eviction_options["cores"]),
+                ram=float(eviction_options["ram"]),
+                storage=float(eviction_options["storage"]),
+                duration=int(eviction_options["duration"]),
                 output_dir=artifacts_dir,
                 run_id="",
                 apply_chunk_size=25,

@@ -37,8 +37,12 @@ from pydantic import BaseModel, Field, RootModel, ValidationError, field_validat
 from rich.console import Console
 from typing_extensions import Literal
 
+from kueuer.utils.constants import DECIMAL_PRECISION
+from kueuer.utils.k8s_config import get_k8s_config
+
 # High precision for CPU arithmetic (Decimal) and for stringifying without loss
-getcontext().prec = 50
+# Rationale: See DECIMAL_PRECISION in utils/constants.py
+getcontext().prec = DECIMAL_PRECISION
 
 app = typer.Typer(help="Cluster utilities")
 
@@ -97,13 +101,10 @@ class TotalsAcc:
 
 def _load_kube() -> CoreV1Api:
     """
-    Try standard kubeconfig first, then fall back to in-cluster config.
+    Get the Core V1 API client using centralized configuration.
     """
-    try:
-        config.load_kube_config()
-    except Exception:
-        config.load_incluster_config()
-    return client.CoreV1Api()
+    k8s = get_k8s_config()
+    return k8s.core_v1
 
 
 def _compile_patterns(patterns: Optional[Sequence[str]]) -> Optional[List[re.Pattern]]:

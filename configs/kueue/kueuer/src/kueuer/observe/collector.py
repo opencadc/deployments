@@ -10,17 +10,21 @@ from typing import Any, Callable, Dict, List
 
 from kueuer.observe.models import ObservationSample
 from kueuer.observe.samplers import collect_sampler_snapshot, utc_now_iso
+from kueuer.utils.constants import (
+    DEFAULT_OBSERVATION_INTERVAL_SECONDS,
+    MIN_OBSERVATION_INTERVAL_SECONDS,
+)
 
 
 class ObservationCollector:
     def __init__(
         self,
         namespace: str,
-        interval_seconds: float = 5.0,
+        interval_seconds: float = DEFAULT_OBSERVATION_INTERVAL_SECONDS,
         snapshot_fn: Callable[[str], Dict[str, Any]] = collect_sampler_snapshot,
     ) -> None:
         self.namespace = namespace
-        self.interval_seconds = max(float(interval_seconds), 0.01)
+        self.interval_seconds = max(float(interval_seconds), MIN_OBSERVATION_INTERVAL_SECONDS)
         self.snapshot_fn = snapshot_fn
         self.samples: List[ObservationSample] = []
         self.capabilities: Dict[str, bool] = {}

@@ -13,6 +13,16 @@ from kubernetes import client, config
 from kueuer.benchmarks import DEFAULT_JOBSPEC_FILEPATH, analyze, k8s, track
 from kueuer.utils import io
 from kueuer.utils.artifacts import default_run_id, resolve_domain_output
+from kueuer.utils.constants import (
+    DEFAULT_APPLY_BACKOFF_SECONDS,
+    DEFAULT_APPLY_CHUNK_SIZE,
+    DEFAULT_APPLY_RETRIES,
+    DEFAULT_ARTIFACTS_DIR,
+    DEFAULT_CLUSTER_QUEUE,
+    DEFAULT_LOCAL_QUEUE,
+    DEFAULT_PRIORITY_CLASS,
+    DEFAULT_WORKLOAD_NAMESPACE,
+)
 from kueuer.utils.logging import logger
 
 benchmark_cli: typer.Typer = typer.Typer(help="Launch Benchmarks")
@@ -51,10 +61,6 @@ EVICTION_PROFILES: Dict[str, Dict[str, float]] = {
     },
 }
 
-def _default_run_id() -> str:
-    """Expose the default run-id generator for tests and CLI helpers."""
-    return default_run_id()
-
 
 def _normalize_profile_name(profile: str) -> str:
     """Return the canonical profile name."""
@@ -80,7 +86,7 @@ def _cli_override_or_none(
 
 
 def _performance_output_paths(output_dir: str, run_id: str) -> tuple[str, str, str]:
-    effective_input = run_id or (_default_run_id() if output_dir == "artifacts" else "")
+    effective_input = run_id or (default_run_id() if output_dir == DEFAULT_ARTIFACTS_DIR else "")
     root, domain_root, output_path, effective_run_id = resolve_domain_output(
         output_dir=output_dir,
         domain="performance",
@@ -96,7 +102,7 @@ def _performance_output_paths(output_dir: str, run_id: str) -> tuple[str, str, s
 
 
 def _eviction_output_paths(output_dir: str, run_id: str) -> tuple[str, str, str]:
-    effective_input = run_id or (_default_run_id() if output_dir == "artifacts" else "")
+    effective_input = run_id or (default_run_id() if output_dir == DEFAULT_ARTIFACTS_DIR else "")
     root, domain_root, output_path, effective_run_id = resolve_domain_output(
         output_dir=output_dir,
         domain="evictions",
@@ -186,6 +192,58 @@ def resolve_eviction_parameters(
         "ram": resolved_ram,
         "storage": resolved_storage,
         "duration": float(resolved_duration),
+    }
+
+
+def resolve_e2e_parameters(
+    profile: str,
+    counts_csv: str,
+    duration: Optional[int],
+    cores: Optional[float],
+    ram: Optional[float],
+    storage: Optional[float],
+    eviction_jobs: Optional[int],
+    eviction_cores: Optional[float],
+    eviction_ram: Optional[float],
+    eviction_storage: Optional[float],
+) -> Dict[str, Dict[str, Any]]:
+    """Resolve explicit performance and eviction values for `benchmark e2e`."""
+    normalized_profile = _normalize_profile_name(profile)
+    normalized_counts = ",".join(str(count) for count in parse_counts_csv(counts_csv))
+    performance = resolve_performance_parameters(
+        profile=normalized_profile,
+        duration=duration,
+        cores=cores,
+        ram=ram,
+        storage=storage,
+        wait=None,
+    )
+    eviction = resolve_eviction_parameters(
+        profile=normalized_profile,
+        jobs=eviction_jobs,
+        cores=eviction_cores if eviction_cores is not None else cores,
+        ram=eviction_ram if eviction_ram is not None else ram,
+        storage=eviction_storage if eviction_storage is not None else storage,
+        duration=duration,
+    )
+    return {
+        "performance": {
+            "profile": normalized_profile,
+            "counts_csv": normalized_counts,
+            "duration": int(performance["duration"]),
+            "cores": float(performance["cores"]),
+            "ram": float(performance["ram"]),
+            "storage": float(performance["storage"]),
+            "wait": int(performance["wait"]),
+        },
+        "eviction": {
+            "profile": normalized_profile,
+            "jobs": int(eviction["jobs"]),
+            "cores": float(eviction["cores"]),
+            "ram": float(eviction["ram"]),
+            "storage": float(eviction["storage"]),
+            "duration": int(eviction["duration"]),
+        },
     }
 
 
@@ -803,6 +861,186 @@ def eviction(
     logger.info("Eviction benchmark completed.")
     typer.echo(f"Artifacts written under {artifact_root}")
     typer.echo(f"uv run kr plot evictions {output} --show")
+
+
+@benchmark_cli.command("e2e")
+def e2e(
+    output_dir: str = typer.Option(
+        DEFAULT_ARTIFACTS_DIR,
+        "-o",
+        "--output-dir",
+        help="Directory where benchmark artifacts are written.",
+    ),
+    run_id: str = typer.Option(
+        "",
+        "--run-id",
+        help="Run identifier used under the default artifacts directory.",
+    ),
+    namespace: str = typer.Option(
+        DEFAULT_WORKLOAD_NAMESPACE,
+        "--namespace",
+        help="Namespace to launch jobs in.",
+    ),
+    localqueue: str = typer.Option(
+        DEFAULT_LOCAL_QUEUE,
+        "--localqueue",
+        help="Local Kueue queue to launch jobs in.",
+    ),
+    clusterqueue: str = typer.Option(
+        DEFAULT_CLUSTER_QUEUE,
+        "--clusterqueue",
+        help="ClusterQueue used for readiness checks and backlog scenarios.",
+    ),
+    priority: str = typer.Option(
+        DEFAULT_PRIORITY_CLASS,
+        "--priority",
+        help="Kueue priority to use for the performance benchmark phase.",
+    ),
+    profile: str = typer.Option(
+        "local-safe",
+        "--profile",
+        help="Benchmark profile defaults for both performance and eviction phases.",
+    ),
+    counts_csv: str = typer.Option(
+        "2,4,8,16,32,64",
+        "--counts",
+        help="Comma-separated job counts for the performance benchmark phase.",
+    ),
+    scenario: str = typer.Option(
+        "control",
+        "--scenario",
+        help=(
+            "Queue scenario to apply before the suite. control leaves the "
+            "existing queues unchanged. backlog creates temporary constrained "
+            "queue objects to force backlog pressure."
+        ),
+    ),
+    duration: Optional[int] = typer.Option(
+        None,
+        "--duration",
+        help="Override duration for both performance and eviction runs.",
+        show_default=False,
+    ),
+    cores: Optional[float] = typer.Option(
+        None,
+        "--cores",
+        help="Override CPU cores for both performance and eviction runs.",
+        show_default=False,
+    ),
+    ram: Optional[float] = typer.Option(
+        None,
+        "--ram",
+        help="Override RAM in GB for both performance and eviction runs.",
+        show_default=False,
+    ),
+    storage: Optional[float] = typer.Option(
+        None,
+        "--storage",
+        help="Override storage in GB for both performance and eviction runs.",
+        show_default=False,
+    ),
+    eviction_cores: Optional[float] = typer.Option(
+        None,
+        "--eviction-cores",
+        help="Override eviction queue CPU capacity only.",
+        show_default=False,
+    ),
+    eviction_ram: Optional[float] = typer.Option(
+        None,
+        "--eviction-ram",
+        help="Override eviction queue RAM capacity only.",
+        show_default=False,
+    ),
+    eviction_storage: Optional[float] = typer.Option(
+        None,
+        "--eviction-storage",
+        help="Override eviction queue storage capacity only.",
+        show_default=False,
+    ),
+    eviction_jobs: Optional[int] = typer.Option(
+        None,
+        "--eviction-jobs",
+        help="Override eviction job count only.",
+        show_default=False,
+    ),
+    observe: bool = typer.Option(
+        True,
+        "--observe/--no-observe",
+        help=(
+            "Collect observation data during the end-to-end run. Enabled by "
+            "default; pass --no-observe to skip observation collection."
+        ),
+    ),
+    observe_interval_seconds: float = typer.Option(
+        5.0,
+        "--observe-interval-seconds",
+        help="Sampling cadence for observation data.",
+    ),
+    observe_output_subdir: str = typer.Option(
+        "observe",
+        "--observe-output-subdir",
+        help="Relative subdirectory for observation files.",
+    ),
+    skip_queue_apply: bool = typer.Option(False, "--skip-queue-apply"),
+    skip_teardown: bool = typer.Option(False, "--skip-teardown"),
+    keep_artifacts: bool = typer.Option(
+        True,
+        "--keep-artifacts/--no-keep-artifacts",
+        help="Keep generated artifacts.",
+    ),
+) -> None:
+    """Run the full benchmark workflow with automatic post-processing."""
+    from kueuer.lifecycle import commands as lifecycle_commands
+
+    try:
+        resolved = resolve_e2e_parameters(
+            profile=profile,
+            counts_csv=counts_csv,
+            duration=duration,
+            cores=cores,
+            ram=ram,
+            storage=storage,
+            eviction_jobs=eviction_jobs,
+            eviction_cores=eviction_cores,
+            eviction_ram=eviction_ram,
+            eviction_storage=eviction_storage,
+        )
+    except ValueError as error:
+        param_hint = "--counts" if "count" in str(error).lower() else "--profile"
+        raise typer.BadParameter(str(error), param_hint=param_hint) from error
+
+    report = lifecycle_commands.run_benchmark_e2e(
+        artifacts_dir=output_dir,
+        run_id=run_id,
+        namespace=namespace,
+        localqueue=localqueue,
+        clusterqueue=clusterqueue,
+        priority=priority,
+        scenario=scenario,
+        performance_options=resolved["performance"],
+        eviction_options=resolved["eviction"],
+        observe=observe,
+        observe_interval_seconds=observe_interval_seconds,
+        observe_output_subdir=observe_output_subdir,
+        skip_queue_apply=skip_queue_apply,
+        skip_teardown=skip_teardown,
+    )
+
+    typer.echo(f"e2e {'ok' if report['ok'] else 'failed'} for run {report['run_id']}")
+    if not report["ok"]:
+        typer.echo(f"failed step: {report['failed_step']}")
+        raise typer.Exit(code=1)
+
+    typer.echo(f"Artifacts written under {report['run_root']}")
+    typer.echo(f"uv run kr plot performance {report['performance_csv']} --show")
+    typer.echo(f"uv run kr plot evictions {report['evictions_yaml']} --show")
+    observe_timeseries = report.get("observe_timeseries")
+    if observe_timeseries:
+        typer.echo(f"uv run kr plot observations {observe_timeseries} --show")
+    if not keep_artifacts:
+        typer.echo(
+            "keep_artifacts is disabled, but automatic artifact deletion is not implemented."
+        )
 
 
 if __name__ == "__main__":

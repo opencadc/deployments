@@ -60,7 +60,7 @@ def test_benchmark_performance_uses_run_scoped_default_output_and_prints_plot_co
 ) -> None:
     captured = {}
 
-    monkeypatch.setattr(benchmark, "_default_run_id", lambda: "20260306-153000")
+    monkeypatch.setattr(benchmark, "default_run_id", lambda: "20260306-153000")
     monkeypatch.setattr(benchmark.k8s, "check", lambda namespace, kueue, priority: True)
 
     def fake_benchmark(**kwargs):

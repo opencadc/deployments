@@ -1,4 +1,9 @@
-"""CLI commands for observation collection and analysis."""
+"""Internal observation collection and analysis functions.
+
+These functions are used by the lifecycle module when the --observe flag is enabled.
+They are not exposed as CLI commands - observation functionality is accessed through
+the lifecycle e2e command with --observe, and plots are generated via 'kr plot observations'.
+"""
 
 from __future__ import annotations
 
@@ -8,42 +13,17 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import typer
-
 from kueuer.observe import plot as observe_plot
 from kueuer.observe.analyze import evaluate_policy, summarize_observations
 from kueuer.observe.collector import ObservationCollector
 from kueuer.observe.models import ObservationSample
-from kueuer.utils.artifacts import default_run_id
-
-observe_cli = typer.Typer(
-    help=(
-        "Collect, summarize, and visualize control-plane observations for "
-        "Kueue benchmark and lifecycle runs."
-    )
-)
-
-
-def _run_id() -> str:
-    return default_run_id()
-
-
-def _latest_run_id(artifacts_dir: Path) -> Optional[str]:
-    run_ids: List[str] = []
-    for child in artifacts_dir.iterdir() if artifacts_dir.exists() else []:
-        if not child.is_dir():
-            continue
-        if (child / "observe").exists():
-            run_ids.append(child.name)
-    if not run_ids:
-        return None
-    return sorted(run_ids)[-1]
+from kueuer.utils.constants import DEFAULT_OBSERVATION_INTERVAL_SECONDS
 
 
 def collect_observations(
     output_dir: str,
     namespace: str,
-    interval_seconds: float = 5.0,
+    interval_seconds: float = DEFAULT_OBSERVATION_INTERVAL_SECONDS,
     duration_seconds: float = 0.0,
 ) -> Dict[str, str]:
     collector = ObservationCollector(
@@ -173,119 +153,3 @@ def render_observation_plots(
         output_dir=output_dir,
         show=show,
     )
-
-
-@observe_cli.command(
-    "collect",
-    help=(
-        "Collect raw observation samples for controller, API server, and queue "
-        "state under artifacts/<run-id>/observe/."
-    ),
-)
-def collect(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
-    run_id: str = typer.Option("", "--run-id"),
-    namespace: str = typer.Option("skaha-workload", "--namespace"),
-    interval_seconds: float = typer.Option(5.0, "--interval-seconds"),
-    duration_seconds: float = typer.Option(0.0, "--duration-seconds"),
-) -> None:
-    """Collect one-shot or time-bounded observation samples for a run."""
-    effective = run_id or _run_id()
-    observe_dir = Path(artifacts_dir) / effective / "observe"
-    report = collect_observations(
-        output_dir=observe_dir.as_posix(),
-        namespace=namespace,
-        interval_seconds=interval_seconds,
-        duration_seconds=duration_seconds,
-    )
-    typer.echo(f"collect completed for run {effective}: {report['timeseries_csv']}")
-    typer.echo(f"uv run kr plot observations artifacts/{effective}/observe/timeseries.csv --show")
-    typer.echo(f"uv run kr observe analyze --run-id {effective}")
-
-
-@observe_cli.command(
-    "analyze",
-    help=(
-        "Summarize observation samples and evaluate the rollout policy for a "
-        "run directory."
-    ),
-)
-def analyze(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
-    run_id: str = typer.Option("", "--run-id"),
-    baseline_summary_path: str = typer.Option("", "--baseline-summary"),
-) -> None:
-    """Summarize observation samples and write policy artifacts."""
-    effective = run_id or _latest_run_id(Path(artifacts_dir))
-    if not effective:
-        raise typer.BadParameter(
-            "No run directory found under artifacts. Pass --run-id.",
-            param_hint="--run-id",
-        )
-    observe_dir = Path(artifacts_dir) / effective / "observe"
-    report = analyze_observations(
-        observe_dir=observe_dir.as_posix(),
-        baseline_summary_path=baseline_summary_path,
-    )
-    typer.echo(f"analyze completed for run {effective}: {report['report_json']}")
-    typer.echo(f"uv run kr observe report --run-id {effective}")
-
-
-@observe_cli.command(
-    "plot",
-    help=(
-        "Render observation plots from observe/timeseries.csv for an existing "
-        "run directory."
-    ),
-)
-def plot(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
-    run_id: str = typer.Option("", "--run-id"),
-    output_dir: str = typer.Option(
-        ...,
-        "--output-dir",
-        help="Directory where observation plots are written.",
-    ),
-    show: bool = typer.Option(
-        False,
-        "--show/--no-show",
-        help="Display plots interactively.",
-    ),
-) -> None:
-    """Render observation plots into an explicit output directory."""
-    effective = run_id or _latest_run_id(Path(artifacts_dir))
-    if not effective:
-        raise typer.BadParameter(
-            "No run directory found under artifacts. Pass --run-id.",
-            param_hint="--run-id",
-        )
-    observe_dir = Path(artifacts_dir) / effective / "observe"
-    report = render_observation_plots(
-        observe_dir=observe_dir.as_posix(),
-        output_dir=output_dir,
-        show=show,
-    )
-    typer.echo(f"plot completed for run {effective}: {report['observation_overview_plot']}")
-
-
-@observe_cli.command(
-    "report",
-    help=(
-        "Return the consolidated observation report.json for a run directory."
-        "for a run directory."
-    ),
-)
-def report(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
-    run_id: str = typer.Option("", "--run-id"),
-) -> None:
-    """Render the Markdown observation report for a run."""
-    effective = run_id or _latest_run_id(Path(artifacts_dir))
-    if not effective:
-        raise typer.BadParameter(
-            "No run directory found under artifacts. Pass --run-id.",
-            param_hint="--run-id",
-        )
-    observe_dir = Path(artifacts_dir) / effective / "observe"
-    report_path = render_observation_report(observe_dir.as_posix())
-    typer.echo(f"report completed for run {effective}: {report_path}")

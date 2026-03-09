@@ -15,10 +15,10 @@ The tool is organized around two concerns that matter for large batch systems:
    server latency, controller memory, restart counts, or queue wait times too
    much?
 
-`benchmark` focuses on job behavior and scheduling outcomes. `lifecycle`
-collects the control-plane observation data that explains those outcomes, then
-ties everything together into a repeatable workflow for preflight checks, suite
-execution, artifact collection, and cleanup. `plot` renders the existing run
+`benchmark` focuses on job behavior and scheduling outcomes. Top-level
+`preflight` validates access and queue readiness, `benchmark e2e` collects the
+control-plane observation data that explains those outcomes, and top-level
+`teardown` cleans benchmark resources back up. `plot` renders the existing run
 artifacts back into PNGs when you want to inspect or regenerate visuals.
 
 ## Profiles
@@ -52,10 +52,14 @@ their output location from the input artifact path and write to a sibling
 
 These are the user-facing command groups:
 
-1. `benchmark`: Produce performance and eviction benchmark data.
+1. `benchmark`: Produce performance data, eviction data, or one fully processed
+   end-to-end benchmark run.
 2. `plot`: Render performance, eviction, and observation plots from benchmark
    outputs.
-3. `lifecycle`: Run cluster preflight checks, execute suites, collect outputs,
-   and tear down benchmark resources.
-4. `jobs`: Launch or delete benchmark jobs directly.
-5. `cluster`: Inspect aggregate node resources.
+3. `jobs`: Launch or delete benchmark jobs directly.
+4. `cluster`: Inspect aggregate node resources.
+
+The public top-level workflow commands are:
+
+1. `preflight`: Run access, Kueue health, and queue readiness checks.
+2. `teardown`: Delete benchmark jobs and, optionally, queue objects.

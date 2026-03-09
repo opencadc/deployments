@@ -7,6 +7,8 @@ import subprocess
 from dataclasses import dataclass
 from typing import List
 
+from kueuer.utils.constants import DEFAULT_COMMAND_TIMEOUT_SECONDS
+
 
 @dataclass
 class CommandResult:
@@ -19,7 +21,7 @@ def command_exists(command: str) -> bool:
     return shutil.which(command) is not None
 
 
-def run_command(command: List[str], timeout_seconds: int = 120) -> CommandResult:
+def run_command(command: List[str], timeout_seconds: int = DEFAULT_COMMAND_TIMEOUT_SECONDS) -> CommandResult:
     process = subprocess.run(  # noqa: S603
         command,
         capture_output=True,
