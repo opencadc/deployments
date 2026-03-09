@@ -47,24 +47,27 @@ uv run kr plot evictions \
   --show
 ```
 
-## Run the lifecycle workflow
+## Run the end-to-end workflow
 
-Use lifecycle when you want readiness checks, benchmark execution, collection,
-and teardown tied to one run directory.
+Use the workflow commands when you want readiness checks, benchmark execution,
+observation collection, plotting, and teardown tied to one run directory.
 
 ```bash
-uv run kr lifecycle preflight --run-id "$RUN_ID"
+uv run kr preflight --run-id "$RUN_ID"
 
-uv run kr lifecycle e2e \
+uv run kr benchmark e2e \
   --run-id "$RUN_ID" \
   --profile local-safe \
-  --counts 2,4,8,16,32,64
+  --counts 2,4,8,16,32,64 \
+  --duration 30 \
+  --cores 0.4 \
+  --eviction-ram 8
 ```
 
 The end-to-end workflow writes benchmark outputs, plots, observation data, and
 manifest state under `artifacts/$RUN_ID/`.
 
-Observation collection is enabled by default for `lifecycle e2e`. Pass
+Observation collection is enabled by default for `benchmark e2e`. Pass
 `--no-observe` when you explicitly want a run without observation artifacts.
 
 `--scenario` controls the queue setup used for the suite:
@@ -85,9 +88,9 @@ uv run kr plot observations \
   --show
 ```
 
-If you already ran `uv run kr lifecycle e2e`, the usual next step is still
-`uv run kr lifecycle collect --run-id "$RUN_ID"` when you want to regenerate
-the full set of plots and reports from the existing run artifacts.
+If you already ran `uv run kr benchmark e2e`, the run directory already
+contains the generated plots and reports. Use the plot commands above when you
+want to regenerate a specific plot family from existing artifacts.
 
 ## Inspect the run directory
 

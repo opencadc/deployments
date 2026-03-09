@@ -1,8 +1,7 @@
-"""Lifecycle command group for end-to-end benchmark automation."""
+"""Internal workflow helpers and reusable CLI callables for benchmark runs."""
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
@@ -17,17 +16,18 @@ from kueuer.lifecycle.queues import (
     ensure_queues as ensure_queues_state,
 )
 from kueuer.lifecycle.shell import run_command
-from kueuer.lifecycle.suite import run_suite as run_benchmark_suite
+from kueuer.lifecycle.suite import run_benchmark_suite
 from kueuer.lifecycle.teardown import cleanup_benchmark_jobs, cleanup_queues
-from kueuer.utils.artifacts import resolve_run_input_path
-
-lifecycle_cli = typer.Typer(help="Lifecycle automation commands.")
-
-
-def _run_id() -> str:
-    """Generate a UTC timestamp run identifier."""
-    return datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-
+from kueuer.utils.artifacts import default_run_id, resolve_run_input_path
+from kueuer.utils.constants import (
+    DEFAULT_ARTIFACTS_DIR,
+    DEFAULT_CLUSTER_QUEUE,
+    DEFAULT_LOCAL_QUEUE,
+    DEFAULT_OBSERVATION_INTERVAL_SECONDS,
+    DEFAULT_OBSERVATION_SUBDIR,
+    DEFAULT_PRIORITY_CLASS,
+    DEFAULT_WORKLOAD_NAMESPACE,
+)
 
 def _manifest_path(artifacts_dir: str, run_id: str) -> Path:
     """Resolve canonical manifest path and preserve legacy fallback behavior."""
@@ -224,13 +224,12 @@ def print_preflight_report(report: Dict[str, Any]) -> None:
             typer.echo(f"  - {item}")
 
 
-@lifecycle_cli.command("preflight")
 def preflight(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
+    artifacts_dir: str = typer.Option(DEFAULT_ARTIFACTS_DIR, "--output-dir"),
     run_id: str = typer.Option("", "--run-id"),
-    namespace: str = typer.Option("skaha-workload", "--namespace"),
-    localqueue: str = typer.Option("skaha-local-queue", "--localqueue"),
-    clusterqueue: str = typer.Option("skaha-cluster-queue", "--clusterqueue"),
+    namespace: str = typer.Option(DEFAULT_WORKLOAD_NAMESPACE, "--namespace"),
+    localqueue: str = typer.Option(DEFAULT_LOCAL_QUEUE, "--localqueue"),
+    clusterqueue: str = typer.Option(DEFAULT_CLUSTER_QUEUE, "--clusterqueue"),
     apply_if_missing: bool = typer.Option(
         True,
         "--apply-if-missing/--no-apply-if-missing",
@@ -238,7 +237,7 @@ def preflight(
     ),
 ) -> None:
     """Run access, Kueue health, and queue readiness checks."""
-    effective = run_id or _run_id()
+    effective = run_id or default_run_id()
     report = run_cluster_preflight(
         namespace=namespace,
         localqueue=localqueue,
@@ -253,11 +252,11 @@ def preflight(
 
 
 def validate_kueue(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
+    artifacts_dir: str = typer.Option(DEFAULT_ARTIFACTS_DIR, "--output-dir"),
     run_id: str = typer.Option("", "--run-id"),
 ) -> None:
     """Validate Kueue control-plane readiness and persist the step report."""
-    effective = run_id or _run_id()
+    effective = run_id or default_run_id()
     report = validate_kueue_health()
     _write_manifest_step(
         artifacts_dir,
@@ -278,11 +277,11 @@ def validate_kueue(
 
 
 def ensure_queues(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
+    artifacts_dir: str = typer.Option(DEFAULT_ARTIFACTS_DIR, "--output-dir"),
     run_id: str = typer.Option("", "--run-id"),
-    namespace: str = typer.Option("skaha-workload", "--namespace"),
-    localqueue: str = typer.Option("skaha-local-queue", "--localqueue"),
-    clusterqueue: str = typer.Option("skaha-cluster-queue", "--clusterqueue"),
+    namespace: str = typer.Option(DEFAULT_WORKLOAD_NAMESPACE, "--namespace"),
+    localqueue: str = typer.Option(DEFAULT_LOCAL_QUEUE, "--localqueue"),
+    clusterqueue: str = typer.Option(DEFAULT_CLUSTER_QUEUE, "--clusterqueue"),
     apply_if_missing: bool = typer.Option(
         True,
         "--apply-if-missing/--no-apply-if-missing",
@@ -290,7 +289,7 @@ def ensure_queues(
     ),
 ) -> None:
     """Ensure required queue objects exist and persist the step report."""
-    effective = run_id or _run_id()
+    effective = run_id or default_run_id()
     cluster_config, local_config = default_config_paths()
     report = ensure_queues_state(
         namespace=namespace,
@@ -318,74 +317,14 @@ def ensure_queues(
         raise typer.Exit(code=1)
 
 
-@lifecycle_cli.command("run-suite")
-def run_suite(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
-    run_id: str = typer.Option("", "--run-id"),
-    namespace: str = typer.Option("skaha-workload", "--namespace"),
-    localqueue: str = typer.Option("skaha-local-queue", "--localqueue"),
-    clusterqueue: str = typer.Option("skaha-cluster-queue", "--clusterqueue"),
-    priority: str = typer.Option("high", "--priority"),
-    profile: str = typer.Option("local-safe", "--profile"),
-    counts_csv: str = typer.Option("2,4,8,16,32,64", "--counts"),
-    scenario: str = typer.Option(
-        "control",
-        "--scenario",
-        help=(
-            "Queue scenario to apply before the suite. control leaves the "
-            "existing queues unchanged. backlog creates temporary constrained "
-            "queue objects to force backlog pressure."
-        ),
-    ),
-    observe: bool = typer.Option(False, "--observe"),
-    observe_interval_seconds: float = typer.Option(5.0, "--observe-interval-seconds"),
-    observe_output_subdir: str = typer.Option("observe", "--observe-output-subdir"),
-) -> None:
-    """Run lifecycle benchmark suite and persist the step report."""
-    effective = run_id or _run_id()
-    try:
-        suite_report = run_benchmark_suite(
-            artifacts_dir=(Path(artifacts_dir) / effective).as_posix(),
-            namespace=namespace,
-            localqueue=localqueue,
-            clusterqueue=clusterqueue,
-            priority=priority,
-            profile=profile,
-            counts_csv=counts_csv,
-            scenario=scenario,
-            observe=observe,
-            observe_interval_seconds=observe_interval_seconds,
-            observe_output_subdir=observe_output_subdir,
-        )
-    except Exception as error:  # noqa: BLE001
-        failure_report = {"ok": False, "errors": [str(error)]}
-        _write_manifest_step(
-            artifacts_dir,
-            effective,
-            "run-suite",
-            False,
-            failure_report,
-        )
-        raise
-    suite_ok = bool(suite_report.get("ok", True))
-    _write_manifest_step(artifacts_dir, effective, "run-suite", suite_ok, suite_report)
-    typer.echo(f"run-suite {'ok' if suite_ok else 'failed'} for run {effective}")
-    if not suite_ok:
-        for error in suite_report.get("errors", []):
-            typer.echo(f"- {error}")
-        raise typer.Exit(code=1)
-    typer.echo(f"uv run kr lifecycle collect --run-id {effective}")
-
-
-@lifecycle_cli.command("collect")
 def collect(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
+    artifacts_dir: str = typer.Option(DEFAULT_ARTIFACTS_DIR, "--output-dir"),
     run_id: str = typer.Option("", "--run-id"),
     performance_csv: str = typer.Option("", "--performance-csv"),
     evictions_yaml: str = typer.Option("", "--evictions-yaml"),
 ) -> None:
     """Collect plots and summary artifacts and persist the step report."""
-    effective = run_id or _run_id()
+    effective = run_id or default_run_id()
     run_root = Path(artifacts_dir) / effective
     perf_path = performance_csv or _resolve_suite_path(
         run_root, "performance", "performance.csv", "performance_results.csv"
@@ -421,11 +360,10 @@ def collect(
         typer.echo(f"Run report: {report['report_md']}")
 
 
-@lifecycle_cli.command("teardown")
 def teardown(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
+    artifacts_dir: str = typer.Option(DEFAULT_ARTIFACTS_DIR, "--output-dir"),
     run_id: str = typer.Option("", "--run-id"),
-    namespace: str = typer.Option("skaha-workload", "--namespace"),
+    namespace: str = typer.Option(DEFAULT_WORKLOAD_NAMESPACE, "--namespace"),
     prefixes: List[str] = typer.Option(  # noqa: B008
         ["direct-", "kueue-", "kueue-eviction"],
         "--prefix",
@@ -438,7 +376,7 @@ def teardown(
     ),
 ) -> None:
     """Delete benchmark jobs (and optionally queues) and persist the step report."""
-    effective = run_id or _run_id()
+    effective = run_id or default_run_id()
     cleanup_report = cleanup_benchmark_jobs(namespace=namespace, prefixes=prefixes)
     queues_report = {"ok": True, "results": []}
     if delete_queues:
@@ -456,43 +394,24 @@ def teardown(
         raise typer.Exit(code=1)
 
 
-@lifecycle_cli.command("e2e")
-def e2e(
-    artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
-    run_id: str = typer.Option("", "--run-id"),
-    namespace: str = typer.Option("skaha-workload", "--namespace"),
-    localqueue: str = typer.Option("skaha-local-queue", "--localqueue"),
-    clusterqueue: str = typer.Option("skaha-cluster-queue", "--clusterqueue"),
-    priority: str = typer.Option("high", "--priority"),
-    profile: str = typer.Option("local-safe", "--profile"),
-    counts_csv: str = typer.Option("2,4,8,16,32,64", "--counts"),
-    scenario: str = typer.Option(
-        "control",
-        "--scenario",
-        help=(
-            "Queue scenario to apply before the suite. control leaves the "
-            "existing queues unchanged. backlog creates temporary constrained "
-            "queue objects to force backlog pressure."
-        ),
-    ),
-    observe: bool = typer.Option(
-        True,
-        "--observe/--no-observe",
-        help=(
-            "Collect observation data during the end-to-end run. Enabled by "
-            "default; pass --no-observe to skip observation collection."
-        ),
-    ),
-    observe_interval_seconds: float = typer.Option(5.0, "--observe-interval-seconds"),
-    observe_output_subdir: str = typer.Option("observe", "--observe-output-subdir"),
-    skip_queue_apply: bool = typer.Option(False, "--skip-queue-apply"),
-    skip_teardown: bool = typer.Option(False, "--skip-teardown"),
-    keep_artifacts: bool = typer.Option(
-        True, "--keep-artifacts/--no-keep-artifacts", help="Keep generated artifacts."
-    ),
-) -> None:
-    """Run the full lifecycle workflow with manifest tracking."""
-    effective = run_id or _run_id()
+def run_benchmark_e2e(
+    artifacts_dir: str,
+    run_id: str,
+    namespace: str,
+    localqueue: str,
+    clusterqueue: str,
+    priority: str,
+    scenario: str,
+    performance_options: Dict[str, Any],
+    eviction_options: Dict[str, Any],
+    observe: bool = True,
+    observe_interval_seconds: float = DEFAULT_OBSERVATION_INTERVAL_SECONDS,
+    observe_output_subdir: str = DEFAULT_OBSERVATION_SUBDIR,
+    skip_queue_apply: bool = False,
+    skip_teardown: bool = False,
+) -> Dict[str, Any]:
+    """Run the internal benchmark end-to-end workflow and persist its manifest."""
+    effective = run_id or default_run_id()
     run_root = Path(artifacts_dir) / effective
     cluster_config, local_config = default_config_paths()
 
@@ -513,8 +432,8 @@ def e2e(
             localqueue=localqueue,
             clusterqueue=clusterqueue,
             priority=priority,
-            profile=profile,
-            counts_csv=counts_csv,
+            performance_options=performance_options,
+            eviction_options=eviction_options,
             scenario=scenario,
             observe=observe,
             observe_interval_seconds=observe_interval_seconds,
@@ -549,21 +468,28 @@ def e2e(
         pipeline_report,
     )
 
-    typer.echo(f"e2e {'ok' if pipeline_report['ok'] else 'failed'} for run {effective}")
     if not pipeline_report["ok"]:
-        typer.echo(f"failed step: {pipeline_report['failed_step']}")
-        raise typer.Exit(code=1)
-    typer.echo(f"Artifacts written under {run_root.as_posix()}")
+        return {
+            **pipeline_report,
+            "run_id": effective,
+            "run_root": run_root.as_posix(),
+        }
+
     perf_path = _resolve_suite_path(
         run_root, "performance", "performance.csv", "performance_results.csv"
     ).as_posix()
     evict_path = _resolve_suite_path(
         run_root, "evictions", "evictions.yaml", "evictions.yaml"
     ).as_posix()
-    typer.echo(f"uv run kr plot performance {perf_path} --show")
-    typer.echo(f"uv run kr plot evictions {evict_path} --show")
+
+    report: Dict[str, Any] = {
+        **pipeline_report,
+        "run_id": effective,
+        "run_root": run_root.as_posix(),
+        "performance_csv": perf_path,
+        "evictions_yaml": evict_path,
+    }
     observe_timeseries = run_root / "observe" / "timeseries.csv"
     if observe_timeseries.exists():
-        typer.echo(f"uv run kr plot observations {observe_timeseries.as_posix()} --show")
-    if not keep_artifacts:
-        typer.echo("keep_artifacts is disabled, but automatic artifact deletion is not implemented.")
+        report["observe_timeseries"] = observe_timeseries.as_posix()
+    return report

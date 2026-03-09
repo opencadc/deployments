@@ -16,13 +16,21 @@ def _option_default(fn, name: str):
 def test_benchmark_command_defaults_use_artifacts_paths() -> None:
     performance_output = _option_default(benchmark.performance, "output_dir")
     evictions_output = _option_default(benchmark.eviction, "output_dir")
+    e2e_output = _option_default(benchmark.e2e, "output_dir")
     performance_run_id = _option_default(benchmark.performance, "run_id")
     evictions_run_id = _option_default(benchmark.eviction, "run_id")
+    e2e_run_id = _option_default(benchmark.e2e, "run_id")
+    e2e_observe = _option_default(benchmark.e2e, "observe")
+    e2e_duration = _option_default(benchmark.e2e, "duration")
 
     assert performance_output == "artifacts"
     assert evictions_output == "artifacts"
+    assert e2e_output == "artifacts"
     assert performance_run_id == ""
     assert evictions_run_id == ""
+    assert e2e_run_id == ""
+    assert e2e_observe is True
+    assert e2e_duration is None
 
 
 def test_plot_command_derives_output_directory_from_input_path() -> None:

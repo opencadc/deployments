@@ -8,15 +8,16 @@ It is built around two operational questions:
 2. Does Kueue add unacceptable load to the Kubernetes control plane while it
    does that work?
 
-The package gives you benchmark commands, lifecycle automation, and plotting
-tools that write their artifacts under `artifacts/` by default.
+The package gives you benchmark commands, workflow helpers, and plotting tools
+that write their artifacts under `artifacts/` by default.
 
 ## What the tool does
 
-`benchmark` measures queue behavior directly. `lifecycle` ties benchmark runs
-to control-plane observation collection, analysis, reporting, preflight
-checks, artifact collection, and cleanup. `plot` renders benchmark,
-eviction, and observation PNGs from existing run artifacts.
+`benchmark` measures queue behavior directly. Top-level `preflight` and
+`teardown` handle readiness and cleanup. `benchmark e2e` ties benchmark runs
+to control-plane observation collection, analysis, reporting, and automatic
+post-processing. `plot` renders benchmark, eviction, and observation PNGs from
+existing run artifacts.
 
 That split maps directly to the two main concerns:
 
@@ -70,19 +71,19 @@ uv run kr plot performance \
 That plot command writes the performance overview dashboard plus the primary
 scale-decision charts under `artifacts/$RUN_ID/plots/`.
 
-## Observation data in lifecycle tests
+## Observation data in end-to-end runs
 
 Observation data exists to answer the second core question: whether Kueue adds
 unacceptable control-plane pressure while it handles large queue backlogs.
-During lifecycle runs, `kueuer` samples controller, API server, and queue
+During end-to-end runs, `kueuer` samples controller, API server, and queue
 state into `artifacts/<run_id>/observe/`, then uses those files to render
 plots and evaluate the observation policy.
 For an end-to-end cluster check with control-plane observations:
 
 ```bash
-uv run kr lifecycle preflight --run-id "$RUN_ID"
+uv run kr preflight --run-id "$RUN_ID"
 
-uv run kr lifecycle e2e \
+uv run kr benchmark e2e \
   --run-id "$RUN_ID" \
   --profile local-safe \
   --counts 2,4,8,16,32,64
@@ -95,26 +96,25 @@ directory.
 
 If you want to skip observations for a specific run, pass `--no-observe`.
 
-`uv run kr lifecycle collect --run-id "$RUN_ID"` is the post-processing step.
-It reads the suite outputs that already exist for that run and generates the
-plot directories, comparison report, and observation-derived reports. After it
-finishes, inspect the paths it prints, especially:
+`benchmark e2e` already post-processes the suite outputs for the same run and
+prints the next plot commands. After it finishes, inspect the generated paths,
+especially:
 
 1. `artifacts/$RUN_ID/plots/performance/`
 2. `artifacts/$RUN_ID/plots/evictions/`
 3. `artifacts/$RUN_ID/plots/observe/` when observation data exists
-4. `artifacts/$RUN_ID/comparison/report.md`
+4. `artifacts/$RUN_ID/report.md`
 
-If you want to re-render standalone plot families from an existing lifecycle
+If you want to re-render standalone plot families from an existing end-to-end
 run, use the plot commands directly:
 
 ```bash
 uv run kr plot performance \
-  "artifacts//performance.csv" \
+  "artifacts/$RUN_ID/performance/performance.csv" \
   --show
 
 uv run kr plot evictions \
-  "artifacts/$RUN_ID/evictions.yaml" \
+  "artifacts/$RUN_ID/evictions/evictions.yaml" \
   --show
 
 uv run kr plot observations \
@@ -124,7 +124,7 @@ uv run kr plot observations \
 
 These commands write PNGs into `artifacts/$RUN_ID/plots/` automatically.
 
-`--scenario` controls the queue setup used during lifecycle suite execution:
+`--scenario` controls the queue setup used during `benchmark e2e` execution:
 
 1. `control` uses the normal configured queues.
 2. `backlog` creates temporary constrained `*-backlog` queues so the suite runs

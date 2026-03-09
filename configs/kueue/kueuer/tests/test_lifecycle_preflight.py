@@ -135,9 +135,8 @@ def test_preflight_command_prints_verbose_inventory(monkeypatch, tmp_path) -> No
     result = runner.invoke(
         app,
         [
-            "lifecycle",
             "preflight",
-            "--artifacts-dir",
+            "--output-dir",
             tmp_path.as_posix(),
             "--run-id",
             "run-a",
