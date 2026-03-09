@@ -7,24 +7,22 @@ queue behavior, or control-plane stability in unacceptable ways.
 
 ## Generate plots
 
-Standalone benchmark plots require an explicit output directory.
+Standalone benchmark plot commands infer `artifacts/<run_id>/plots/` from the
+input artifact path.
 
 ```bash
 RUN_ID="<your-run-id>"
 
 uv run kr plot performance \
-  "artifacts/$RUN_ID/performance.csv" \
-  --output-dir "artifacts/$RUN_ID/plots/performance" \
+  "artifacts/$RUN_ID/performance/performance.csv" \
   --show
 
 uv run kr plot evictions \
-  "artifacts/$RUN_ID/evictions.yaml" \
-  --output-dir "artifacts/$RUN_ID/plots/evictions" \
+  "artifacts/$RUN_ID/evictions/evictions.yaml" \
   --show
 
-uv run kr observe plot \
-  --run-id "$RUN_ID" \
-  --output-dir "artifacts/$RUN_ID/plots/observe" \
+uv run kr plot observations \
+  "artifacts/$RUN_ID/observe/timeseries.csv" \
   --show
 ```
 
@@ -77,9 +75,8 @@ scale.
 
 ## Read plots against policy
 
-Do not read plots in isolation. Cross-check them with the observation policy
-artifacts:
+Do not read plots in isolation. Cross-check them with the consolidated
+observation report artifact:
 
-1. `observe/summary.json` for aggregated metrics
-2. `observe/policy.json` for pass/fail policy evaluation
-3. `observe/report.md` for a compact Markdown summary
+1. `observe/report.json` for aggregate metrics, pass/fail checks, and
+   violations

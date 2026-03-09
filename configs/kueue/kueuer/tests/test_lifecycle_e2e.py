@@ -1,6 +1,7 @@
-from kueuer.lifecycle import commands
 import pytest
 import typer
+
+from kueuer.lifecycle import commands
 
 
 def test_execute_e2e_pipeline_runs_steps_in_order() -> None:

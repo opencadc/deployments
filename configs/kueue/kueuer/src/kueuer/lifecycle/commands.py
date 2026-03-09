@@ -12,10 +12,14 @@ from kueuer.lifecycle.collect import collect_outputs
 from kueuer.lifecycle.kueue_validate import validate_kueue_health
 from kueuer.lifecycle.models import append_step, load_or_init_manifest, save_manifest
 from kueuer.lifecycle.preflight import run_preflight
-from kueuer.lifecycle.queues import default_config_paths, ensure_queues as ensure_queues_state
+from kueuer.lifecycle.queues import (
+    default_config_paths,
+    ensure_queues as ensure_queues_state,
+)
 from kueuer.lifecycle.shell import run_command
 from kueuer.lifecycle.suite import run_suite as run_benchmark_suite
 from kueuer.lifecycle.teardown import cleanup_benchmark_jobs, cleanup_queues
+from kueuer.utils.artifacts import resolve_run_input_path
 
 lifecycle_cli = typer.Typer(help="Lifecycle automation commands.")
 
@@ -37,15 +41,22 @@ def _manifest_path(artifacts_dir: str, run_id: str) -> Path:
 
 def _resolve_suite_path(
     run_root: Path,
+    domain: str,
     canonical_name: str,
     legacy_name: str,
 ) -> Path:
-    """Resolve suite artifact path with canonical+legacy filename fallback."""
-    canonical = run_root / "suite" / canonical_name
-    legacy = run_root / "suite" / legacy_name
-    if canonical.exists() or not legacy.exists():
-        return canonical
-    return legacy
+    """Resolve canonical lifecycle input path with legacy fallbacks."""
+    legacy_candidates = [
+        run_root / canonical_name,
+        run_root / "suite" / canonical_name,
+        run_root / "suite" / legacy_name,
+    ]
+    return resolve_run_input_path(
+        run_root=run_root,
+        domain=domain,
+        filename=canonical_name,
+        legacy_paths=legacy_candidates,
+    )
 
 
 def _write_manifest_step(
@@ -317,7 +328,15 @@ def run_suite(
     priority: str = typer.Option("high", "--priority"),
     profile: str = typer.Option("local-safe", "--profile"),
     counts_csv: str = typer.Option("2,4,8,16,32,64", "--counts"),
-    scenario: str = typer.Option("control", "--scenario"),
+    scenario: str = typer.Option(
+        "control",
+        "--scenario",
+        help=(
+            "Queue scenario to apply before the suite. control leaves the "
+            "existing queues unchanged. backlog creates temporary constrained "
+            "queue objects to force backlog pressure."
+        ),
+    ),
     observe: bool = typer.Option(False, "--observe"),
     observe_interval_seconds: float = typer.Option(5.0, "--observe-interval-seconds"),
     observe_output_subdir: str = typer.Option("observe", "--observe-output-subdir"),
@@ -369,10 +388,10 @@ def collect(
     effective = run_id or _run_id()
     run_root = Path(artifacts_dir) / effective
     perf_path = performance_csv or _resolve_suite_path(
-        run_root, "performance.csv", "performance_results.csv"
+        run_root, "performance", "performance.csv", "performance_results.csv"
     ).as_posix()
     evict_path = evictions_yaml or _resolve_suite_path(
-        run_root, "evictions.yaml", "evictions.yaml"
+        run_root, "evictions", "evictions.yaml", "evictions.yaml"
     ).as_posix()
     report = collect_outputs(
         performance_csv=perf_path,
@@ -385,6 +404,21 @@ def collect(
     if not collect_ok:
         raise typer.Exit(code=1)
     typer.echo(f"Artifacts written under {run_root.as_posix()}")
+    typer.echo(f"uv run kr plot performance {perf_path} --show")
+    typer.echo(f"uv run kr plot evictions {evict_path} --show")
+    observe_timeseries = run_root / "observe" / "timeseries.csv"
+    if observe_timeseries.exists():
+        typer.echo(f"uv run kr plot observations {observe_timeseries.as_posix()} --show")
+    if report.get("performance_plot_dir"):
+        typer.echo(f"Performance plots: {report['performance_plot_dir']}")
+    if report.get("evictions_plot_dir"):
+        typer.echo(f"Eviction plots: {report['evictions_plot_dir']}")
+    if report.get("observe_plot_dir"):
+        typer.echo(f"Observation plots: {report['observe_plot_dir']}")
+    if report.get("observe_report_json"):
+        typer.echo(f"Observation report: {report['observe_report_json']}")
+    if report.get("report_md"):
+        typer.echo(f"Run report: {report['report_md']}")
 
 
 @lifecycle_cli.command("teardown")
@@ -432,8 +466,23 @@ def e2e(
     priority: str = typer.Option("high", "--priority"),
     profile: str = typer.Option("local-safe", "--profile"),
     counts_csv: str = typer.Option("2,4,8,16,32,64", "--counts"),
-    scenario: str = typer.Option("control", "--scenario"),
-    observe: bool = typer.Option(False, "--observe"),
+    scenario: str = typer.Option(
+        "control",
+        "--scenario",
+        help=(
+            "Queue scenario to apply before the suite. control leaves the "
+            "existing queues unchanged. backlog creates temporary constrained "
+            "queue objects to force backlog pressure."
+        ),
+    ),
+    observe: bool = typer.Option(
+        True,
+        "--observe/--no-observe",
+        help=(
+            "Collect observation data during the end-to-end run. Enabled by "
+            "default; pass --no-observe to skip observation collection."
+        ),
+    ),
     observe_interval_seconds: float = typer.Option(5.0, "--observe-interval-seconds"),
     observe_output_subdir: str = typer.Option("observe", "--observe-output-subdir"),
     skip_queue_apply: bool = typer.Option(False, "--skip-queue-apply"),
@@ -473,9 +522,11 @@ def e2e(
         ),
         collect_fn=lambda: collect_outputs(
             performance_csv=_resolve_suite_path(
-                run_root, "performance.csv", "performance_results.csv"
+                run_root, "performance", "performance.csv", "performance_results.csv"
             ).as_posix(),
-            evictions_yaml=(run_root / "suite" / "evictions.yaml").as_posix(),
+            evictions_yaml=_resolve_suite_path(
+                run_root, "evictions", "evictions.yaml", "evictions.yaml"
+            ).as_posix(),
             output_dir=run_root.as_posix(),
         ),
         teardown_fn=(
@@ -503,5 +554,16 @@ def e2e(
         typer.echo(f"failed step: {pipeline_report['failed_step']}")
         raise typer.Exit(code=1)
     typer.echo(f"Artifacts written under {run_root.as_posix()}")
+    perf_path = _resolve_suite_path(
+        run_root, "performance", "performance.csv", "performance_results.csv"
+    ).as_posix()
+    evict_path = _resolve_suite_path(
+        run_root, "evictions", "evictions.yaml", "evictions.yaml"
+    ).as_posix()
+    typer.echo(f"uv run kr plot performance {perf_path} --show")
+    typer.echo(f"uv run kr plot evictions {evict_path} --show")
+    observe_timeseries = run_root / "observe" / "timeseries.csv"
+    if observe_timeseries.exists():
+        typer.echo(f"uv run kr plot observations {observe_timeseries.as_posix()} --show")
     if not keep_artifacts:
         typer.echo("keep_artifacts is disabled, but automatic artifact deletion is not implemented.")

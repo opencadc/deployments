@@ -45,19 +45,9 @@ def test_collect_outputs_includes_observe_artifacts_when_present(tmp_path: Path)
 
     def observe_analyzer(observe_dir: str, baseline_summary_path: str = ""):
         del baseline_summary_path
-        summary = Path(observe_dir, "summary.json")
-        policy = Path(observe_dir, "policy.json")
-        summary.write_text("{}", encoding="utf-8")
-        policy.write_text("{}", encoding="utf-8")
-        return {
-            "summary_json": summary.as_posix(),
-            "policy_json": policy.as_posix(),
-        }
-
-    def observe_reporter(observe_dir: str):
-        report = Path(observe_dir, "report.md")
-        report.write_text("# report\n", encoding="utf-8")
-        return report.as_posix()
+        report = Path(observe_dir, "report.json")
+        report.write_text("{}", encoding="utf-8")
+        return {"report_json": report.as_posix()}
 
     report = collect.collect_outputs(
         performance_csv=perf_csv.as_posix(),
@@ -67,12 +57,9 @@ def test_collect_outputs_includes_observe_artifacts_when_present(tmp_path: Path)
         evictions_plotter=evict_plotter,
         observe_plotter=observe_plotter,
         observe_analyzer=observe_analyzer,
-        observe_reporter=observe_reporter,
     )
 
     assert "observe_plot_dir" in report
     assert Path(report["observe_plot_dir"]).exists()
-    assert Path(report["observe_summary_json"]).exists()
-    assert Path(report["observe_policy_json"]).exists()
-    assert Path(report["observe_report_md"]).exists()
-    assert Path(report["comparison_summary"]).exists()
+    assert Path(report["observe_report_json"]).exists()
+    assert Path(report["report_json"]).exists()

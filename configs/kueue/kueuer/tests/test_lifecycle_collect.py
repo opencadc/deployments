@@ -3,7 +3,7 @@ from pathlib import Path
 from kueuer.lifecycle import collect
 
 
-def test_collect_outputs_generates_comparison_files(tmp_path: Path) -> None:
+def test_collect_outputs_generates_run_root_reports(tmp_path: Path) -> None:
     perf_csv = tmp_path / "perf.csv"
     perf_csv.write_text(
         (
@@ -38,7 +38,7 @@ def test_collect_outputs_generates_comparison_files(tmp_path: Path) -> None:
 
     assert Path(report["performance_plot_dir"], "perf.png").exists()
     assert Path(report["evictions_plot_dir"], "evict.png").exists()
-    assert Path(report["comparison_summary"]).exists()
-    assert Path(report["comparison_report"]).exists()
-    assert report["comparison_summary"].endswith("/comparison/summary.json")
-    assert report["comparison_report"].endswith("/comparison/report.md")
+    assert Path(report["report_json"]).exists()
+    assert Path(report["report_md"]).exists()
+    assert report["report_json"].endswith("/report.json")
+    assert report["report_md"].endswith("/report.md")

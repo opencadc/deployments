@@ -1,5 +1,5 @@
-from typing import Dict, List
 from types import SimpleNamespace
+from typing import Dict, List
 
 from kueuer.lifecycle import teardown
 from kueuer.lifecycle.queues import default_config_paths

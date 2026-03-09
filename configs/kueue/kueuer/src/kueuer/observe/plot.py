@@ -6,10 +6,9 @@ from pathlib import Path
 from typing import Dict, Iterable
 
 import matplotlib.pyplot as plt
-from matplotlib import dates as mdates
 import pandas as pd
 import seaborn as sns
-
+from matplotlib import dates as mdates
 
 sns.set_theme(
     style="whitegrid",

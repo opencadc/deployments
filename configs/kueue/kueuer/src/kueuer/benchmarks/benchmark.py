@@ -1,18 +1,18 @@
 """Benchmark module for comparing Kubernetes job execution with and without Kueue."""
 
 import time
-from click import get_current_context
-from click.core import Context, ParameterSource
 from datetime import datetime
 from time import sleep
 from typing import Any, Dict, List, Optional
 
 import typer
+from click import get_current_context
+from click.core import Context, ParameterSource
 from kubernetes import client, config
 
 from kueuer.benchmarks import DEFAULT_JOBSPEC_FILEPATH, analyze, k8s, track
 from kueuer.utils import io
-from kueuer.utils.artifacts import resolve_output_root, default_run_id
+from kueuer.utils.artifacts import default_run_id, resolve_domain_output
 from kueuer.utils.logging import logger
 
 benchmark_cli: typer.Typer = typer.Typer(help="Launch Benchmarks")
@@ -81,28 +81,32 @@ def _cli_override_or_none(
 
 def _performance_output_paths(output_dir: str, run_id: str) -> tuple[str, str, str]:
     effective_input = run_id or (_default_run_id() if output_dir == "artifacts" else "")
-    root, effective_run_id = resolve_output_root(
+    root, domain_root, output_path, effective_run_id = resolve_domain_output(
         output_dir=output_dir,
+        domain="performance",
+        filename="performance.csv",
         run_id=effective_input,
     )
-    root.mkdir(parents=True, exist_ok=True)
+    domain_root.mkdir(parents=True, exist_ok=True)
     return (
         root.as_posix(),
-        (root / "performance.csv").as_posix(),
+        output_path.as_posix(),
         effective_run_id,
     )
 
 
 def _eviction_output_paths(output_dir: str, run_id: str) -> tuple[str, str, str]:
     effective_input = run_id or (_default_run_id() if output_dir == "artifacts" else "")
-    root, effective_run_id = resolve_output_root(
+    root, domain_root, output_path, effective_run_id = resolve_domain_output(
         output_dir=output_dir,
+        domain="evictions",
+        filename="evictions.yaml",
         run_id=effective_input,
     )
-    root.mkdir(parents=True, exist_ok=True)
+    domain_root.mkdir(parents=True, exist_ok=True)
     return (
         root.as_posix(),
-        (root / "evictions.yaml").as_posix(),
+        output_path.as_posix(),
         effective_run_id,
     )
 
@@ -540,8 +544,6 @@ def performance(
         output_dir=output_dir,
         run_id=run_id,
     )
-    plot_dir = f"{artifact_root}/plots/performance"
-
     logger.info("Starting benchmark with the following configuration:")
     logger.info("Profile  : %s", profile)
     logger.info("Jobs     : %s", counts)
@@ -589,9 +591,7 @@ def performance(
     logger.info("Benchmark completed successfully.")
     logger.info("Results saved to %s", output)
     typer.echo(f"Artifacts written under {artifact_root}")
-    typer.echo(
-        f"uv run kr plot performance {output} --output-dir {plot_dir} --show"
-    )
+    typer.echo(f"uv run kr plot performance {output} --show")
 
 
 @benchmark_cli.command("evictions")
@@ -706,8 +706,6 @@ def eviction(
         output_dir=output_dir,
         run_id=run_id,
     )
-    plot_dir = f"{artifact_root}/plots/evictions"
-
     config.load_kube_config()
     crd = client.CustomObjectsApi()
     snapshot = crd.list_namespaced_custom_object(  # type: ignore
@@ -804,9 +802,7 @@ def eviction(
     logger.info("Jobs cleaned up successfully.")
     logger.info("Eviction benchmark completed.")
     typer.echo(f"Artifacts written under {artifact_root}")
-    typer.echo(
-        f"uv run kr plot evictions {output} --output-dir {plot_dir} --show"
-    )
+    typer.echo(f"uv run kr plot evictions {output} --show")
 
 
 if __name__ == "__main__":

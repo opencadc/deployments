@@ -2,8 +2,10 @@
 
 This page explains the public CLI surface in task order. The examples use the
 same artifact contract as the implementation: artifact-producing commands write
-to `artifacts/<run_id>/...` by default, and plot commands require an explicit
-`--output-dir`.
+to `artifacts/<run_id>/...` by default. Each run keeps benchmark inputs under
+`performance/`, `evictions/`, and `observe/`, and all plots under `plots/`.
+Standalone plot commands derive their output directory automatically from the
+input artifact path.
 
 ## Core concepts
 
@@ -23,7 +25,7 @@ lifecycle workflow.
 ### `kr benchmark performance`
 
 This command compares direct Kubernetes job execution with Kueue-managed job
-execution and writes `performance.csv`.
+execution and writes `performance/performance.csv`.
 
 | Option | Meaning |
 | --- | --- |
@@ -39,7 +41,7 @@ execution and writes `performance.csv`.
 | `--cores` | CPU requested and limited for each job. |
 | `--ram` | Memory requested and limited for each job, in GiB. |
 | `--storage` | Ephemeral storage requested and limited for each job, in GiB. |
-| `--output-dir` | Directory where `performance.csv` is written. |
+| `--output-dir` | Run root where `performance/performance.csv` is written. |
 | `--run-id` | Run directory name when `--output-dir` is left at `artifacts`. |
 | `--wait` | Delay between experiments so the cluster can settle. |
 | `--apply-chunk-size` | Number of Job manifests per `kubectl apply` batch. |
@@ -48,7 +50,8 @@ execution and writes `performance.csv`.
 
 ### `kr benchmark evictions`
 
-This command fills a queue with mixed priorities and writes `evictions.yaml`.
+This command fills a queue with mixed priorities and writes
+`evictions/evictions.yaml`.
 
 | Option | Meaning |
 | --- | --- |
@@ -62,7 +65,7 @@ This command fills a queue with mixed priorities and writes `evictions.yaml`.
 | `--ram` | Total memory budget assumed for the packed ClusterQueue. |
 | `--storage` | Total ephemeral storage budget assumed for the queue. |
 | `--duration` | Longest runtime assigned before per-priority scaling. |
-| `--output-dir` | Directory where `evictions.yaml` is written. |
+| `--output-dir` | Run root where `evictions/evictions.yaml` is written. |
 | `--run-id` | Run directory name when `--output-dir` is left at `artifacts`. |
 | `--apply-chunk-size` | Number of Job manifests per `kubectl apply` batch. |
 | `--apply-retries` | Retry count for failed apply batches. |
@@ -76,23 +79,33 @@ Use plot commands when you already have benchmark outputs and want PNG files.
 
 This command reads a `performance.csv` file and renders the performance
 dashboard plus the primary scale-decision plots: throughput, completion ratio,
-tail turnaround, and non-runtime overhead.
+tail turnaround, and non-runtime overhead under
+`<run_root>/plots/performance/`.
 
 | Option | Meaning |
 | --- | --- |
 | `FILEPATH` | Input `performance.csv` file to read. |
-| `--output-dir` | Required directory where the PNG files are written. |
 | `--show` | Open the plots interactively in addition to writing files. |
 
 ### `kr plot evictions`
 
 This command reads an `evictions.yaml` file and renders eviction pressure,
-timeline, and heatmap plots.
+timeline, and heatmap plots under `<run_root>/plots/evictions/`.
 
 | Option | Meaning |
 | --- | --- |
 | `FILEPATH` | Input `evictions.yaml` file to read. |
-| `--output-dir` | Required directory where the PNG files are written. |
+| `--show` | Open the plots interactively in addition to writing files. |
+
+### `kr plot observations`
+
+This command reads an `observe/timeseries.csv` file and renders the
+observation overview plus controller, API server, and queue-pressure plots
+under `<run_root>/plots/observe/`.
+
+| Option | Meaning |
+| --- | --- |
+| `FILEPATH` | Input `observe/timeseries.csv` file to read. |
 | `--show` | Open the plots interactively in addition to writing files. |
 
 ## Lifecycle commands
@@ -128,22 +141,24 @@ This command executes the performance and eviction benchmark suite for one run.
 | `--priority` | Priority class used for the performance benchmark. |
 | `--profile` | Named default bundle for benchmark resource settings. |
 | `--counts` | Explicit job counts for the performance benchmark. |
-| `--scenario` | Queue scenario to apply before the suite starts. |
+| `--scenario` | Queue scenario to apply before the suite starts. `control` keeps the normal queues. `backlog` creates temporary constrained `*-backlog` queues. |
 | `--observe` | Start the observation collector during the suite. |
 | `--observe-interval-seconds` | Sampling cadence for observation data. |
 | `--observe-output-subdir` | Relative subdirectory for observation files. |
 
 ### `kr lifecycle collect`
 
-This command reads suite outputs and generates plots, summaries, and observation
-reports under the run directory.
+This command reads existing run outputs and generates plots, the run report, and
+the observation report under the run directory. It is the command you run after
+`run-suite` when you want the visible plot and report artifacts without
+rerunning the benchmarks.
 
 | Option | Meaning |
 | --- | --- |
 | `--artifacts-dir` | Root directory that holds run directories. |
 | `--run-id` | Run directory name under `--artifacts-dir`. |
-| `--performance-csv` | Override path for the suite performance CSV. |
-| `--evictions-yaml` | Override path for the suite evictions YAML. |
+| `--performance-csv` | Override path for the performance CSV. |
+| `--evictions-yaml` | Override path for the evictions YAML. |
 
 ### `kr lifecycle teardown`
 
@@ -159,8 +174,8 @@ This command removes benchmark jobs and optionally queue objects.
 
 ### `kr lifecycle e2e`
 
-This command runs the full workflow: preflight, suite, collection, and
-teardown.
+This command runs the full workflow: preflight, suite execution, observation
+collection, plot and report generation, and teardown.
 
 | Option | Meaning |
 | --- | --- |
@@ -172,59 +187,10 @@ teardown.
 | `--priority` | Priority class used for the performance benchmark. |
 | `--profile` | Named default bundle for benchmark resource settings. |
 | `--counts` | Explicit job counts for the performance benchmark. |
-| `--scenario` | Queue scenario to apply before the suite starts. |
-| `--observe` | Start the observation collector during the suite. |
+| `--scenario` | Queue scenario to apply before the suite starts. `control` keeps the normal queues. `backlog` creates temporary constrained `*-backlog` queues. |
+| `--observe` / `--no-observe` | Collect observation data during the run. Enabled by default. When enabled, `e2e` also generates observation plots and reports during collection. |
 | `--observe-interval-seconds` | Sampling cadence for observation data. |
 | `--observe-output-subdir` | Relative subdirectory for observation files. |
 | `--skip-queue-apply` | Do not auto-apply queue YAML during preflight. |
 | `--skip-teardown` | Keep benchmark jobs after the suite finishes. |
 | `--keep-artifacts` | Keep the run directory on disk after completion. |
-
-## Observation commands
-
-Use observation commands when you want control-plane data without rerunning the
-full lifecycle suite.
-
-### `kr observe collect`
-
-This command collects raw observation samples and writes them under
-`observe/`.
-
-| Option | Meaning |
-| --- | --- |
-| `--artifacts-dir` | Root directory that holds run directories. |
-| `--run-id` | Run directory name under `--artifacts-dir`. |
-| `--namespace` | Namespace used for queue and benchmark-pod sampling. |
-| `--interval-seconds` | Sampling cadence when collecting for a duration. |
-| `--duration-seconds` | Collection duration. `0` means collect one snapshot. |
-
-### `kr observe plot`
-
-This command renders the observation overview plus controller, API server, and
-queue pressure plots from `observe/timeseries.csv`.
-
-| Option | Meaning |
-| --- | --- |
-| `--artifacts-dir` | Root directory that holds run directories. |
-| `--run-id` | Run directory name under `--artifacts-dir`. |
-| `--output-dir` | Required directory where observation plots are written. |
-| `--show` | Open the plots interactively in addition to writing files. |
-
-### `kr observe analyze`
-
-This command summarizes observation samples and evaluates the rollout policy.
-
-| Option | Meaning |
-| --- | --- |
-| `--artifacts-dir` | Root directory that holds run directories. |
-| `--run-id` | Run directory name under `--artifacts-dir`. |
-| `--baseline-summary` | Optional baseline summary JSON for latency comparison. |
-
-### `kr observe report`
-
-This command renders a Markdown report from `summary.json` and `policy.json`.
-
-| Option | Meaning |
-| --- | --- |
-| `--artifacts-dir` | Root directory that holds run directories. |
-| `--run-id` | Run directory name under `--artifacts-dir`. |

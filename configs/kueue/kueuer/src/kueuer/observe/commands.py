@@ -2,20 +2,26 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import typer
 
+from kueuer.observe import plot as observe_plot
 from kueuer.observe.analyze import evaluate_policy, summarize_observations
 from kueuer.observe.collector import ObservationCollector
 from kueuer.observe.models import ObservationSample
-from kueuer.observe import plot as observe_plot
 from kueuer.utils.artifacts import default_run_id
 
-observe_cli = typer.Typer(help="Observation and scale-attribution commands.")
+observe_cli = typer.Typer(
+    help=(
+        "Collect, summarize, and visualize control-plane observations for "
+        "Kueue benchmark and lifecycle runs."
+    )
+)
 
 
 def _run_id() -> str:
@@ -66,23 +72,57 @@ def _load_samples(raw_samples_jsonl: Path) -> List[ObservationSample]:
     return samples
 
 
+def _load_samples_from_timeseries(timeseries_csv: Path) -> List[ObservationSample]:
+    grouped: Dict[tuple[str, str, bool, str], ObservationSample] = {}
+    if not timeseries_csv.exists():
+        return []
+
+    with timeseries_csv.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            timestamp = str(row.get("timestamp", ""))
+            source = str(row.get("source", ""))
+            available = str(row.get("available", "")).strip().lower() == "true"
+            labels_json = str(row.get("labels_json", "") or "{}")
+            try:
+                labels = json.loads(labels_json) if labels_json else {}
+            except json.JSONDecodeError:
+                labels = {}
+            key = (timestamp, source, available, json.dumps(labels, sort_keys=True))
+            sample = grouped.setdefault(
+                key,
+                ObservationSample(
+                    timestamp=timestamp,
+                    source=source,
+                    available=available,
+                    values={},
+                    labels={str(k): str(v) for k, v in dict(labels).items()},
+                ),
+            )
+            metric = str(row.get("metric", "") or "").strip()
+            value = str(row.get("value", "") or "").strip()
+            if metric and value:
+                sample.values[metric] = float(value)
+
+    return list(grouped.values())
+
+
+def _derive_capabilities(samples: List[ObservationSample]) -> Dict[str, bool]:
+    capabilities: Dict[str, bool] = {}
+    for sample in samples:
+        capabilities[sample.source] = capabilities.get(sample.source, False) or sample.available
+    return capabilities
+
+
 def analyze_observations(
     observe_dir: str,
     baseline_summary_path: str = "",
 ) -> Dict[str, str]:
     root = Path(observe_dir)
-    raw_samples_path = root / "raw_samples.jsonl"
-    capabilities_path = root / "capabilities.json"
+    timeseries_path = root / "timeseries.csv"
 
-    samples = _load_samples(raw_samples_path)
-    capabilities: Dict[str, bool] = {}
-    if capabilities_path.exists():
-        capabilities = {
-            str(key): bool(value)
-            for key, value in json.loads(capabilities_path.read_text(encoding="utf-8"))
-            .get("capabilities", {})
-            .items()
-        }
+    samples = _load_samples_from_timeseries(timeseries_path)
+    capabilities = _derive_capabilities(samples)
 
     summary = summarize_observations(samples, capabilities=capabilities)
 
@@ -99,50 +139,25 @@ def analyze_observations(
         baseline_metrics=baseline_metrics,
     )
 
-    summary_path = root / "summary.json"
-    policy_path = root / "policy.json"
-    summary_path.write_text(json.dumps(summary.to_dict(), indent=2) + "\n", encoding="utf-8")
-    policy_path.write_text(json.dumps(policy.to_dict(), indent=2) + "\n", encoding="utf-8")
-
-    return {
-        "summary_json": summary_path.as_posix(),
-        "policy_json": policy_path.as_posix(),
+    report_path = root / "report.json"
+    report_payload = {
+        "generated_at": summary.generated_at,
+        "aggregate_metrics": summary.aggregate_metrics,
+        "capabilities": summary.capabilities,
+        "status": policy.status,
+        "checks": policy.checks,
+        "violations": policy.violations,
     }
+    report_path.write_text(json.dumps(report_payload, indent=2) + "\n", encoding="utf-8")
+
+    return {"report_json": report_path.as_posix()}
 
 
 def render_observation_report(observe_dir: str) -> str:
     root = Path(observe_dir)
-    summary_path = root / "summary.json"
-    policy_path = root / "policy.json"
-    summary = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path.exists() else {}
-    policy = json.loads(policy_path.read_text(encoding="utf-8")) if policy_path.exists() else {}
-
-    lines = [
-        "# Observation report",
-        "",
-        f"- status: `{policy.get('status', 'unknown')}`",
-        f"- generated_at: `{summary.get('generated_at', '')}`",
-        "",
-        "## checks",
-        "",
-    ]
-    checks = policy.get("checks", {})
-    if checks:
-        for key, value in checks.items():
-            lines.append(f"- {key}: `{value}`")
-    else:
-        lines.append("- none")
-
-    lines.extend(["", "## violations", ""])
-    violations = policy.get("violations", [])
-    if violations:
-        for item in violations:
-            lines.append(f"- {item}")
-    else:
-        lines.append("- none")
-
-    report_path = root / "report.md"
-    report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    report_path = root / "report.json"
+    if not report_path.exists():
+        report_path = Path(analyze_observations(observe_dir=observe_dir)["report_json"])
     return report_path.as_posix()
 
 
@@ -160,7 +175,13 @@ def render_observation_plots(
     )
 
 
-@observe_cli.command("collect")
+@observe_cli.command(
+    "collect",
+    help=(
+        "Collect raw observation samples for controller, API server, and queue "
+        "state under artifacts/<run-id>/observe/."
+    ),
+)
 def collect(
     artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
     run_id: str = typer.Option("", "--run-id"),
@@ -168,6 +189,7 @@ def collect(
     interval_seconds: float = typer.Option(5.0, "--interval-seconds"),
     duration_seconds: float = typer.Option(0.0, "--duration-seconds"),
 ) -> None:
+    """Collect one-shot or time-bounded observation samples for a run."""
     effective = run_id or _run_id()
     observe_dir = Path(artifacts_dir) / effective / "observe"
     report = collect_observations(
@@ -177,18 +199,23 @@ def collect(
         duration_seconds=duration_seconds,
     )
     typer.echo(f"collect completed for run {effective}: {report['timeseries_csv']}")
-    typer.echo(
-        f"uv run kr observe plot --run-id {effective} --output-dir artifacts/{effective}/plots/observe --show"
-    )
+    typer.echo(f"uv run kr plot observations artifacts/{effective}/observe/timeseries.csv --show")
     typer.echo(f"uv run kr observe analyze --run-id {effective}")
 
 
-@observe_cli.command("analyze")
+@observe_cli.command(
+    "analyze",
+    help=(
+        "Summarize observation samples and evaluate the rollout policy for a "
+        "run directory."
+    ),
+)
 def analyze(
     artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
     run_id: str = typer.Option("", "--run-id"),
     baseline_summary_path: str = typer.Option("", "--baseline-summary"),
 ) -> None:
+    """Summarize observation samples and write policy artifacts."""
     effective = run_id or _latest_run_id(Path(artifacts_dir))
     if not effective:
         raise typer.BadParameter(
@@ -200,11 +227,17 @@ def analyze(
         observe_dir=observe_dir.as_posix(),
         baseline_summary_path=baseline_summary_path,
     )
-    typer.echo(f"analyze completed for run {effective}: {report['policy_json']}")
+    typer.echo(f"analyze completed for run {effective}: {report['report_json']}")
     typer.echo(f"uv run kr observe report --run-id {effective}")
 
 
-@observe_cli.command("plot")
+@observe_cli.command(
+    "plot",
+    help=(
+        "Render observation plots from observe/timeseries.csv for an existing "
+        "run directory."
+    ),
+)
 def plot(
     artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
     run_id: str = typer.Option("", "--run-id"),
@@ -219,6 +252,7 @@ def plot(
         help="Display plots interactively.",
     ),
 ) -> None:
+    """Render observation plots into an explicit output directory."""
     effective = run_id or _latest_run_id(Path(artifacts_dir))
     if not effective:
         raise typer.BadParameter(
@@ -234,11 +268,18 @@ def plot(
     typer.echo(f"plot completed for run {effective}: {report['observation_overview_plot']}")
 
 
-@observe_cli.command("report")
+@observe_cli.command(
+    "report",
+    help=(
+        "Return the consolidated observation report.json for a run directory."
+        "for a run directory."
+    ),
+)
 def report(
     artifacts_dir: str = typer.Option("artifacts", "--artifacts-dir"),
     run_id: str = typer.Option("", "--run-id"),
 ) -> None:
+    """Render the Markdown observation report for a run."""
     effective = run_id or _latest_run_id(Path(artifacts_dir))
     if not effective:
         raise typer.BadParameter(

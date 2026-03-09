@@ -4,8 +4,7 @@ from typing import Callable, Dict, List
 from typer.testing import CliRunner
 
 from kueuer.cli import app
-from kueuer.lifecycle import preflight
-from kueuer.lifecycle import commands
+from kueuer.lifecycle import commands, preflight
 
 
 @dataclass

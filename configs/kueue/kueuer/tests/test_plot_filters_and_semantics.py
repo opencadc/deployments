@@ -56,7 +56,11 @@ def test_performance_command_writes_plot_files(tmp_path, monkeypatch) -> None:
     ).to_csv(csv_path, index=False)
 
     monkeypatch.setattr(plot_module.plt, "show", lambda: (_ for _ in ()).throw(AssertionError("show should not be called")))
-    plot_module.performance(csv_path.as_posix(), output_dir=tmp_path.as_posix(), show=False)
+    plot_module.render_performance_plots(
+        csv_path.as_posix(),
+        output_dir=tmp_path.as_posix(),
+        show=False,
+    )
 
     expected = [
         "performance_overview.png",
@@ -99,7 +103,11 @@ job-c:
     )
 
     monkeypatch.setattr(plot_module.plt, "show", lambda: (_ for _ in ()).throw(AssertionError("show should not be called")))
-    plot_module.evictions(yaml_path.as_posix(), output_dir=tmp_path.as_posix(), show=False)
+    plot_module.render_eviction_plots(
+        yaml_path.as_posix(),
+        output_dir=tmp_path.as_posix(),
+        show=False,
+    )
 
     expected = [
         "eviction_pressure_by_priority.png",

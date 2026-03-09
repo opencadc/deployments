@@ -15,10 +15,11 @@ The tool is organized around two concerns that matter for large batch systems:
    server latency, controller memory, restart counts, or queue wait times too
    much?
 
-`benchmark` focuses on job behavior and scheduling outcomes. `observe` focuses
-on control-plane attribution. `lifecycle` ties them together into a repeatable
-workflow for preflight checks, suite execution, artifact collection, and
-cleanup.
+`benchmark` focuses on job behavior and scheduling outcomes. `lifecycle`
+collects the control-plane observation data that explains those outcomes, then
+ties everything together into a repeatable workflow for preflight checks, suite
+execution, artifact collection, and cleanup. `plot` renders the existing run
+artifacts back into PNGs when you want to inspect or regenerate visuals.
 
 ## Profiles
 
@@ -43,24 +44,18 @@ to compare output directories.
 
 If you pass a custom `--output-dir` to a standalone benchmark command, `kueuer`
 writes directly into that directory instead of creating another run-id
-subdirectory. Plot commands are different: they always require an explicit
-`--output-dir`.
+subdirectory. Standalone benchmark plot commands are different: they derive
+their output location from the input artifact path and write to a sibling
+`plots/` directory automatically.
 
 ## Command groups
 
 These are the user-facing command groups:
 
 1. `benchmark`: Produce performance and eviction benchmark data.
-2. `plot`: Render performance and eviction plots from benchmark outputs.
+2. `plot`: Render performance, eviction, and observation plots from benchmark
+   outputs.
 3. `lifecycle`: Run cluster preflight checks, execute suites, collect outputs,
    and tear down benchmark resources.
-4. `observe`: Collect, plot, analyze, and report control-plane observations.
-5. `jobs`: Launch or delete benchmark jobs directly.
-6. `cluster`: Inspect aggregate node resources.
-
-## Next steps
-
-Use the CLI reference to choose the right command surface for your workflow:
-
-1. [`cli-reference.md`](/Users/brars/Workspace/opencadc/deployments/configs/kueue/kueuer/docs/cli-reference.md)
-2. [`benchmark-walkthrough.md`](/Users/brars/Workspace/opencadc/deployments/configs/kueue/kueuer/docs/benchmark-walkthrough.md)
+4. `jobs`: Launch or delete benchmark jobs directly.
+5. `cluster`: Inspect aggregate node resources.

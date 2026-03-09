@@ -1,3 +1,4 @@
+from kueuer.observe import commands
 from kueuer.observe.analyze import evaluate_policy, summarize_observations
 from kueuer.observe.models import ObservationPolicyResult, ObservationSample
 
@@ -133,3 +134,23 @@ def test_unavailable_samples_do_not_produce_passing_policy() -> None:
     )
     result = evaluate_policy(summary.aggregate_metrics)
     assert result.status == "fail"
+
+
+def test_analyze_observations_writes_consolidated_report_json(tmp_path) -> None:
+    observe_dir = tmp_path / "observe"
+    observe_dir.mkdir(parents=True, exist_ok=True)
+    (observe_dir / "timeseries.csv").write_text(
+        "timestamp,source,available,metric,value,labels_json\n"
+        "2026-03-05T00:00:00Z,kueue-controller,true,kueue_controller_memory_working_set_bytes,1024,{}\n"
+        "2026-03-05T00:00:00Z,kueue-controller,true,kueue_controller_restart_count_delta,0,{}\n"
+        "2026-03-05T00:00:00Z,queues,true,benchmark_oomkilled_pods,0,{}\n"
+        "2026-03-05T00:00:00Z,apiserver,true,apiserver_non_watch_request_p95_seconds,0.12,{}\n",
+        encoding="utf-8",
+    )
+
+    report = commands.analyze_observations(observe_dir.as_posix())
+
+    assert report["report_json"].endswith("/observe/report.json")
+    assert (observe_dir / "report.json").exists()
+    assert not (observe_dir / "raw_samples.jsonl").exists()
+    assert not (observe_dir / "capabilities.json").exists()

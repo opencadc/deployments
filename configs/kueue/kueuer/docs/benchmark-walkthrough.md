@@ -1,4 +1,4 @@
-# Benchmark walkthrough
+# Benchmark Walkthrough
 
 This walkthrough shows the shortest safe path from cluster checks to
 interpretable artifacts. It uses explicit run IDs so the output paths are easy
@@ -9,7 +9,7 @@ to inspect afterward.
 Choose one run ID and reuse it for every command in the walkthrough.
 
 ```bash
-cd /Users/brars/Workspace/opencadc/deployments/configs/kueue/kueuer
+cd deployments/configs/kueue/kueuer
 RUN_ID="$(date -u +%Y%m%d-%H%M%S)"
 ```
 
@@ -34,18 +34,16 @@ Each command prints the exact follow-up plot command you can run next.
 
 ## Plot the standalone results
 
-Plot commands require an explicit output directory. A common layout is one
-subdirectory per plot family.
+Standalone benchmark plot commands derive `artifacts/$RUN_ID/plots/`
+automatically from the input artifact path.
 
 ```bash
 uv run kr plot performance \
-  "artifacts/$RUN_ID/performance.csv" \
-  --output-dir "artifacts/$RUN_ID/plots/performance" \
+  "artifacts/$RUN_ID/performance/performance.csv" \
   --show
 
 uv run kr plot evictions \
-  "artifacts/$RUN_ID/evictions.yaml" \
-  --output-dir "artifacts/$RUN_ID/plots/evictions" \
+  "artifacts/$RUN_ID/evictions/evictions.yaml" \
   --show
 ```
 
@@ -60,32 +58,36 @@ uv run kr lifecycle preflight --run-id "$RUN_ID"
 uv run kr lifecycle e2e \
   --run-id "$RUN_ID" \
   --profile local-safe \
-  --counts 2,4,8,16,32,64 \
-  --observe
+  --counts 2,4,8,16,32,64
 ```
 
 The end-to-end workflow writes benchmark outputs, plots, observation data, and
 manifest state under `artifacts/$RUN_ID/`.
 
-## Work with observation data directly
+Observation collection is enabled by default for `lifecycle e2e`. Pass
+`--no-observe` when you explicitly want a run without observation artifacts.
 
-Use the observation commands when you want to inspect control-plane behavior
-without rerunning the full suite.
+`--scenario` controls the queue setup used for the suite:
+
+1. `control` runs against the normal queue objects.
+2. `backlog` creates temporary constrained `*-backlog` queues to force
+   admission pressure.
+
+## Re-render observation plots
+
+Use the observation plot command when you already have
+`artifacts/$RUN_ID/observe/timeseries.csv` and want fresh PNGs without
+rerunning the suite.
 
 ```bash
-uv run kr observe collect \
-  --run-id "$RUN_ID" \
-  --namespace skaha-workload \
-  --duration-seconds 60
-
-uv run kr observe plot \
-  --run-id "$RUN_ID" \
-  --output-dir "artifacts/$RUN_ID/plots/observe" \
+uv run kr plot observations \
+  "artifacts/$RUN_ID/observe/timeseries.csv" \
   --show
-
-uv run kr observe analyze --run-id "$RUN_ID"
-uv run kr observe report --run-id "$RUN_ID"
 ```
+
+If you already ran `uv run kr lifecycle e2e`, the usual next step is still
+`uv run kr lifecycle collect --run-id "$RUN_ID"` when you want to regenerate
+the full set of plots and reports from the existing run artifacts.
 
 ## Inspect the run directory
 
@@ -97,11 +99,12 @@ find "artifacts/$RUN_ID" -maxdepth 3 -type f | sort
 
 Typical outputs include:
 
-1. `artifacts/$RUN_ID/performance.csv`
-2. `artifacts/$RUN_ID/evictions.yaml`
+1. `artifacts/$RUN_ID/performance/performance.csv`
+2. `artifacts/$RUN_ID/evictions/evictions.yaml`
 3. `artifacts/$RUN_ID/plots/performance/*.png`
 4. `artifacts/$RUN_ID/plots/evictions/*.png`
-5. `artifacts/$RUN_ID/observe/timeseries.csv`
-6. `artifacts/$RUN_ID/observe/summary.json`
-7. `artifacts/$RUN_ID/observe/policy.json`
-8. `artifacts/$RUN_ID/observe/report.md`
+5. `artifacts/$RUN_ID/plots/observe/*.png`
+6. `artifacts/$RUN_ID/observe/timeseries.csv`
+7. `artifacts/$RUN_ID/observe/report.json`
+8. `artifacts/$RUN_ID/report.json`
+9. `artifacts/$RUN_ID/report.md`

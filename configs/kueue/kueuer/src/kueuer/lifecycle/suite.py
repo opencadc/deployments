@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
@@ -17,8 +18,7 @@ def _suite_commands(
     namespace: str,
     localqueue: str,
     priority: str,
-    performance_output: str,
-    evictions_output: str,
+    artifacts_dir: str,
 ) -> List[str]:
     """Build the command transcript recorded in lifecycle suite reports."""
     return [
@@ -26,13 +26,13 @@ def _suite_commands(
             "kr benchmark performance "
             f"--profile {profile} --counts {counts_csv} "
             f"-n {namespace} -k {localqueue} -p {priority} "
-            f"-o {performance_output}"
+            f"-o {artifacts_dir}"
         ),
         (
             "kr benchmark evictions "
             f"--profile {profile} -n {namespace} -k {localqueue} "
             "-p low -p medium -p high "
-            f"-o {evictions_output}"
+            f"-o {artifacts_dir}"
         ),
     ]
 
@@ -57,109 +57,107 @@ def run_suite(
     eviction_runner: Callable[..., Any] = benchmark.eviction,
 ) -> Dict[str, Any]:
     """Run performance and eviction benchmark suites with optional observation."""
-    suite_dir = Path(artifacts_dir) / "suite"
-    suite_dir.mkdir(parents=True, exist_ok=True)
-    performance_output = (suite_dir / "performance.csv").as_posix()
-    evictions_output = (suite_dir / "evictions.yaml").as_posix()
+    run_root = Path(artifacts_dir)
+    performance_output = (run_root / "performance" / "performance.csv").as_posix()
+    evictions_output = (run_root / "evictions" / "evictions.yaml").as_posix()
     commands = _suite_commands(
         profile=profile,
         counts_csv=counts_csv,
         namespace=namespace,
         localqueue=localqueue,
         priority=priority,
-        performance_output=performance_output,
-        evictions_output=evictions_output,
+        artifacts_dir=artifacts_dir,
     )
-    scenario_dir = Path(artifacts_dir) / "scenario"
-    scenario_context = scenario_apply_fn(
-        scenario=scenario,
-        output_dir=scenario_dir.as_posix(),
-        namespace=namespace,
-        localqueue=localqueue,
-        clusterqueue=clusterqueue,
-        run_cmd=run_cmd,
-    )
-    scenario_errors = [str(item) for item in scenario_context.get("errors", []) if item]
-    if scenario_errors:
+    with tempfile.TemporaryDirectory(prefix="kueuer-scenario-") as scenario_tmp:
+        scenario_context = scenario_apply_fn(
+            scenario=scenario,
+            output_dir=scenario_tmp,
+            namespace=namespace,
+            localqueue=localqueue,
+            clusterqueue=clusterqueue,
+            run_cmd=run_cmd,
+        )
+        scenario_errors = [str(item) for item in scenario_context.get("errors", []) if item]
+        if scenario_errors:
+            if scenario_context.get("applied"):
+                restore_report = scenario_restore_fn(scenario_context, run_cmd=run_cmd) or {}
+                scenario_context["restore"] = restore_report
+                if restore_report.get("error"):
+                    scenario_errors.append(str(restore_report["error"]))
+            return {
+                "ok": False,
+                "performance_output": performance_output,
+                "evictions_output": evictions_output,
+                "commands": commands,
+                "scenario": scenario_context,
+                "errors": scenario_errors,
+            }
         if scenario_context.get("applied"):
+            commands.insert(0, f"kr lifecycle scenario {scenario}")
+        effective_localqueue = str(scenario_context.get("localqueue") or localqueue)
+        effective_clusterqueue = str(scenario_context.get("clusterqueue") or clusterqueue)
+
+        collector = None
+        observe_report: Dict[str, Any] = {}
+        observe_error: Exception | None = None
+        if observe:
+            collector = collector_factory(
+                namespace=namespace,
+                interval_seconds=observe_interval_seconds,
+            )
+            collector.start()
+
+        try:
+            performance_runner(
+                filepath=DEFAULT_JOBSPEC_FILEPATH,
+                namespace=namespace,
+                kueue=effective_localqueue,
+                priority=priority,
+                profile=profile,
+                counts_csv=counts_csv,
+                e0=1,
+                exponent=6,
+                duration=None,
+                cores=None,
+                ram=None,
+                storage=None,
+                output_dir=artifacts_dir,
+                run_id="",
+                wait=None,
+                apply_chunk_size=25,
+                apply_retries=2,
+                apply_backoff=2.0,
+            )
+            eviction_runner(
+                filepath=DEFAULT_JOBSPEC_FILEPATH,
+                namespace=namespace,
+                kueue=effective_localqueue,
+                priorities=["low", "medium", "high"],
+                profile=profile,
+                jobs=None,
+                cores=None,
+                ram=None,
+                storage=None,
+                duration=None,
+                output_dir=artifacts_dir,
+                run_id="",
+                apply_chunk_size=25,
+                apply_retries=2,
+                apply_backoff=2.0,
+            )
+        finally:
+            if collector is not None:
+                collector.stop()
             restore_report = scenario_restore_fn(scenario_context, run_cmd=run_cmd) or {}
             scenario_context["restore"] = restore_report
-            if restore_report.get("error"):
+            if scenario_context.get("applied") and restore_report.get("error"):
                 scenario_errors.append(str(restore_report["error"]))
-        return {
-            "ok": False,
-            "performance_output": performance_output,
-            "evictions_output": evictions_output,
-            "commands": commands,
-            "scenario": scenario_context,
-            "errors": scenario_errors,
-        }
-    if scenario_context.get("applied"):
-        commands.insert(0, f"kr lifecycle scenario {scenario}")
-    effective_localqueue = str(scenario_context.get("localqueue") or localqueue)
-    effective_clusterqueue = str(scenario_context.get("clusterqueue") or clusterqueue)
-
-    collector = None
-    observe_report: Dict[str, Any] = {}
-    observe_error: Exception | None = None
-    if observe:
-        collector = collector_factory(
-            namespace=namespace,
-            interval_seconds=observe_interval_seconds,
-        )
-        collector.start()
-
-    try:
-        performance_runner(
-            filepath=DEFAULT_JOBSPEC_FILEPATH,
-            namespace=namespace,
-            kueue=effective_localqueue,
-            priority=priority,
-            profile=profile,
-            counts_csv=counts_csv,
-            e0=1,
-            exponent=6,
-            duration=None,
-            cores=None,
-            ram=None,
-            storage=None,
-            output_dir=suite_dir.as_posix(),
-            run_id="",
-            wait=None,
-            apply_chunk_size=25,
-            apply_retries=2,
-            apply_backoff=2.0,
-        )
-        eviction_runner(
-            filepath=DEFAULT_JOBSPEC_FILEPATH,
-            namespace=namespace,
-            kueue=effective_localqueue,
-            priorities=["low", "medium", "high"],
-            profile=profile,
-            jobs=None,
-            cores=None,
-            ram=None,
-            storage=None,
-            duration=None,
-            output_dir=suite_dir.as_posix(),
-            run_id="",
-            apply_chunk_size=25,
-            apply_retries=2,
-            apply_backoff=2.0,
-        )
-    finally:
-        if collector is not None:
-            collector.stop()
-        restore_report = scenario_restore_fn(scenario_context, run_cmd=run_cmd) or {}
-        scenario_context["restore"] = restore_report
-        if scenario_context.get("applied") and restore_report.get("error"):
-            scenario_errors.append(str(restore_report["error"]))
-        if collector is not None:
-            observe_dir = Path(artifacts_dir) / observe_output_subdir
-            try:
-                observe_report = collector.write_series(observe_dir.as_posix())
-            except Exception as error:  # noqa: BLE001
-                observe_error = error
+            if collector is not None:
+                observe_dir = Path(artifacts_dir) / observe_output_subdir
+                try:
+                    observe_report = collector.write_series(observe_dir.as_posix())
+                except Exception as error:  # noqa: BLE001
+                    observe_error = error
 
     if observe_error is not None:
         raise observe_error

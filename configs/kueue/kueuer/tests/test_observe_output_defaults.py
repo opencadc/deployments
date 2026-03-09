@@ -46,7 +46,7 @@ def test_analyze_without_run_id_uses_latest_run(tmp_path: Path, monkeypatch) -> 
     def fake_analyze_observations(observe_dir: str, baseline_summary_path: str = ""):
         captured["observe_dir"] = observe_dir
         captured["baseline_summary_path"] = baseline_summary_path
-        return {"policy_json": str(Path(observe_dir) / "policy.json")}
+        return {"report_json": str(Path(observe_dir) / "report.json")}
 
     monkeypatch.setattr(commands, "analyze_observations", fake_analyze_observations)
 

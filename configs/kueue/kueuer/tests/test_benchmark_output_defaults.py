@@ -1,4 +1,5 @@
 import inspect
+from pathlib import Path
 
 from typer.models import OptionInfo
 
@@ -24,9 +25,33 @@ def test_benchmark_command_defaults_use_artifacts_paths() -> None:
     assert evictions_run_id == ""
 
 
-def test_plot_command_requires_explicit_output_directory() -> None:
-    perf_output_dir = _option_default(plot.performance, "output_dir")
-    evict_output_dir = _option_default(plot.evictions, "output_dir")
+def test_plot_command_derives_output_directory_from_input_path() -> None:
+    assert "output_dir" not in inspect.signature(plot.performance).parameters
+    assert "output_dir" not in inspect.signature(plot.evictions).parameters
+    assert "output_dir" not in inspect.signature(plot.observations).parameters
 
-    assert perf_output_dir is ...
-    assert evict_output_dir is ...
+
+def test_plot_observations_writes_into_run_plot_directory(
+    tmp_path: Path, monkeypatch
+) -> None:
+    run_root = tmp_path / "artifacts" / "20260307-001222"
+    observe_dir = run_root / "observe"
+    observe_dir.mkdir(parents=True, exist_ok=True)
+    timeseries = observe_dir / "timeseries.csv"
+    timeseries.write_text("timestamp,source,available,metric,value,labels_json\n", encoding="utf-8")
+
+    captured = {}
+
+    def fake_plotter(timeseries_csv: str, output_dir: str, show: bool):
+        captured["timeseries_csv"] = timeseries_csv
+        captured["output_dir"] = output_dir
+        captured["show"] = show
+        return {"observation_overview_plot": str(Path(output_dir) / "observation_overview.png")}
+
+    monkeypatch.setattr(plot.observe_plot, "observations", fake_plotter)
+
+    plot.observations(timeseries.as_posix(), show=False)
+
+    assert captured["timeseries_csv"] == timeseries.as_posix()
+    assert captured["output_dir"] == (run_root / "plots" / "observe").as_posix()
+    assert captured["show"] is False

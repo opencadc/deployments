@@ -6,7 +6,11 @@ import math
 from datetime import datetime, timezone
 from typing import Dict, Iterable, List, Sequence, Tuple
 
-from kueuer.observe.models import ObservationPolicyResult, ObservationSample, ObservationSummary
+from kueuer.observe.models import (
+    ObservationPolicyResult,
+    ObservationSample,
+    ObservationSummary,
+)
 
 
 def _p95(values: List[float]) -> float:

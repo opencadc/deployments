@@ -2,13 +2,14 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
-from matplotlib import ticker
 import pandas as pd
 import seaborn as sns
 import typer
+from matplotlib import ticker
 
+from kueuer.observe import plot as observe_plot
 from kueuer.utils import io
-
+from kueuer.utils.artifacts import resolve_plot_dir
 
 sns.set_theme(
     style="whitegrid",
@@ -41,7 +42,16 @@ PRIORITY_COLORS = {
     "High": "#487c6e",
 }
 
-app = typer.Typer(help="Plot Kueue benchmark results.")
+app = typer.Typer(
+    help=(
+        "Render performance, eviction, and observation plots from existing "
+        "run artifacts."
+    )
+)
+
+
+def _derived_plot_dir(filepath: str) -> str:
+    return resolve_plot_dir(filepath).as_posix()
 
 
 def _finalize_plot(
@@ -518,19 +528,12 @@ def compute_comparative_metrics(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-@app.command("performance")
-def performance(
+def render_performance_plots(
     filepath: str,
-    output_dir: str = typer.Option(
-        ...,
-        "-o",
-        "--output-dir",
-        help="Directory where plots are written.",
-    ),
-    show: bool = typer.Option(
-        False, "--show/--no-show", help="Display plots interactively."
-    ),
+    output_dir: str,
+    show: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Render performance plots into an explicit output directory."""
     df = load_results(filepath)
     df = compute_throughput(df)
     df = compute_latency(df)
@@ -582,19 +585,27 @@ def performance(
     return df, comparative_df
 
 
-@app.command("evictions")
-def evictions(
+@app.command("performance")
+def performance(
     filepath: str,
-    output_dir: str = typer.Option(
-        ...,
-        "-o",
-        "--output-dir",
-        help="Directory where plots are written.",
-    ),
     show: bool = typer.Option(
         False, "--show/--no-show", help="Display plots interactively."
     ),
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Render performance plots beside a `performance.csv` artifact."""
+    return render_performance_plots(
+        filepath=filepath,
+        output_dir=_derived_plot_dir(filepath),
+        show=show,
+    )
+
+
+def render_eviction_plots(
+    filepath: str,
+    output_dir: str,
+    show: bool = False,
 ) -> None:
+    """Render eviction plots into an explicit output directory."""
     data = io.read_yaml(filepath)
     df = pd.DataFrame.from_dict(data, orient="index")
     if df.empty:
@@ -622,3 +633,33 @@ def evictions(
     _plot_eviction_pressure(df, output_dir, show)
     _plot_workload_timeline(df, output_dir, show)
     _plot_eviction_heatmap(evict_df, output_dir, show)
+
+
+@app.command("evictions")
+def evictions(
+    filepath: str,
+    show: bool = typer.Option(
+        False, "--show/--no-show", help="Display plots interactively."
+    ),
+) -> None:
+    """Render eviction plots beside an `evictions.yaml` artifact."""
+    render_eviction_plots(
+        filepath=filepath,
+        output_dir=_derived_plot_dir(filepath),
+        show=show,
+    )
+
+
+@app.command("observations")
+def observations(
+    filepath: str,
+    show: bool = typer.Option(
+        False, "--show/--no-show", help="Display plots interactively."
+    ),
+) -> Dict[str, str]:
+    """Render observation plots beside an `observe/timeseries.csv` artifact."""
+    return observe_plot.observations(
+        timeseries_csv=filepath,
+        output_dir=_derived_plot_dir(filepath),
+        show=show,
+    )

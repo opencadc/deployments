@@ -20,12 +20,9 @@ class FakeCollector:
 
     def write_series(self, output_dir: str):
         Path(output_dir).mkdir(parents=True, exist_ok=True)
-        raw = Path(output_dir) / "raw_samples.jsonl"
         csv = Path(output_dir) / "timeseries.csv"
-        raw.write_text("{}\n", encoding="utf-8")
         csv.write_text("metric,value\n", encoding="utf-8")
         return {
-            "raw_samples_jsonl": raw.as_posix(),
             "timeseries_csv": csv.as_posix(),
         }
 

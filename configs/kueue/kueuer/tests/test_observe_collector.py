@@ -1,4 +1,3 @@
-import json
 import time
 from pathlib import Path
 
@@ -37,7 +36,7 @@ def test_collector_periodically_samples() -> None:
     assert len(collector.samples) >= 2
 
 
-def test_collector_writes_jsonl_and_csv(tmp_path: Path) -> None:
+def test_collector_writes_timeseries_only(tmp_path: Path) -> None:
     def snapshot_fn(namespace: str):
         return {
             "samples": [
@@ -60,14 +59,11 @@ def test_collector_writes_jsonl_and_csv(tmp_path: Path) -> None:
     collector.collect_once()
     outputs = collector.write_series(tmp_path.as_posix())
 
-    raw_jsonl = Path(outputs["raw_samples_jsonl"])
     timeseries_csv = Path(outputs["timeseries_csv"])
-    assert raw_jsonl.exists()
     assert timeseries_csv.exists()
-
-    lines = raw_jsonl.read_text(encoding="utf-8").strip().splitlines()
-    payload = json.loads(lines[0])
-    assert payload["source"] == "queues"
+    assert "raw_samples_jsonl" not in outputs
+    assert "capabilities_json" not in outputs
+    assert "pending_workloads" in timeseries_csv.read_text(encoding="utf-8")
 
 
 def test_collector_handles_snapshot_errors_gracefully() -> None:

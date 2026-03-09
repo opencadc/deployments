@@ -66,13 +66,7 @@ class ObservationCollector:
     def write_series(self, output_dir: str) -> Dict[str, str]:
         root = Path(output_dir)
         root.mkdir(parents=True, exist_ok=True)
-        raw_jsonl = root / "raw_samples.jsonl"
         timeseries_csv = root / "timeseries.csv"
-        capabilities_json = root / "capabilities.json"
-
-        with raw_jsonl.open("w", encoding="utf-8") as handle:
-            for sample in self.samples:
-                handle.write(json.dumps(sample.to_dict()) + "\n")
 
         with timeseries_csv.open("w", encoding="utf-8", newline="") as handle:
             writer = csv.DictWriter(
@@ -112,20 +106,6 @@ class ObservationCollector:
                         }
                     )
 
-        capabilities_json.write_text(
-            json.dumps(
-                {
-                    "generated_at": utc_now_iso(),
-                    "capabilities": self.capabilities,
-                },
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-
         return {
-            "raw_samples_jsonl": raw_jsonl.as_posix(),
             "timeseries_csv": timeseries_csv.as_posix(),
-            "capabilities_json": capabilities_json.as_posix(),
         }

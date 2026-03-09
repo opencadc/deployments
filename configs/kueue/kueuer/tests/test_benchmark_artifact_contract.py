@@ -7,7 +7,6 @@ from typer.testing import CliRunner
 from kueuer.benchmarks import benchmark, plot
 from kueuer.cli import app
 
-
 runner = CliRunner()
 
 
@@ -38,15 +37,22 @@ def test_benchmark_command_defaults_use_artifacts_dir_and_blank_run_id() -> None
     assert _option_default(benchmark.eviction, "run_id") == ""
 
 
-def test_plot_performance_requires_output_dir(tmp_path: Path) -> None:
-    csv_path = tmp_path / "results.csv"
-    csv_path.write_text("timestamp,first_creation_time,last_creation_time,first_completion_time,last_completion_time,job_count,use_kueue,total_execution_time,avg_time_from_creation_completion,median_time_from_creation_completion,std_dev_time_from_creation_completion,job_duration\n", encoding="utf-8")
+def test_plot_performance_derives_output_dir_from_input_path(tmp_path: Path) -> None:
+    artifact_root = tmp_path / "20260306-230629"
+    performance_dir = artifact_root / "performance"
+    performance_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = performance_dir / "performance.csv"
+    csv_path.write_text(
+        "timestamp,first_creation_time,last_creation_time,first_completion_time,last_completion_time,job_count,use_kueue,total_execution_time,avg_time_from_creation_completion,median_time_from_creation_completion,std_dev_time_from_creation_completion,job_duration\n"
+        "2026-03-05T00:00:00Z,2026-03-05T00:00:00Z,2026-03-05T00:00:01Z,2026-03-05T00:00:03Z,2026-03-05T00:00:06Z,2,False,6,3,3,0.2,1\n"
+        "2026-03-05T00:00:00Z,2026-03-05T00:00:00Z,2026-03-05T00:00:01Z,2026-03-05T00:00:03Z,2026-03-05T00:00:06Z,2,True,5,2.5,2.5,0.3,1\n",
+        encoding="utf-8",
+    )
 
     result = runner.invoke(app, ["plot", "performance", csv_path.as_posix()])
 
-    assert result.exit_code != 0
-    rendered_output = result.stdout + getattr(result, "stderr", "")
-    assert "--output-dir" in rendered_output
+    assert result.exit_code == 0
+    assert (artifact_root / "plots" / "performance" / "performance_overview.png").exists()
 
 
 def test_benchmark_performance_uses_run_scoped_default_output_and_prints_plot_command(
@@ -74,13 +80,35 @@ def test_benchmark_performance_uses_run_scoped_default_output_and_prints_plot_co
     )
 
     assert result.exit_code == 0
-    assert captured["resultsfile"].endswith("artifacts/20260306-153000/performance.csv")
+    assert captured["resultsfile"].endswith("artifacts/20260306-153000/performance/performance.csv")
     assert (
-        "uv run kr plot performance artifacts/20260306-153000/performance.csv --output-dir artifacts/20260306-153000/plots/performance --show"
+        "uv run kr plot performance artifacts/20260306-153000/performance/performance.csv --show"
         in result.stdout
     )
 
 
-def test_plot_module_has_no_default_output_dir() -> None:
-    assert _option_default(plot.performance, "output_dir") is ...
-    assert _option_default(plot.evictions, "output_dir") is ...
+def test_plot_evictions_derives_output_dir_from_input_path(tmp_path: Path) -> None:
+    artifact_root = tmp_path / "20260306-231524"
+    eviction_dir = artifact_root / "evictions"
+    eviction_dir.mkdir(parents=True, exist_ok=True)
+    yaml_path = eviction_dir / "evictions.yaml"
+    yaml_path.write_text(
+        "job-a:\n"
+        "  name: job-a\n"
+        "  priority: 10000\n"
+        "  admitted_at: \"2026-03-05T00:00:00Z\"\n"
+        "  finished_at: \"2026-03-05T00:00:05Z\"\n"
+        "  requeues: 0\n"
+        "  preemptors: []\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["plot", "evictions", yaml_path.as_posix()])
+
+    assert result.exit_code == 0
+    assert (artifact_root / "plots" / "evictions" / "eviction_pressure_by_priority.png").exists()
+
+
+def test_plot_module_no_longer_exposes_output_dir_option() -> None:
+    assert "output_dir" not in inspect.signature(plot.performance).parameters
+    assert "output_dir" not in inspect.signature(plot.evictions).parameters
