@@ -1,0 +1,10 @@
+# This file is used to create a namespace for the skaha sessions if it does not already exist.
+{{- with .Values.deployment.skaha.sessions }}
+{{- if and .namespace (not (eq $.Release.Namespace .namespace)) }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .namespace }}
+{{- end }}
+{{- end }}

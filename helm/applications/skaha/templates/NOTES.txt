@@ -5,7 +5,7 @@ Post-install notes for Skaha with optional Kueue integration.
 Skaha release: {{ .Release.Name }}
 Namespace: {{ .Release.Namespace }}
 
-Skaha workload namespace: {{ .Values.skahaWorkload.namespace | default "skaha-workload" }}
+Skaha workload namespace: {{ .Values.deployment.skaha.sessions.namespace | default "skaha-workload" }}
 
 User Sessions:
 - Ensure CARTA images being used are at version 5.0.3 or higher.
@@ -39,16 +39,16 @@ Kueue:
 Quick checks:
   - kubectl get deployment {{ .Release.Name }}-skaha-tomcat -n {{ .Release.Namespace }}
   - kubectl get clusterqueues 2>/dev/null || true
-  - kubectl get localqueues -n {{ .Values.skahaWorkload.namespace }} 2>/dev/null || true
+  - kubectl get localqueues -n {{ .Values.deployment.skaha.sessions.namespace }} 2>/dev/null || true
 
 If user Jobs remain Pending:
-- Ensure LocalQueue exists in {{ .Values.skahaWorkload.namespace }} and references your configured ClusterQueue.
+- Ensure LocalQueue exists in {{ .Values.deployment.skaha.sessions.namespace }} and references your configured ClusterQueue.
 - Verify ClusterQueue quotas are sufficient.
 - Confirm priority classes referenced by sessions exist or are created.
 
 !! ISSUES !!:
-{{- if and .Values.experimentalFeatures .Values.experimentalFeatures.sessionLimitRange }}
-The experimentalFeatures.sessionLimitRange value is deprecated and will be removed in 2026.2.  Please use the now released deployment.skaha.sessions.limitRange instead.
+{{- if and .Values.skahaWorkload .Values.deployment.skaha.sessions.namespace }}
+Please use the deployment.skaha.sessions.namespace to set the workload (User Session) Namespace.  The .skahaWorkload value is deprecated.
 {{- else }}
 None.
 {{- end}}

@@ -8,6 +8,7 @@ kubernetesClusterDomain: cluster.local
 replicaCount: 1
 
 # It's best to keep this set as such, unless you're willing to change these in several places.
+# @deprecated Use deployment.skaha.sessions.namespace instead.  Here for backward compatibility.
 skahaWorkload:
   namespace: skaha-workload
 
@@ -103,6 +104,9 @@ deployment:
     # Settings for User Sessions.  Sensible defaults supplied, but can be overridden.
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     sessions:
+      # Namespace to create User Sessions in.  This should be a Namespace that is designated for user workloads, and should have appropriate resource quotas and limits set.  Defaults to "skaha-workload", but can be overridden.
+      namespace: canfar-workload
+      
       expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
       maxCount: "5"  # Max number of sessions per user.
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
@@ -407,6 +411,28 @@ deployment:
   #   - ip: 127.3.34.5
   #     hostname: myhost.example.org
   # extraHosts: []
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+rbac:
+  # Whether to create RBAC roles and bindings for Skaha.  Defaults to true.
+  create: true
+
+  # Whether to create a ClusterRole with read-only permissions for Skaha to query Nodes for their capacity.
+  # This is used to provide information to the Science Portal UI about available resources in the cluster.
+  # A simple node: list permission is granted, but this does require elevated privileges, so it is optional and defaults to false.
+  clusterRole:
+    create: false
 
 # This is a list of tolerations that will be added to the Pod spec of the Skaha API.
 # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

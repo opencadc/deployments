@@ -24,8 +24,6 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      imagePullSecrets:
-        - name: regcred
       containers:
       - image: {{ .Values.deployment.sciencePortal.image }}
         imagePullPolicy: {{ .Values.deployment.sciencePortal.imagePullPolicy }}

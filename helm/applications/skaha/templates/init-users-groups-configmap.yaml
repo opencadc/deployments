@@ -2,6 +2,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-init-users-groups-config
-  namespace: {{ .Values.skahaWorkload.namespace }}
+  namespace: {{ .Values.deployment.skaha.sessions.namespace }}
 data:
   {{- (.Files.Glob "init-users-groups-config/*").AsConfig | nindent 2 }}
