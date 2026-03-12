@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-from kueuer.benchmarks import DEFAULT_JOBSPEC_FILEPATH, benchmark
+from kueuer.benchmarks import DEFAULT_JOBSPEC_FILEPATH
 from kueuer.lifecycle.scenarios import apply_scenario, restore_scenario
 from kueuer.lifecycle.shell import run_command
 from kueuer.observe.collector import ObservationCollector
@@ -65,10 +65,18 @@ def run_benchmark_suite(
     scenario_apply_fn: Callable[..., Dict[str, Any]] = apply_scenario,
     scenario_restore_fn: Callable[..., Dict[str, Any]] = restore_scenario,
     run_cmd: Callable[[List[str]], Any] = run_command,
-    performance_runner: Callable[..., Any] = benchmark.performance,
-    eviction_runner: Callable[..., Any] = benchmark.eviction,
+    performance_runner: Callable[..., Any] | None = None,
+    eviction_runner: Callable[..., Any] | None = None,
 ) -> Dict[str, Any]:
     """Run performance and eviction benchmark suites with optional observation."""
+    if performance_runner is None or eviction_runner is None:
+        from kueuer.benchmarks import benchmark
+
+        if performance_runner is None:
+            performance_runner = benchmark.performance
+        if eviction_runner is None:
+            eviction_runner = benchmark.eviction
+
     run_root = Path(artifacts_dir)
     performance_output = (run_root / "performance" / "performance.csv").as_posix()
     evictions_output = (run_root / "evictions" / "evictions.yaml").as_posix()

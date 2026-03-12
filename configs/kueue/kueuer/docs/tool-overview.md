@@ -63,3 +63,31 @@ The public top-level workflow commands are:
 
 1. `preflight`: Run access, Kueue health, and queue readiness checks.
 2. `teardown`: Delete benchmark jobs and, optionally, queue objects.
+
+## Cluster access and execution
+
+The tool uses the default kubectl configuration (kubeconfig). Ensure your
+current context has access to the workload namespace and Kueue resources;
+there is no separate login host or custom auth step—whatever `kubectl` uses
+by default is what the Python Kubernetes client uses.
+
+## Kueue occupation and resource sizing
+
+Kueue’s ClusterQueue quotas (and any flavors in use) limit how much CPU,
+memory, and ephemeral storage can be admitted at once. Benchmark jobs request
+resources; those requests count against those quotas. So **Kueue occupation
+restrictions directly affect this testing**: if the cluster queue’s nominal
+quota is small (for example 1 CPU and 1 Gi memory), only a few jobs from a
+benchmark run may be admitted at a time; the rest stay pending until capacity
+frees up. That changes throughput, tail latency, and queue wait metrics. For
+realistic scale tests, ensure ClusterQueue quotas (and node capacity) are
+sufficient for the profile and job counts you use.
+
+Using **milli-cores** (or other fractional CPU requests) is supported by
+Kubernetes and by the tool’s job spec. Smaller per-job requests allow more
+concurrent jobs to be admitted under the same ClusterQueue quota, which can
+increase throughput and queue pressure in a different way than fewer, larger
+jobs. The default profiles use fractional cores (for example 0.1 in
+`local-safe`). If you switch to very small requests (for example 10m or 50m),
+expect more jobs to be admitted in parallel and more scheduling churn; adjust
+quotas and expectations accordingly.

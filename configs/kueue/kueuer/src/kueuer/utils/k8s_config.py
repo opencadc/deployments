@@ -26,6 +26,7 @@ class KubernetesConfig:
 
     _instance: Optional[KubernetesConfig] = None
     _lock = threading.Lock()
+    _initialized: bool = False
 
     def __new__(cls) -> KubernetesConfig:
         if cls._instance is None:

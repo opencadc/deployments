@@ -65,7 +65,9 @@ uv run kr benchmark e2e \
 ```
 
 The end-to-end workflow writes benchmark outputs, plots, observation data, and
-manifest state under `artifacts/$RUN_ID/`.
+a run manifest under `artifacts/$RUN_ID/`. The manifest (`manifest.json`)
+records each lifecycle step (preflight, e2e, collect, teardown) and its
+outcome for that run.
 
 Observation collection is enabled by default for `benchmark e2e`. Pass
 `--no-observe` when you explicitly want a run without observation artifacts.

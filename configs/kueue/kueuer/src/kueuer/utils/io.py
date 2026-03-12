@@ -72,4 +72,3 @@ def save_evictions_to_yaml(
     Path(filename).parent.mkdir(parents=True, exist_ok=True)
     with open(filename, "w", encoding="utf-8") as fopen:
         yaml.dump(results, fopen, default_flow_style=False)
-    fopen.close()

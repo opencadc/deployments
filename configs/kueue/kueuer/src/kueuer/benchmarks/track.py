@@ -16,12 +16,12 @@ logfire.configure(send_to_logfire=False)
 _PREEMPTOR_UID_RE = re.compile(r"UID:\s*([0-9a-fA-F-]+)")
 
 
-def status(job: client.V1Job, state: str) -> bool:
+def job_reached_state(job: client.V1Job, state: str) -> bool:
     """Check if a k8s job has reached a certain state.
 
     Args:
         job (client.V1Job): Kubernetes Job object.
-        stage (str): Desired status of the job.
+        state (str): Desired condition type (e.g. "Complete", "Failed").
 
     Returns:
         bool: True if the job has reached the desired status.
@@ -279,7 +279,7 @@ def jobs(  # noqa: C901
     # There is an edge case, where jobs can finish even before we start tracking them.
     # So, we need to check if any of the jobs are already in the desired state.
     for item in data.items:
-        if item.metadata.name in pending and status(item, to_state):
+        if item.metadata.name in pending and job_reached_state(item, to_state):
             completion: datetime = item.status.completion_time
             creation: datetime = item.metadata.creation_timestamp
             duration: float = (completion - creation).total_seconds()
@@ -287,7 +287,7 @@ def jobs(  # noqa: C901
             logfire.info(msg)
             done[item.metadata.name] = (creation, completion, duration)
             pending[item.metadata.name] = False
-        elif item.metadata.name in pending and status(item, "Failed"):
+        elif item.metadata.name in pending and job_reached_state(item, "Failed"):
             failed_count += 1
             pending[item.metadata.name] = False
             logfire.warning("%s reached terminal state Failed.", item.metadata.name)
@@ -312,7 +312,7 @@ def jobs(  # noqa: C901
             if name not in pending:
                 continue
 
-            if status(item, to_state):
+            if job_reached_state(item, to_state):
                 completion: datetime = item.status.completion_time
                 creation: datetime = item.metadata.creation_timestamp
                 duration: float = (completion - creation).total_seconds()
@@ -320,7 +320,7 @@ def jobs(  # noqa: C901
                 logfire.info(msg)
                 done[name] = (creation, completion, duration)
                 pending[name] = False
-            elif status(item, "Failed"):
+            elif job_reached_state(item, "Failed"):
                 failed_count += 1
                 pending[name] = False
                 logfire.warning("%s reached terminal state Failed.", name)

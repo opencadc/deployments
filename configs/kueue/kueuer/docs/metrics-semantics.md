@@ -85,13 +85,14 @@ These metrics appear in `evictions.yaml`.
 7. `benchmark_oomkilled_pods`: Count of benchmark pods observed with
    `OOMKilled`.
 
-## Metrics no longer treated as first-class plots
+## Default plot emphasis
 
-The tool still preserves raw benchmark and observation data, but it no longer
-elevates every derivable field into a top-level plot. In particular, the
-earlier first-job turnaround, generic duration distribution, and CV views were
-weaker decision signals than completion ratio, tail turnaround, and queue wait
-pressure, so they are no longer the default emphasis in the plot set.
+The tool preserves all raw benchmark and observation data, but the default
+plot set emphasizes the metrics that best support pass/fail decisions:
+completion ratio, tail turnaround, and queue wait pressure. Other derivable
+metrics (for example first-job turnaround, generic duration distribution, and
+coefficient-of-variation views) remain in the data and can be plotted or
+analyzed separately.
 
 ## Policy interpretation
 
