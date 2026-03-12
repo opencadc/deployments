@@ -1,8 +1,10 @@
 """Launches a job in a Kubernetes cluster."""
 
 import asyncio
+import copy
+import math
 from time import time
-from typing import Any, Awaitable, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import aiofiles
 import aiofiles.os
@@ -114,7 +116,126 @@ def clusterqueue(kueue: str) -> Optional[str]:
     return None
 
 
-async def apply(data: Dict[Any, Any], prefix: str, count: int) -> bool:
+def chunk_ranges(total: int, chunk_size: int) -> List[Tuple[int, int]]:
+    """Split total jobs into [start, end) chunks."""
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be > 0")
+    return [
+        (start, min(start + chunk_size, total))
+        for start in range(0, total, chunk_size)
+    ]
+
+
+def stress_cpu_workers(cores: float) -> int:
+    """Map requested CPU to a stress-ng worker count."""
+    return max(int(math.ceil(cores)), 1)
+
+
+def _format_cpu_quantity(cores: float) -> str:
+    """Format CPU cores into Kubernetes CPU quantity syntax."""
+    if float(cores).is_integer():
+        return str(int(cores))
+    return f"{cores:.3f}".rstrip("0").rstrip(".")
+
+
+def _contains_oomkilled(container_statuses: Any) -> bool:
+    """Return True when any container was terminated due to OOMKilled."""
+    for container in container_statuses or []:
+        state = getattr(container, "state", None)
+        terminated = getattr(state, "terminated", None)
+        reason = getattr(terminated, "reason", None)
+        if reason == "OOMKilled":
+            return True
+    return False
+
+
+def summarize_pod_statuses(pods: List[Any]) -> Dict[str, int]:
+    """Summarize phase and OOMKilled outcomes for a pod collection."""
+    summary: Dict[str, int] = {
+        "pods_total": len(pods),
+        "pods_pending": 0,
+        "pods_running": 0,
+        "pods_succeeded": 0,
+        "pods_failed": 0,
+        "pods_oomkilled": 0,
+        "pods_unknown": 0,
+    }
+    for pod in pods:
+        phase = str(getattr(pod.status, "phase", "Unknown"))
+        key = f"pods_{phase.lower()}"
+        if key in summary:
+            summary[key] += 1
+        else:
+            summary["pods_unknown"] += 1
+        if _contains_oomkilled(getattr(pod.status, "container_statuses", None)):
+            summary["pods_oomkilled"] += 1
+    return summary
+
+
+def collect_pod_outcomes(namespace: str, prefix: str) -> Dict[str, int]:
+    """Collect pod outcome summary for jobs with the given name prefix."""
+    config.load_kube_config()
+    v1 = client.CoreV1Api()
+    pods = v1.list_namespaced_pod(namespace=namespace).items
+    selected = [
+        pod
+        for pod in pods
+        if (pod.metadata and pod.metadata.name and pod.metadata.name.startswith(prefix))
+    ]
+    return summarize_pod_statuses(selected)
+
+
+def collect_job_outcomes(namespace: str, prefix: str) -> Dict[str, int]:
+    """Collect job outcome counters for jobs with the given name prefix."""
+    config.load_kube_config()
+    batch_v1 = client.BatchV1Api()
+    jobs = batch_v1.list_namespaced_job(namespace=namespace).items
+    selected = [
+        job
+        for job in jobs
+        if (job.metadata and job.metadata.name and job.metadata.name.startswith(prefix))
+    ]
+    outcomes: Dict[str, int] = {
+        "jobs_total": len(selected),
+        "jobs_succeeded": 0,
+        "jobs_failed": 0,
+        "jobs_active": 0,
+    }
+    for job in selected:
+        outcomes["jobs_succeeded"] += int(getattr(job.status, "succeeded", 0) or 0)
+        outcomes["jobs_failed"] += int(getattr(job.status, "failed", 0) or 0)
+        outcomes["jobs_active"] += int(getattr(job.status, "active", 0) or 0)
+    return outcomes
+
+
+def kueue_controller_restarts(namespace: str = "kueue-system") -> int:
+    """Return aggregate restart count of kueue-system pods."""
+    try:
+        config.load_kube_config()
+        v1 = client.CoreV1Api()
+        pods = v1.list_namespaced_pod(namespace=namespace).items
+        total = 0
+        for pod in pods:
+            for status in getattr(pod.status, "container_statuses", None) or []:
+                total += int(getattr(status, "restart_count", 0) or 0)
+        return total
+    except Exception as error:  # noqa: BLE001
+        logger.warning(
+            "Unable to sample Kueue controller restarts in namespace %s: %s",
+            namespace,
+            error,
+        )
+        return 0
+
+
+async def apply(
+    data: Dict[Any, Any],
+    prefix: str,
+    count: int,
+    chunk_size: int = 25,
+    retries: int = 2,
+    backoff_seconds: float = 2.0,
+) -> Dict[str, Any]:
     """Kubernetes job apply.
 
     Args:
@@ -122,36 +243,80 @@ async def apply(data: Dict[Any, Any], prefix: str, count: int) -> bool:
         name (str): Name of the job.
 
     """
-    async with aiofiles.tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".yaml"
-    ) as temp:
-        for num in range(count):
-            name: str = f"{prefix}-{num}"
-            data["metadata"]["name"] = name
-            for container in data["spec"]["template"]["spec"]["containers"]:
-                container["name"] = name
-            await temp.write(yaml.dump(data))
-            await temp.write("\n---\n")
-    logger.debug("Applying %s", temp.name)
     now = time()
-    try:
-        command = f"kubectl apply -f {temp.name}"
-        proc = await asyncio.create_subprocess_shell(
-            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
-        logger.debug("stdout: %s", stdout.decode())
-        if stderr:
-            logger.info("stderr: %s", stderr.decode())
-        if proc.returncode != 0:
-            logger.error("Error applying %s", temp.name)
-            return False
-        return True
-    finally:
-        logger.info("Took %ss to apply k8s manifest", time() - now)
-        await temp.close()
-        await aiofiles.os.remove(str(temp.name))
-        logger.debug("Deleted %s", temp.name)
+    report: Dict[str, Any] = {
+        "requested_jobs": count,
+        "chunk_size": chunk_size,
+        "chunks_total": 0,
+        "chunks_succeeded": 0,
+        "chunks_failed": 0,
+        "jobs_applied": 0,
+        "jobs_failed_to_apply": 0,
+        "apply_attempts": 0,
+        "apply_retries": 0,
+        "manifest_apply_seconds": 0.0,
+        "last_error": "",
+    }
+    for start, end in chunk_ranges(count, chunk_size):
+        report["chunks_total"] += 1
+        chunk_jobs = end - start
+        async with aiofiles.tempfile.NamedTemporaryFile(
+            delete=False, mode="w", suffix=".yaml"
+        ) as temp:
+            for num in range(start, end):
+                manifest = copy.deepcopy(data)
+                name: str = f"{prefix}-{num}"
+                manifest["metadata"]["name"] = name
+                for container in manifest["spec"]["template"]["spec"]["containers"]:
+                    container["name"] = name
+                await temp.write(yaml.dump(manifest))
+                await temp.write("\n---\n")
+        logger.debug("Applying %s", temp.name)
+        try:
+            applied = False
+            for attempt in range(1, retries + 2):
+                report["apply_attempts"] += 1
+                proc = await asyncio.create_subprocess_exec(
+                    "kubectl",
+                    "apply",
+                    "-f",
+                    str(temp.name),
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                stdout, stderr = await proc.communicate()
+                if stdout:
+                    logger.debug("stdout: %s", stdout.decode())
+                if stderr:
+                    logger.info("stderr: %s", stderr.decode())
+                if proc.returncode == 0:
+                    applied = True
+                    report["chunks_succeeded"] += 1
+                    report["jobs_applied"] += chunk_jobs
+                    break
+                report["last_error"] = stderr.decode().strip() or stdout.decode().strip()
+                if attempt <= retries:
+                    report["apply_retries"] += 1
+                    sleep_s = backoff_seconds * attempt
+                    logger.warning(
+                        "kubectl apply failed for %s (attempt %s/%s), retrying in %.1fs",
+                        temp.name,
+                        attempt,
+                        retries + 1,
+                        sleep_s,
+                    )
+                    await asyncio.sleep(sleep_s)
+            if not applied:
+                report["chunks_failed"] += 1
+                report["jobs_failed_to_apply"] += chunk_jobs
+                logger.error("Failed to apply manifest chunk %s", temp.name)
+        finally:
+            await temp.close()
+            await aiofiles.os.remove(str(temp.name))
+            logger.debug("Deleted %s", temp.name)
+    report["manifest_apply_seconds"] = time() - now
+    logger.info("Took %ss to apply k8s manifest", report["manifest_apply_seconds"])
+    return report
 
 
 @app.command("run")
@@ -173,19 +338,19 @@ def run(
     duration: int = (
         typer.Option(60, "-d", "--duration", help="Duration for each job in seconds.")
     ),
-    cores: int = (
+    cores: float = (
         typer.Option(
-            1, "-c", "--cores", help="Number of CPU cores to allocate to each job."
+            1.0, "-c", "--cores", help="Number of CPU cores to allocate to each job."
         )
     ),
-    ram: int = (
+    ram: float = (
         typer.Option(
-            1, "-r", "--ram", help="Amount of RAM to allocate to each job in GB."
+            1.0, "-r", "--ram", help="Amount of RAM to allocate to each job in GB."
         )
     ),
-    storage: int = (
+    storage: float = (
         typer.Option(
-            1,
+            1.0,
             "-s",
             "--storage",
             help="Amount of ephemeral-storage to allocate to each job in GB.",
@@ -199,12 +364,33 @@ def run(
             None, "-p", "--priority", help="Kueue priority to launch jobs with."
         )
     ),
-) -> None:
+    apply_chunk_size: int = (
+        typer.Option(
+            25,
+            "--apply-chunk-size",
+            help="Number of jobs per kubectl apply chunk.",
+        )
+    ),
+    apply_retries: int = (
+        typer.Option(
+            2, "--apply-retries", help="Retries per apply chunk on kubectl failures."
+        )
+    ),
+    apply_backoff: float = (
+        typer.Option(
+            2.0,
+            "--apply-backoff",
+            help="Backoff base (seconds) used between apply retries.",
+        )
+    ),
+) -> Dict[str, Any]:
     """Run jobs to stress k8s cluster."""
     ram_mb: float = ram * 1024.0
+    cpu_workers = stress_cpu_workers(cores)
+    cpu_quantity = _format_cpu_quantity(cores)
     args: List[str] = [
         "--cpu",
-        f"{cores}",
+        f"{cpu_workers}",
         "--cpu-method",
         "matrixprod",
         "--vm",
@@ -232,19 +418,26 @@ def run(
         container["args"] = args
         container["resources"] = {}
         container["resources"]["limits"] = {}
-        container["resources"]["limits"]["cpu"] = f"{cores}"
+        container["resources"]["limits"]["cpu"] = cpu_quantity
         container["resources"]["limits"]["memory"] = f"{ram_mb}Mi"
         container["resources"]["limits"]["ephemeral-storage"] = f"{storage}Gi"
         container["resources"]["requests"] = {}
-        container["resources"]["requests"]["cpu"] = f"{cores}"
+        container["resources"]["requests"]["cpu"] = cpu_quantity
         container["resources"]["requests"]["memory"] = f"{ram_mb}Mi"
         container["resources"]["requests"]["ephemeral-storage"] = f"{storage}Gi"
-
-    tasks: List[Awaitable[bool]] = []
-    tasks.append(apply(job, prefix, jobs))
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(asyncio.gather(*tasks))
+    result = loop.run_until_complete(
+        apply(
+            job,
+            prefix,
+            jobs,
+            chunk_size=apply_chunk_size,
+            retries=apply_retries,
+            backoff_seconds=apply_backoff,
+        )
+    )
+    return result
 
 
 @app.command("delete")
