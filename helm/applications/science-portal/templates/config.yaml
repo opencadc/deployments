@@ -1,0 +1,9 @@
+# Slightly different from the science-portal-config ConfigMap, which is used for the main application configuration to pass files.
+# This will be used to mount environment variables to help move away from config files for configuration.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: science-portal-env-config
+  namespace: {{ .Release.Namespace }}
+data:
+  DISCOVERY_RESOURCE_URL: {{ .Values.discovery.url | required "The discovery.url value is required." | quote }}

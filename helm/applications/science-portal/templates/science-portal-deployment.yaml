@@ -27,14 +27,16 @@ spec:
       containers:
       - image: {{ .Values.deployment.sciencePortal.image }}
         imagePullPolicy: {{ .Values.deployment.sciencePortal.imagePullPolicy }}
-        name: science-portal-tomcat
+        name: science-portal
+        {{- with .Values.deployment.sciencePortal.resources }}
         resources:
           requests:
-            memory: {{ .Values.deployment.sciencePortal.resources.requests.memory }}
-            cpu: {{ .Values.deployment.sciencePortal.resources.requests.cpu }}
+            memory: {{ .requests.memory }}
+            cpu: {{ .requests.cpu }}
           limits:
-            memory: {{ .Values.deployment.sciencePortal.resources.limits.memory }}
-            cpu: {{ .Values.deployment.sciencePortal.resources.limits.cpu }}
+            memory: {{ .limits.memory }}
+            cpu: {{ .limits.cpu }}
+        {{- end }}
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -52,6 +54,10 @@ spec:
         {{- toYaml . | nindent 10 }}
         {{- end }}
         {{- if .Values.deployment.sciencePortal.extraEnv }}
+        envFrom:
+        - configMapRef:
+            name: science-portal-env-config
+        {{- end }}
         env:
         {{- with .Values.deployment.sciencePortal.extraEnv }}
         {{- toYaml . | nindent 8 }}

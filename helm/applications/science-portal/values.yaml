@@ -25,11 +25,15 @@ podSecurityContext: {}
 # @param applicationName - The name of the application.  This will rename the underlying WAR file, thus changing the endpoint.  Defaults to science-portal.
 # applicationName: science-portal
 
+# The URL of the TAP service endpoint to use for software discovery.  This is required.
+discovery:
+  url: ""
+
 # Science Portal web service deployment
 deployment:
   hostname: example.host.com    # Change this!
   sciencePortal:
-    image: images.opencadc.org/platform/science-portal:1.3.0
+    image: images.opencadc.org/platform/science-portal:1.4.0
     imagePullPolicy: Always
 
     # org.opencadc.science-portal.tabLabels

@@ -54,38 +54,34 @@ spec:
           - name: {{ .name }}
             value: {{ .value | quote }}
           {{- end }}
+          {{- with .Values.oidc }}
           # OIDC Configuration
-          - name: NEXT_OIDC_URI
-            value: {{ .Values.oidc.uri | quote }}
           - name: NEXT_PUBLIC_OIDC_URI
-            value: {{ .Values.oidc.uri | quote }}
-          - name: NEXT_OIDC_CLIENT_ID
-            value: {{ .Values.oidc.clientId | quote }}
+            value: {{ .uri | quote }}
           - name: NEXT_PUBLIC_OIDC_CLIENT_ID
-            value: {{ .Values.oidc.clientId | quote }}
-          - name: NEXT_OIDC_CALLBACK_URI
-            value: {{ .Values.oidc.callbackUri | quote }}
+            value: {{ .clientId | quote }}
           - name: NEXT_PUBLIC_OIDC_CALLBACK_URI
-            value: {{ .Values.oidc.callbackUri | quote }}
-          - name: NEXT_OIDC_REDIRECT_URI
-            value: {{ .Values.oidc.redirectUri | quote }}
+            value: {{ .callbackUri | quote }}
           - name: NEXT_PUBLIC_OIDC_REDIRECT_URI
-            value: {{ .Values.oidc.redirectUri | quote }}
-          - name: NEXT_OIDC_SCOPE
-            value: {{ .Values.oidc.scope | quote }}
+            value: {{ .redirectUri | quote }}
           - name: NEXT_PUBLIC_OIDC_SCOPE
-            value: {{ .Values.oidc.scope | quote }}
+            value: {{ .scope | quote }}
+          {{- end }}
           # Secrets from Kubernetes Secret
+          {{- if .Values.secrets.auth }}
           - name: AUTH_SECRET
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.secrets.existingSecret }}
-                key: {{ .Values.secrets.keys.authSecret }}
+                name: {{ .Values.secrets.auth.secretName }}
+                key: {{ .Values.secrets.auth.secretKey }}
+          {{- end }}
+          {{- if .Values.secrets.oidc }}
           - name: NEXT_OIDC_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.secrets.existingSecret }}
-                key: {{ .Values.secrets.keys.oidcClientSecret }}
+                name: {{ .Values.secrets.oidc.secretName }}
+                key: {{ .Values.secrets.oidc.secretKey }}
+          {{- end }}
         {{- with .Values.volumeMounts }}
         volumeMounts:
           {{- toYaml . | nindent 12 }}
