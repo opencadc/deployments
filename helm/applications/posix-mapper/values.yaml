@@ -19,7 +19,7 @@ replicaCount: 1
 deployment:
   hostname: example.org    # Change this!
   posixMapper:
-    image: images.opencadc.org/platform/posix-mapper:0.3.2
+    image: registry.gitlab.com/ska-telescope/src/src-ugm/ska-src-ugm-posix-mapper:0.4.0
     imagePullPolicy: Always
     resourceID: ivo://opencadc.org/posix-mapper
 
