@@ -423,6 +423,7 @@ def run_benchmark_e2e(
     observe_output_subdir: str = DEFAULT_OBSERVATION_SUBDIR,
     skip_queue_apply: bool = False,
     skip_teardown: bool = False,
+    spawn_mechanism: str = "kubectl",
 ) -> Dict[str, Any]:
     """Run the internal benchmark end-to-end workflow and persist its manifest."""
     effective = run_id or default_run_id()
@@ -452,6 +453,7 @@ def run_benchmark_e2e(
             observe=observe,
             observe_interval_seconds=observe_interval_seconds,
             observe_output_subdir=observe_output_subdir,
+            spawn_mechanism=spawn_mechanism,
         ),
         collect_fn=lambda: collect_outputs(
             performance_csv=_resolve_suite_path(

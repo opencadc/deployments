@@ -3,8 +3,9 @@
 import asyncio
 import copy
 import math
+import random
 from time import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import aiofiles
 import aiofiles.os
@@ -19,6 +20,10 @@ from kueuer.utils.logging import logger
 
 app = typer.Typer(help="Launch K8s Jobs")
 DEFAULT_STRESS_VM_MEMORY_FRACTION = 0.33
+DEFAULT_SPAWN_MECHANISM = "kubectl"
+
+# Cache API connectivity mode per process.
+_API_CLIENT_READY: bool = False
 
 
 def check(namespace: str, kueue: str, priority: str) -> bool:
@@ -284,6 +289,7 @@ async def apply(
         "apply_retries": 0,
         "manifest_apply_seconds": 0.0,
         "last_error": "",
+        "spawn_mechanism": "kubectl",
     }
     for start, end in chunk_ranges(count, chunk_size):
         report["chunks_total"] += 1
@@ -291,12 +297,7 @@ async def apply(
         async with aiofiles.tempfile.NamedTemporaryFile(
             delete=False, mode="w", suffix=".yaml"
         ) as temp:
-            for num in range(start, end):
-                manifest = copy.deepcopy(data)
-                name: str = f"{prefix}-{num}"
-                manifest["metadata"]["name"] = name
-                for container in manifest["spec"]["template"]["spec"]["containers"]:
-                    container["name"] = name
+            for manifest in render_job_manifests(data, prefix, start, end):
                 await temp.write(yaml.dump(manifest))
                 await temp.write("\n---\n")
         logger.debug("Applying %s", temp.name)
@@ -345,6 +346,199 @@ async def apply(
     report["manifest_apply_seconds"] = time() - now
     logger.info("Took %ss to apply k8s manifest", report["manifest_apply_seconds"])
     return report
+
+
+def render_job_manifest(
+    template: Dict[Any, Any],
+    name: str,
+) -> Dict[Any, Any]:
+    """Return a deep-copied job manifest with name and container names set."""
+    manifest = copy.deepcopy(template)
+    manifest["metadata"]["name"] = name
+    for container in manifest["spec"]["template"]["spec"]["containers"]:
+        container["name"] = name
+    return manifest
+
+
+def render_job_manifests(
+    template: Dict[Any, Any],
+    prefix: str,
+    start: int,
+    end: int,
+) -> List[Dict[Any, Any]]:
+    """Render job manifests for indices in [start, end)."""
+    return [render_job_manifest(template, f"{prefix}-{num}") for num in range(start, end)]
+
+
+def _is_transient_api_error(error: ApiException) -> bool:
+    try:
+        status = int(getattr(error, "status", 0) or 0)
+    except Exception:  # noqa: BLE001
+        return False
+    return status in {429, 500, 502, 503, 504}
+
+
+def _api_preflight_check(namespace: str) -> None:
+    """Perform a lightweight namespace-scoped API check."""
+    v1 = client.CoreV1Api()
+    # Prefer a namespaced call to ensure auth scopes match workload permissions.
+    v1.list_namespaced_pod(namespace=namespace, limit=1)  # type: ignore[arg-type]
+
+
+def ensure_api_client_ready(namespace: str) -> None:
+    """Ensure Kubernetes Python client is configured (kubeconfig or incluster)."""
+    global _API_CLIENT_READY
+    if _API_CLIENT_READY:
+        return
+
+    errors: List[str] = []
+    try:
+        config.load_kube_config()
+        _api_preflight_check(namespace)
+        _API_CLIENT_READY = True
+        logger.info("Kubernetes API client configured using kubeconfig.")
+        return
+    except Exception as error:  # noqa: BLE001
+        errors.append(f"kubeconfig: {error}")
+
+    try:
+        config.load_incluster_config()
+        _api_preflight_check(namespace)
+        _API_CLIENT_READY = True
+        logger.info("Kubernetes API client configured using in-cluster service account.")
+        return
+    except Exception as error:  # noqa: BLE001
+        errors.append(f"incluster: {error}")
+
+    msg = "Unable to configure Kubernetes API client. " + "; ".join(errors)
+    raise RuntimeError(msg)
+
+
+async def _create_job_with_retries(
+    batch: client.BatchV1Api,
+    namespace: str,
+    manifest: Dict[Any, Any],
+    retries: int,
+    backoff_seconds: float,
+) -> Tuple[bool, str]:
+    """Create a job with transient retries. Returns (ok, error_message)."""
+    name = str(manifest.get("metadata", {}).get("name", ""))
+    for attempt in range(1, retries + 2):
+        try:
+            batch.create_namespaced_job(namespace=namespace, body=manifest)  # type: ignore[arg-type]
+            return True, ""
+        except ApiException as error:
+            if getattr(error, "status", None) == 409:
+                # Create-only semantics: treat existing job as a failure.
+                return False, f"{name}: already exists (409)"
+            if not _is_transient_api_error(error) or attempt > retries:
+                return False, f"{name}: {error}"
+            sleep_s = backoff_seconds * attempt
+            # Add jitter to avoid thundering herd.
+            sleep_s *= 0.8 + (0.4 * random.random())
+            await asyncio.sleep(sleep_s)
+        except Exception as error:  # noqa: BLE001
+            if attempt > retries:
+                return False, f"{name}: {error}"
+            sleep_s = backoff_seconds * attempt
+            sleep_s *= 0.8 + (0.4 * random.random())
+            await asyncio.sleep(sleep_s)
+    return False, f"{name}: unknown failure"
+
+
+async def apply_api(
+    data: Dict[Any, Any],
+    prefix: str,
+    count: int,
+    chunk_size: int = 25,
+    retries: int = 2,
+    backoff_seconds: float = 2.0,
+    api_concurrency: int = 10,
+    namespace: str = "default",
+) -> Dict[str, Any]:
+    """Create Kubernetes Jobs using the Python API client."""
+    ensure_api_client_ready(namespace=namespace)
+    batch = client.BatchV1Api()
+    semaphore = asyncio.Semaphore(max(int(api_concurrency), 1))
+
+    now = time()
+    report: Dict[str, Any] = {
+        "requested_jobs": count,
+        "chunk_size": chunk_size,
+        "chunks_total": 0,
+        "chunks_succeeded": 0,
+        "chunks_failed": 0,
+        "jobs_applied": 0,
+        "jobs_failed_to_apply": 0,
+        "apply_attempts": 0,
+        "apply_retries": 0,
+        "manifest_apply_seconds": 0.0,
+        "last_error": "",
+        "spawn_mechanism": "api",
+        "api_concurrency": api_concurrency,
+    }
+
+    async def _guarded_create(manifest: Dict[Any, Any]) -> Tuple[bool, str]:
+        async with semaphore:
+            ok, err = await _create_job_with_retries(
+                batch=batch,
+                namespace=namespace,
+                manifest=manifest,
+                retries=retries,
+                backoff_seconds=backoff_seconds,
+            )
+            report["apply_attempts"] += 1
+            if not ok and err:
+                report["last_error"] = err
+            return ok, err
+
+    for start, end in chunk_ranges(count, chunk_size):
+        report["chunks_total"] += 1
+        manifests = render_job_manifests(data, prefix, start, end)
+        results = await asyncio.gather(*[_guarded_create(m) for m in manifests])
+        failures = [err for ok, err in results if not ok]
+        if failures:
+            report["chunks_failed"] += 1
+            report["jobs_failed_to_apply"] += len(failures)
+            report["last_error"] = failures[0]
+        else:
+            report["chunks_succeeded"] += 1
+            report["jobs_applied"] += len(results)
+
+    report["manifest_apply_seconds"] = time() - now
+    logger.info("Took %ss to submit jobs via API", report["manifest_apply_seconds"])
+    return report
+
+
+async def submit_jobs(
+    template: Dict[Any, Any],
+    prefix: str,
+    jobs: int,
+    spawn_mechanism: str,
+    namespace: str,
+    apply_chunk_size: int,
+    apply_retries: int,
+    apply_backoff: float,
+) -> Dict[str, Any]:
+    """Submit rendered jobs using the selected spawn mechanism."""
+    if spawn_mechanism == "api":
+        return await apply_api(
+            template,
+            prefix,
+            jobs,
+            chunk_size=apply_chunk_size,
+            retries=apply_retries,
+            backoff_seconds=apply_backoff,
+            namespace=namespace,
+        )
+    return await apply(
+        template,
+        prefix,
+        jobs,
+        chunk_size=apply_chunk_size,
+        retries=apply_retries,
+        backoff_seconds=apply_backoff,
+    )
 
 
 @app.command("run")
@@ -423,6 +617,13 @@ def run(
             ),
         )
     ),
+    spawn_mechanism: str = (
+        typer.Option(
+            DEFAULT_SPAWN_MECHANISM,
+            "--spawn-mechanism",
+            help="Job spawn mechanism to use: kubectl (apply) or api (client create).",
+        )
+    ),
 ) -> Dict[str, Any]:
     """Run jobs to stress k8s cluster."""
     ram_mb: float = ram * 1024.0
@@ -480,13 +681,15 @@ def run(
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     result = loop.run_until_complete(
-        apply(
-            job,
-            prefix,
-            jobs,
-            chunk_size=apply_chunk_size,
-            retries=apply_retries,
-            backoff_seconds=apply_backoff,
+        submit_jobs(
+            template=job,
+            prefix=prefix,
+            jobs=jobs,
+            spawn_mechanism=spawn_mechanism,
+            namespace=namespace,
+            apply_chunk_size=apply_chunk_size,
+            apply_retries=apply_retries,
+            apply_backoff=apply_backoff,
         )
     )
     return result
