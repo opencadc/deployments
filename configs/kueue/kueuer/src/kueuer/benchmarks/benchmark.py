@@ -261,6 +261,7 @@ def experiment(
     apply_chunk_size: int = 25,
     apply_retries: int = 2,
     apply_backoff: float = 2.0,
+    vm_memory_fraction: float = k8s.DEFAULT_STRESS_VM_MEMORY_FRACTION,
 ) -> Dict[str, Any]:
     """Run a single experiment with the specified configuration.
 
@@ -314,6 +315,7 @@ def experiment(
         apply_chunk_size=apply_chunk_size,
         apply_retries=apply_retries,
         apply_backoff=apply_backoff,
+        vm_memory_fraction=vm_memory_fraction,
     )
 
     # Track jobs to completion and get timing statistics
@@ -395,6 +397,7 @@ def benchmark(
     apply_chunk_size: int,
     apply_retries: int,
     apply_backoff: float,
+    vm_memory_fraction: float,
 ) -> List[Dict[str, Any]]:
     """
     Run a complete benchmark comparing direct Kubernetes jobs vs Kueue jobs.
@@ -434,6 +437,7 @@ def benchmark(
             apply_chunk_size=apply_chunk_size,
             apply_retries=apply_retries,
             apply_backoff=apply_backoff,
+            vm_memory_fraction=vm_memory_fraction,
         )
         results.append(result)
 
@@ -459,6 +463,7 @@ def benchmark(
             apply_chunk_size=apply_chunk_size,
             apply_retries=apply_retries,
             apply_backoff=apply_backoff,
+            vm_memory_fraction=vm_memory_fraction,
         )
         results.append(kueue_result)
 
@@ -566,6 +571,16 @@ def performance(
         "--apply-backoff",
         help="Backoff base (seconds) between apply retries.",
     ),
+    vm_memory_fraction: float = typer.Option(
+        k8s.DEFAULT_STRESS_VM_MEMORY_FRACTION,
+        "--vm-memory-fraction",
+        min=0.1,
+        max=0.95,
+        help=(
+            "Fraction of per-job memory assigned to stress-ng --vm-bytes. "
+            "Lower values reduce OOM risk."
+        ),
+    ),
 ):
     """Compare native K8s job scheduling vs. Kueue."""
     profile = _normalize_profile_name(profile)
@@ -625,6 +640,7 @@ def performance(
         apply_retries,
         apply_backoff,
     )
+    logger.info("VM Frac  : %s", vm_memory_fraction)
 
     if not k8s.check(namespace, kueue, priority):
         logger.error("Please check your Kueue configuration.")
@@ -645,6 +661,7 @@ def performance(
         apply_chunk_size=apply_chunk_size,
         apply_retries=apply_retries,
         apply_backoff=apply_backoff,
+        vm_memory_fraction=vm_memory_fraction,
     )
     logger.info("Benchmark completed successfully.")
     logger.info("Results saved to %s", output)
