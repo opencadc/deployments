@@ -18,6 +18,7 @@ from kueuer.utils import io
 from kueuer.utils.logging import logger
 
 app = typer.Typer(help="Launch K8s Jobs")
+DEFAULT_STRESS_VM_MEMORY_FRACTION = 0.33
 
 
 def check(namespace: str, kueue: str, priority: str) -> bool:
@@ -129,6 +130,33 @@ def chunk_ranges(total: int, chunk_size: int) -> List[Tuple[int, int]]:
 def stress_cpu_workers(cores: float) -> int:
     """Map requested CPU to a stress-ng worker count."""
     return max(int(math.ceil(cores)), 1)
+
+
+def stress_vm_bytes_mb(ram_gb: float, vm_memory_fraction: float) -> float:
+    """Return stress-ng vm-bytes value in megabytes.
+
+    Args:
+        ram_gb: Pod memory limit/request in GiB.
+        vm_memory_fraction: Fraction of pod memory allocated to stress-ng vm worker.
+
+    Returns:
+        float: vm-bytes value in MB.
+    """
+    if not 0.0 < vm_memory_fraction < 1.0:
+        raise ValueError("vm_memory_fraction must be between 0 and 1 (exclusive)")
+    ram_mb = ram_gb * 1024.0
+    return ram_mb * vm_memory_fraction
+
+
+def is_high_oom_risk(ram_gb: float, vm_memory_fraction: float) -> bool:
+    """Heuristic for tight memory headroom likely to trigger OOM.
+
+    This warns when stress-ng memory pressure leaves too little room for process/runtime
+    overhead under pod cgroup limits.
+    """
+    vm_bytes_mb = stress_vm_bytes_mb(ram_gb=ram_gb, vm_memory_fraction=vm_memory_fraction)
+    # For small pods, keep additional safety headroom to avoid allocator/runtime spikes.
+    return vm_memory_fraction >= 0.75 or (ram_gb <= 1.0 and vm_bytes_mb >= 600.0)
 
 
 def _format_cpu_quantity(cores: float) -> str:
@@ -383,10 +411,26 @@ def run(
             help="Backoff base (seconds) used between apply retries.",
         )
     ),
+    vm_memory_fraction: float = (
+        typer.Option(
+            DEFAULT_STRESS_VM_MEMORY_FRACTION,
+            "--vm-memory-fraction",
+            min=0.1,
+            max=0.95,
+            help=(
+                "Fraction of pod memory assigned to stress-ng --vm-bytes. "
+                "Lower values leave more headroom and reduce OOM risk."
+            ),
+        )
+    ),
 ) -> Dict[str, Any]:
     """Run jobs to stress k8s cluster."""
     ram_mb: float = ram * 1024.0
     cpu_workers = stress_cpu_workers(cores)
+    vm_bytes_mb = stress_vm_bytes_mb(
+        ram_gb=ram,
+        vm_memory_fraction=vm_memory_fraction,
+    )
     cpu_quantity = _format_cpu_quantity(cores)
     args: List[str] = [
         "--cpu",
@@ -396,13 +440,21 @@ def run(
         "--vm",
         "1",
         "--vm-bytes",
-        f"{ram_mb * 0.8}M",
+        f"{vm_bytes_mb}M",
         "--temp-path",
         "/tmp",
         "--timeout",
         f"{duration}",
         "--metrics-brief",
     ]
+    if is_high_oom_risk(ram_gb=ram, vm_memory_fraction=vm_memory_fraction):
+        logger.warning(
+            "High OOM risk: ram=%sGi, vm-memory-fraction=%s (vm-bytes=%sM). "
+            "Consider reducing --vm-memory-fraction.",
+            ram,
+            vm_memory_fraction,
+            f"{vm_bytes_mb:.1f}",
+        )
     job = io.read_yaml(filepath)
 
     # Write common job parameters
