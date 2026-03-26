@@ -128,6 +128,9 @@ def run_cluster_preflight(
         *kueue_report.get("errors", []),
         *queue_report.get("errors", []),
     ]
+    warnings = [
+        *access_report.get("warnings", []),
+    ]
     remediation = [
         *kueue_report.get("remediation", []),
         *queue_report.get("manual_commands", []),
@@ -135,6 +138,7 @@ def run_cluster_preflight(
     return {
         "ok": access_report["ok"] and kueue_report["ok"] and queue_report["ok"],
         "errors": errors,
+        "warnings": warnings,
         "remediation": remediation,
         "checks": {
             "access": access_report.get("checks", {}),
@@ -190,9 +194,15 @@ def print_preflight_report(report: Dict[str, Any]) -> None:
     typer.echo("Access checks:")
     typer.echo(f"  - kubectl installed: {'yes' if access.get('binary:kubectl') else 'no'}")
     typer.echo(f"  - current context readable: {'yes' if access.get('context') else 'no'}")
-    typer.echo(f"  - cluster reachable: {'yes' if access.get('cluster-info') else 'no'}")
+    typer.echo(
+        f"  - workload namespace exists: {'yes' if access.get('namespace-exists') else 'no'}"
+    )
     typer.echo(
         f"  - can create jobs: {'yes' if access.get('can-create-jobs') else 'no'}"
+    )
+    typer.echo(
+        "  - cluster-info (kubectl -n <workload-ns>): "
+        f"{'yes' if access.get('cluster-info') else 'no'}"
     )
 
     kueue = report.get("checks", {}).get("kueue", {})
@@ -214,6 +224,10 @@ def print_preflight_report(report: Dict[str, Any]) -> None:
     _echo_list("LocalQueues", list(inventory.get("localqueues", [])))
     _echo_list("PriorityClasses", list(inventory.get("workloadpriorityclasses", [])))
 
+    if report.get("warnings"):
+        typer.echo("Warnings:")
+        for item in report["warnings"]:
+            typer.echo(f"  - {item}")
     if report.get("errors"):
         typer.echo("Errors:")
         for error in report["errors"]:
