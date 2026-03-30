@@ -134,4 +134,3 @@ def test_create_job_with_retries_retries_transient_errors(monkeypatch, status: i
     assert ok is True
     assert err == ""
     assert attempts["count"] == 2
-

@@ -205,11 +205,38 @@ def summarize_pod_statuses(pods: List[Any]) -> Dict[str, int]:
     return summary
 
 
+def _load_client_config_best_effort() -> bool:
+    """Try kubeconfig first, then in-cluster config."""
+    try:
+        config.load_kube_config()
+        return True
+    except Exception:  # noqa: BLE001
+        try:
+            config.load_incluster_config()
+            return True
+        except Exception:  # noqa: BLE001
+            return False
+
+
 def collect_pod_outcomes(namespace: str, prefix: str) -> Dict[str, int]:
     """Collect pod outcome summary for jobs with the given name prefix."""
-    config.load_kube_config()
+    empty = summarize_pod_statuses([])
+    if not _load_client_config_best_effort():
+        logger.warning("Unable to configure Kubernetes client while collecting pod outcomes.")
+        return empty
+
     v1 = client.CoreV1Api()
-    pods = v1.list_namespaced_pod(namespace=namespace).items
+    try:
+        pod_list = v1.list_namespaced_pod(namespace=namespace)
+        pods = list(getattr(pod_list, "items", None) or [])
+    except Exception as error:  # noqa: BLE001
+        logger.warning(
+            "Unable to collect pod outcomes in namespace %s: %s",
+            namespace,
+            error,
+        )
+        return empty
+
     selected = [
         pod
         for pod in pods
@@ -220,20 +247,34 @@ def collect_pod_outcomes(namespace: str, prefix: str) -> Dict[str, int]:
 
 def collect_job_outcomes(namespace: str, prefix: str) -> Dict[str, int]:
     """Collect job outcome counters for jobs with the given name prefix."""
-    config.load_kube_config()
+    empty: Dict[str, int] = {
+        "jobs_total": 0,
+        "jobs_succeeded": 0,
+        "jobs_failed": 0,
+        "jobs_active": 0,
+    }
+    if not _load_client_config_best_effort():
+        logger.warning("Unable to configure Kubernetes client while collecting job outcomes.")
+        return empty
+
     batch_v1 = client.BatchV1Api()
-    jobs = batch_v1.list_namespaced_job(namespace=namespace).items
+    try:
+        job_list = batch_v1.list_namespaced_job(namespace=namespace)
+        jobs = list(getattr(job_list, "items", None) or [])
+    except Exception as error:  # noqa: BLE001
+        logger.warning(
+            "Unable to collect job outcomes in namespace %s: %s",
+            namespace,
+            error,
+        )
+        return empty
+
     selected = [
         job
         for job in jobs
         if (job.metadata and job.metadata.name and job.metadata.name.startswith(prefix))
     ]
-    outcomes: Dict[str, int] = {
-        "jobs_total": len(selected),
-        "jobs_succeeded": 0,
-        "jobs_failed": 0,
-        "jobs_active": 0,
-    }
+    outcomes = {**empty, "jobs_total": len(selected)}
     for job in selected:
         outcomes["jobs_succeeded"] += int(getattr(job.status, "succeeded", 0) or 0)
         outcomes["jobs_failed"] += int(getattr(job.status, "failed", 0) or 0)
@@ -244,9 +285,11 @@ def collect_job_outcomes(namespace: str, prefix: str) -> Dict[str, int]:
 def kueue_controller_restarts(namespace: str = "kueue-system") -> int:
     """Return aggregate restart count of kueue-system pods."""
     try:
-        config.load_kube_config()
+        if not _load_client_config_best_effort():
+            raise RuntimeError("unable to configure kubernetes client")
         v1 = client.CoreV1Api()
-        pods = v1.list_namespaced_pod(namespace=namespace).items
+        pod_list = v1.list_namespaced_pod(namespace=namespace)
+        pods = list(getattr(pod_list, "items", None) or [])
         total = 0
         for pod in pods:
             for status in getattr(pod.status, "container_statuses", None) or []:
@@ -288,10 +331,12 @@ async def apply(
         "apply_attempts": 0,
         "apply_retries": 0,
         "manifest_apply_seconds": 0.0,
+        "chunk_spawn_seconds": [],
         "last_error": "",
         "spawn_mechanism": "kubectl",
     }
     for start, end in chunk_ranges(count, chunk_size):
+        chunk_start = time()
         report["chunks_total"] += 1
         chunk_jobs = end - start
         async with aiofiles.tempfile.NamedTemporaryFile(
@@ -343,6 +388,7 @@ async def apply(
             await temp.close()
             await aiofiles.os.remove(str(temp.name))
             logger.debug("Deleted %s", temp.name)
+        report["chunk_spawn_seconds"].append(time() - chunk_start)
     report["manifest_apply_seconds"] = time() - now
     logger.info("Took %ss to apply k8s manifest", report["manifest_apply_seconds"])
     return report
@@ -473,6 +519,7 @@ async def apply_api(
         "apply_attempts": 0,
         "apply_retries": 0,
         "manifest_apply_seconds": 0.0,
+        "chunk_spawn_seconds": [],
         "last_error": "",
         "spawn_mechanism": "api",
         "api_concurrency": api_concurrency,
@@ -493,6 +540,7 @@ async def apply_api(
             return ok, err
 
     for start, end in chunk_ranges(count, chunk_size):
+        chunk_start = time()
         report["chunks_total"] += 1
         manifests = render_job_manifests(data, prefix, start, end)
         results = await asyncio.gather(*[_guarded_create(m) for m in manifests])
@@ -504,6 +552,7 @@ async def apply_api(
         else:
             report["chunks_succeeded"] += 1
             report["jobs_applied"] += len(results)
+        report["chunk_spawn_seconds"].append(time() - chunk_start)
 
     report["manifest_apply_seconds"] = time() - now
     logger.info("Took %ss to submit jobs via API", report["manifest_apply_seconds"])

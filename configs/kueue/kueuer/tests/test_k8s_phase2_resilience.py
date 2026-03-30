@@ -56,12 +56,45 @@ def test_kueue_controller_restarts_handles_api_errors(monkeypatch) -> None:
     assert k8s.kueue_controller_restarts() == 0
 
 
+def test_collect_pod_outcomes_handles_malformed_pod_list(monkeypatch) -> None:
+    monkeypatch.setattr(k8s.config, "load_kube_config", lambda: None)
+
+    class FakeCoreV1Api:
+        def list_namespaced_pod(self, namespace):
+            raise ValueError("Invalid value for `items`, must not be `None`")
+
+    monkeypatch.setattr(k8s.client, "CoreV1Api", FakeCoreV1Api)
+
+    summary = k8s.collect_pod_outcomes(namespace="default", prefix="bench")
+    assert summary["pods_total"] == 0
+    assert summary["pods_failed"] == 0
+    assert summary["pods_oomkilled"] == 0
+
+
+def test_collect_job_outcomes_handles_malformed_job_list(monkeypatch) -> None:
+    monkeypatch.setattr(k8s.config, "load_kube_config", lambda: None)
+
+    class FakeBatchV1Api:
+        def list_namespaced_job(self, namespace):
+            raise ValueError("Invalid value for `items`, must not be `None`")
+
+    monkeypatch.setattr(k8s.client, "BatchV1Api", FakeBatchV1Api)
+
+    outcomes = k8s.collect_job_outcomes(namespace="default", prefix="bench")
+    assert outcomes == {
+        "jobs_total": 0,
+        "jobs_succeeded": 0,
+        "jobs_failed": 0,
+        "jobs_active": 0,
+    }
+
+
 def test_stress_vm_bytes_mb_uses_safer_default_fraction() -> None:
-    assert k8s.DEFAULT_STRESS_VM_MEMORY_FRACTION == 0.4
+    assert k8s.DEFAULT_STRESS_VM_MEMORY_FRACTION == 0.33
     assert k8s.stress_vm_bytes_mb(
         ram_gb=1.0,
         vm_memory_fraction=k8s.DEFAULT_STRESS_VM_MEMORY_FRACTION,
-    ) == pytest.approx(409.6)
+    ) == pytest.approx(337.92)
 
 
 def test_stress_vm_bytes_mb_validates_fraction_bounds() -> None:

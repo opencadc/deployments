@@ -24,6 +24,20 @@ def test_compute_latency_adds_turnaround_columns() -> None:
     assert out["completion_latency"].iloc[0] == 5.0
 
 
+def test_format_job_count_k_compact_labels() -> None:
+    assert plot_module._format_job_count_k(500) == "500"
+    assert plot_module._format_job_count_k(1000) == "1k"
+    assert plot_module._format_job_count_k(3500) == "3.5k"
+    assert plot_module._format_job_count_k(10000) == "10k"
+
+
+def test_parse_chunk_spawn_seconds_accepts_json_and_list() -> None:
+    assert plot_module._parse_chunk_spawn_seconds("[1.0, 2.5]") == [1.0, 2.5]
+    assert plot_module._parse_chunk_spawn_seconds([3.0, 4.0]) == [3.0, 4.0]
+    assert plot_module._parse_chunk_spawn_seconds("") == []
+    assert plot_module._parse_chunk_spawn_seconds(None) == []
+
+
 def test_compute_completion_ratio_defaults_to_one_without_tracking_columns() -> None:
     df = pd.DataFrame(
         {
@@ -52,6 +66,8 @@ def test_performance_command_writes_plot_files(tmp_path, monkeypatch) -> None:
             "median_time_from_creation_completion": [3.0, 2.5],
             "std_dev_time_from_creation_completion": [0.2, 0.3],
             "job_duration": [1, 1],
+            "submission_manifest_apply_seconds": [1.5, 1.7],
+            "submission_chunk_spawn_seconds": ["[0.7, 0.8]", "[0.85, 0.85]"],
         }
     ).to_csv(csv_path, index=False)
 
@@ -64,6 +80,7 @@ def test_performance_command_writes_plot_files(tmp_path, monkeypatch) -> None:
 
     expected = [
         "performance_overview.png",
+        "spawn_time_by_job_count.png",
         "throughput_by_job_count.png",
         "completion_ratio_by_job_count.png",
         "tail_turnaround_by_job_count.png",
