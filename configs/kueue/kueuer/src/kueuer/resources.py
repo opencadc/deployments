@@ -11,8 +11,12 @@
 Totals cluster resources across Kubernetes nodes filtered by name regex.
 
 - Deduplicates nodes by UID (so overlapping regex lists don't double count).
-- By default totals from node .status.capacity; use --field allocatable to sum .status.allocatable instead.
-- Returns a mapping: dict[str, dict[str, str]] with { "value": <string>, "unit": <string> }.
+- By default totals from node .status.capacity; use --field allocatable to sum
+  .status.allocatable instead.
+- Returns a mapping: ``cpu`` uses ``{ "value", "unit": "cores" }``; ``memory`` and
+  ``ephemeral-storage`` use values in **Gi** (1024³ bytes) with ``unit: "Gi"``.
+- For ``nvidia.com/gpu`` and ``amd.com/gpu``: ``{ "kind", "value", "unit": "count" }``
+  where ``kind`` comes from node labels (e.g. ``nvidia.com/gpu.product``).
 - If a resource does not exist on any matched node, it is **omitted**.
 
 Examples:
@@ -27,10 +31,9 @@ import re
 import sys
 from dataclasses import dataclass
 from decimal import Decimal, getcontext
-from typing import Annotated, Dict, Iterable, List, Optional, Sequence
+from typing import Annotated, Any, Dict, Iterable, List, Optional, Sequence, Union, cast
 
 import typer
-from kubernetes import client, config
 from kubernetes.client import CoreV1Api, V1Node
 from kubernetes.utils.quantity import parse_quantity
 from pydantic import BaseModel, Field, RootModel, ValidationError, field_validator
@@ -60,7 +63,21 @@ class ResourceItem(BaseModel):
     )
 
 
-class ResourceMap(RootModel[Dict[str, ResourceItem]]):
+class GpuResourceItem(BaseModel):
+    """Cluster totals for a GPU resource."""
+
+    kind: str = Field(
+        ...,
+        description=(
+            "Product name if the cluster uses a single model; empty if unknown; "
+            "'mixed' if multiple models."
+        ),
+    )
+    value: str = Field(..., description="Total GPU count.")
+    unit: Literal["count"] = "count"
+
+
+class ResourceMap(RootModel[Dict[str, Union[ResourceItem, GpuResourceItem]]]):
     """Dynamic resource map so unavailable resources can be omitted."""
 
 
@@ -92,6 +109,8 @@ class TotalsAcc:
     ephemeral_bytes: Optional[int]
     nvidia_gpu: Optional[int]
     amd_gpu: Optional[int]
+    nvidia_by_kind: Optional[Dict[str, int]]
+    amd_by_kind: Optional[Dict[str, int]]
 
 
 # =========================
@@ -130,6 +149,53 @@ def _collect_nodes(v1: CoreV1Api, patterns: Optional[Sequence[str]]) -> List[V1N
             uid = n.metadata.uid or name  # Fallback to name if UID missing
             dedup[uid] = n
     return list(dedup.values())
+
+
+def _nvidia_gpu_kind_from_labels(labels: Dict[str, str]) -> str:
+    """Resolve GPU product name from common NVIDIA node labels."""
+    for key in (
+        "nvidia.com/gpu.product",
+        "nvidia.com/gfd.gpu.product",
+    ):
+        v = labels.get(key)
+        if v:
+            return str(v).strip()
+    return ""
+
+
+def _amd_gpu_kind_from_labels(labels: Dict[str, str]) -> str:
+    """Resolve GPU product name from common AMD node labels."""
+    for key in (
+        "amd.com/gpu.product",
+        "amd.com/gpu.family",
+    ):
+        v = labels.get(key)
+        if v:
+            return str(v).strip()
+    return ""
+
+
+def _summary_gpu_kind(by_kind: Dict[str, int]) -> str:
+    """Single model name, empty if unknown, or 'mixed' if multiple distinct models."""
+    active = {k: v for k, v in by_kind.items() if v > 0}
+    if not active:
+        return ""
+    distinct_nonempty = {k for k in active if k}
+    if not distinct_nonempty:
+        return ""
+    if len(distinct_nonempty) == 1:
+        return next(iter(distinct_nonempty))
+    return "mixed"
+
+
+def _bytes_to_gi_str(total_bytes: int) -> str:
+    """Convert a byte total to a decimal string in Gi (1 Gi = 1024³ bytes)."""
+    # Use integer 1024**3 so the divisor is exact (Decimal(1024)**3 can round).
+    gi = Decimal(total_bytes) / Decimal(1024**3)
+    s = format(gi, "f")
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+    return s
 
 
 def _get_field_map(node: V1Node, field: str) -> Dict[str, str]:
@@ -193,11 +259,14 @@ def _sum_resources(nodes: List[V1Node], field: str) -> TotalsAcc:
     eph_vals: List[str] = []
     nvidia_vals: List[str] = []
     amd_vals: List[str] = []
+    nvidia_by_kind: Dict[str, int] = {}
+    amd_by_kind: Dict[str, int] = {}
 
     for n in nodes:
         m = _get_field_map(n, field)
         if not m:
             continue
+        labels = (n.metadata.labels or {}) if n.metadata else {}
         if "cpu" in m:
             cpu_vals.append(m["cpu"])
         if "memory" in m:
@@ -206,8 +275,16 @@ def _sum_resources(nodes: List[V1Node], field: str) -> TotalsAcc:
             eph_vals.append(m["ephemeral-storage"])
         if "nvidia.com/gpu" in m:
             nvidia_vals.append(m["nvidia.com/gpu"])
+            nk = _nvidia_gpu_kind_from_labels(labels)
+            nvidia_by_kind[nk] = nvidia_by_kind.get(nk, 0) + int(
+                parse_quantity(m["nvidia.com/gpu"])
+            )
         if "amd.com/gpu" in m:
             amd_vals.append(m["amd.com/gpu"])
+            ak = _amd_gpu_kind_from_labels(labels)
+            amd_by_kind[ak] = amd_by_kind.get(ak, 0) + int(
+                parse_quantity(m["amd.com/gpu"])
+            )
 
     # Convert lists → optional totals (None means "omit key")
     def _try_sum(dec_sum_fn, vals):
@@ -228,6 +305,8 @@ def _sum_resources(nodes: List[V1Node], field: str) -> TotalsAcc:
         ephemeral_bytes=int(eph_total) if eph_total is not None else None,
         nvidia_gpu=nvidia_total,
         amd_gpu=amd_total,
+        nvidia_by_kind=nvidia_by_kind if nvidia_total is not None else None,
+        amd_by_kind=amd_by_kind if amd_total is not None else None,
     )
 
 
@@ -238,21 +317,27 @@ def _sum_resources(nodes: List[V1Node], field: str) -> TotalsAcc:
 
 def total(
     patterns: Optional[List[str]] = None, field: str = "capacity"
-) -> Dict[str, Dict[str, str]]:
+) -> Dict[str, Any]:
     """
-    Calculate total cluster resources across nodes matching any of the given regex patterns.
+    Calculate total cluster resources across nodes matching regex patterns.
 
     Args:
-        patterns: List of regex strings to match node names. If None or empty, includes all nodes.
-        field:    Which field to sum: "capacity" (default) or "allocatable".
+        patterns: Regex strings for node names. If None or empty, includes all nodes.
+        field: Which field to sum: "capacity" (default) or "allocatable".
 
     Returns:
-        dict[str, dict[str, str]] mapping resource name -> {"value": <str>, "unit": <str>}
-        Only includes resources that exist on at least one matched node.
+        Mapping of resource name to detail dicts. Memory and ephemeral-storage use
+        Gi and ``unit`` ``\"Gi\"``. GPU entries include ``kind``, ``value``, and
+        ``unit`` ``\"count\"``. Only includes resources present on at least one node.
     """
     # Validate inputs with Pydantic
+    if field not in ("capacity", "allocatable"):
+        raise ValueError('field must be "capacity" or "allocatable"')
     try:
-        cfg = Settings(patterns=patterns, field=field)
+        cfg = Settings(
+            patterns=patterns,
+            field=cast(Literal["capacity", "allocatable"], field),
+        )
     except ValidationError as e:
         raise ValueError(str(e)) from e
 
@@ -261,20 +346,30 @@ def total(
     acc = _sum_resources(nodes, cfg.field)
 
     # Build a dynamic map (omit unavailable resources)
-    result: Dict[str, ResourceItem] = {}
+    result: Dict[str, Union[ResourceItem, GpuResourceItem]] = {}
 
     if acc.cpu_cores is not None:
         result["cpu"] = ResourceItem(value=f"{acc.cpu_cores}", unit="cores")
     if acc.memory_bytes is not None:
-        result["memory"] = ResourceItem(value=f"{acc.memory_bytes}", unit="bytes")
+        result["memory"] = ResourceItem(
+            value=_bytes_to_gi_str(acc.memory_bytes),
+            unit="Gi",
+        )
     if acc.ephemeral_bytes is not None:
         result["ephemeral-storage"] = ResourceItem(
-            value=f"{acc.ephemeral_bytes}", unit="bytes"
+            value=_bytes_to_gi_str(acc.ephemeral_bytes),
+            unit="Gi",
         )
-    if acc.nvidia_gpu is not None:
-        result["nvidia.com/gpu"] = ResourceItem(value=f"{acc.nvidia_gpu}", unit="count")
-    if acc.amd_gpu is not None:
-        result["amd.com/gpu"] = ResourceItem(value=f"{acc.amd_gpu}", unit="count")
+    if acc.nvidia_gpu is not None and acc.nvidia_by_kind is not None:
+        result["nvidia.com/gpu"] = GpuResourceItem(
+            kind=_summary_gpu_kind(acc.nvidia_by_kind),
+            value=str(acc.nvidia_gpu),
+        )
+    if acc.amd_gpu is not None and acc.amd_by_kind is not None:
+        result["amd.com/gpu"] = GpuResourceItem(
+            kind=_summary_gpu_kind(acc.amd_by_kind),
+            value=str(acc.amd_gpu),
+        )
 
     # Validate and dump with Pydantic
     return ResourceMap(result).model_dump()
@@ -327,7 +422,6 @@ def resources(
         if scale != 1.0:
             console.print(f"Scaling by {scale * 100}%...")
             for _k, v in result.items():
-                # Limit to Decimal precision to 3 decimal places
                 v["value"] = str(Decimal(v["value"]) * Decimal(scale))
             console.print(result, width=120)
     except Exception as e:
