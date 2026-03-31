@@ -1,8 +1,8 @@
 """Input/Output utilities for reading and writing files."""
 
 import csv
-import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Set
 
 import yaml
@@ -38,14 +38,12 @@ def save_performance_to_csv(results: List[Dict[str, Any]], filename: str) -> Non
         fieldnames.update(result.keys())
     fieldnames = sorted(fieldnames)  # type: ignore
 
-    # Check if file exists to determine if header is needed
-    file_exists = os.path.isfile(filename)
-
-    with open(filename, mode="a", newline="", encoding="utf-8") as csvfile:
+    # Overwrite on each checkpoint so repeated saves are idempotent.
+    # Appending cumulative `results` causes duplicated rows.
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
+    with open(filename, mode="w", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-        if not file_exists:
-            writer.writeheader()
+        writer.writeheader()
 
         for result in results:
             # Handle datetime objects by converting them to strings
@@ -71,6 +69,6 @@ def save_evictions_to_yaml(
         workloads: Dictionary containing workload information
         filename: Path to save YAML file
     """
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
     with open(filename, "w", encoding="utf-8") as fopen:
         yaml.dump(results, fopen, default_flow_style=False)
-    fopen.close()
