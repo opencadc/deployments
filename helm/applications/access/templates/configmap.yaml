@@ -2,7 +2,7 @@
 {{- $rk := .Values.rsaSignaturePublicKey | default dict }}
 {{- $rsaPubB64 := "" }}
 {{- if $rk.existingSecret }}
-{{- $sec := lookup "v1" "Secret" .Release.Namespace $rk.existingSecret }}
+{{- $sec := (lookup "v1" "Secret" .Release.Namespace $rk.existingSecret) }}
 {{- if not $sec }}
 {{- fail (printf "access: rsaSignaturePublicKey.existingSecret %q not found in namespace %s (needed to embed RsaSignaturePub.key in ConfigMap). Use a live cluster for helm install/upgrade, or set rsaSignaturePublicKey.value." $rk.existingSecret .Release.Namespace) }}
 {{- end }}
@@ -36,13 +36,13 @@ data:
     ivo://ivoa.net/sso#OAuth = ivo://cadc.nrc.ca/gms
     ivo://ivoa.net/sso#OpenID = ivo://cadc.nrc.ca/gms
     ivo://ivoa.net/sso#tls-with-password = ivo://cadc.nrc.ca/gms
-    
+
     {{ range .Values.registryURLs }}
     ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ . }}
     {{ end }}
 
-{{- with .Values.logging }}
-  cadc-log.properties:
+  cadc-log.properties: |+
+{{ with .Values.logging }}
 {{ with .userDistinguishedNames }}
     {{- range $index, $element := . }}
     user = {{ $element }}
@@ -59,10 +59,10 @@ data:
     {{- end }}
 {{ end }}
 {{ with .secret }}
-  secret = {{ . }}
+    secret = {{ . }}
 {{ end }}
 {{ end }}
-  
+
   catalina.properties: |-
     tomcat.connector.scheme={{ include "access.tomcatConnectorScheme" . }}
     tomcat.connector.proxyName={{ include "access.tomcatConnectorProxyName" . }}
