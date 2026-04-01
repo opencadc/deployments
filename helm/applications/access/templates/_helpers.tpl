@@ -62,26 +62,14 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Secret that holds RsaSignaturePub.key (chart-created or existing).
-*/}}
-{{- define "access.rsaSignaturePublicKeySecretName" -}}
-{{- $rk := .Values.rsaSignaturePublicKey | default dict -}}
-{{- if $rk.existingSecret -}}
-{{- $rk.existingSecret -}}
-{{- else -}}
-{{- printf "%s-rsa-signature-public-key" (include "access.fullname" .) -}}
-{{- end -}}
-{{- end }}
-
-{{/*
-Fail unless an existing Secret is set or PEM value is provided for a chart-managed Secret.
+Fail unless an existing Secret is set or PEM value is provided (embedded in ConfigMap binaryData).
 */}}
 {{- define "access.validateRsaSignaturePublicKey" -}}
 {{- $rk := .Values.rsaSignaturePublicKey | default dict -}}
 {{- if $rk.existingSecret -}}
 {{- else if $rk.value -}}
 {{- else -}}
-{{- fail "access: set rsaSignaturePublicKey.existingSecret to a Secret containing RsaSignaturePub.key, or set rsaSignaturePublicKey.value (PEM) for a chart-managed Secret" -}}
+{{- fail "access: set rsaSignaturePublicKey.existingSecret to a Secret containing RsaSignaturePub.key, or set rsaSignaturePublicKey.value (PEM) to embed in the ConfigMap" -}}
 {{- end -}}
 {{- end }}
 

@@ -59,10 +59,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-            - name: rsa-signature-public-key
-              mountPath: /config/RsaSignaturePub.key
-              subPath: RsaSignaturePub.key
-              readOnly: true
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -70,9 +66,6 @@ spec:
         - name: config
           configMap:
             name: {{ include "access.fullname" . }}-config
-        - name: rsa-signature-public-key
-          secret:
-            secretName: {{ include "access.rsaSignaturePublicKeySecretName" . }}
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

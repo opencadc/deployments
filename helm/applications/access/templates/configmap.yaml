@@ -1,8 +1,25 @@
+{{- include "access.validateRsaSignaturePublicKey" . }}
+{{- $rk := .Values.rsaSignaturePublicKey | default dict }}
+{{- $rsaPubB64 := "" }}
+{{- if $rk.existingSecret }}
+{{- $sec := lookup "v1" "Secret" .Release.Namespace $rk.existingSecret }}
+{{- if not $sec }}
+{{- fail (printf "access: rsaSignaturePublicKey.existingSecret %q not found in namespace %s (needed to embed RsaSignaturePub.key in ConfigMap). Use a live cluster for helm install/upgrade, or set rsaSignaturePublicKey.value." $rk.existingSecret .Release.Namespace) }}
+{{- end }}
+{{- $rsaPubB64 = index $sec.data "RsaSignaturePub.key" | default "" }}
+{{- if not $rsaPubB64 }}
+{{- fail (printf "access: Secret %q must contain data key RsaSignaturePub.key" $rk.existingSecret) }}
+{{- end }}
+{{- else }}
+{{- $rsaPubB64 = $rk.value | trim | b64enc }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "access.fullname" . }}-config
   namespace: {{ .Release.Namespace }}
+binaryData:
+  "RsaSignaturePub.key": {{ $rsaPubB64 | quote }}
 data:
   cadc-registry.properties: |+
     #

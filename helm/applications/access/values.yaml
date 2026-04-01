@@ -20,12 +20,13 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-# RSA key pair for access cookie signing. Do not commit real keys; use an existing Secret or
-# --set-file when installing.
+# RSA public key for access cookie signing, mounted as /config/RsaSignaturePub.key (ConfigMap
+# binaryData). Do not commit real keys; use an existing Secret or --set-file when installing.
 rsaSignaturePublicKey:
-  # If non-empty, mount this Secret (key RsaSignaturePub.key) and do not create one.
+  # If non-empty, read RsaSignaturePub.key from this Secret into the ConfigMap (requires a live
+  # cluster at install/upgrade so Helm can look up the Secret).
   existingSecret: ""
-  # Used only when existingSecret is empty: PEM contents for a chart-managed Secret.
+  # PEM contents embedded in the ConfigMap when existingSecret is empty.
   value: ""
 
 # Optional extra RegistryClient base URLs (see configmap cadc-registry.properties).
