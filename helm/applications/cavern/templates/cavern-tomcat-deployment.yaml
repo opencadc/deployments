@@ -1,5 +1,10 @@
 {{ $containerPort := 8080 }}
 {{ $storageSpecYAML := required "A valid .Values.storage.service.spec is required!" .Values.storage.service.spec }}
+{{- $db := .Values.deployment.cavern.uws.db -}}
+{{- $auth := $db.auth | default dict -}}
+{{- $sk := $auth.secretKeys | default dict -}}
+{{- $userKey := $sk.username | default "username" -}}
+{{- $passKey := $sk.password | default "password" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,6 +33,33 @@ spec:
         runAsUser: 0
         seccompProfile:
           type: RuntimeDefault
+      initContainers:
+        - name: merge-uws-db-credentials
+          image: {{ .Values.volumeInit.image | quote }}
+          imagePullPolicy: {{ .Values.volumeInit.imagePullPolicy }}
+          command: ['sh', '-c']
+          args:
+            - |
+              set -e
+              cp -a /config-src/. /config-dst/
+              USER=$(tr -d '\n' < "/secret/${USER_KEY}")
+              PASS=$(tr -d '\n' < "/secret/${PASS_KEY}")
+              printf '\norg.opencadc.cavern.uws.username=%s\n' "$USER" >> /config-dst/catalina.properties
+              printf 'org.opencadc.cavern.uws.password=%s\n' "$PASS" >> /config-dst/catalina.properties
+          env:
+            - name: USER_KEY
+              value: {{ $userKey | quote }}
+            - name: PASS_KEY
+              value: {{ $passKey | quote }}
+          volumeMounts:
+            - name: config-source
+              mountPath: /config-src
+              readOnly: true
+            - name: uws-db-secret
+              mountPath: /secret
+              readOnly: true
+            - name: config-merged
+              mountPath: /config-dst
       containers:
       - image: {{ .Values.deployment.cavern.image }}
         imagePullPolicy: {{ .Values.deployment.cavern.imagePullPolicy }}
@@ -53,7 +85,7 @@ spec:
         {{- end }}
         volumeMounts:
         - mountPath: "/config"
-          name: config-volume
+          name: config-merged
         - mountPath: '{{ .Values.deployment.cavern.filesystem.dataDir | required ".deployment.cavern.filesystem.dataDir is required" }}'
           name: cavern-volume
         {{- with .Values.deployment.cavern.extraVolumeMounts }}
@@ -82,9 +114,14 @@ spec:
       priorityClassName: uber-user-preempt-high
       serviceAccountName: skaha
       volumes:
-      - name: config-volume
+      - name: config-source
         configMap:
           name: {{ .Release.Name }}-config
+      - name: uws-db-secret
+        secret:
+          secretName: {{ $auth.existingSecret }}
+      - name: config-merged
+        emptyDir: {}
       {{- if $storageSpecYAML }}
       - name: cavern-volume
         {{- toYaml $storageSpecYAML | nindent 8 }}

@@ -4,7 +4,15 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.9.0<!-- x-release-please-version --> | 0.9.2 | application |
+|0.10.0<!-- x-release-please-version --> | 0.9.2 | application |
+
+## UWS PostgreSQL credentials (Git / Argo CD)
+
+Do not commit database usernames or passwords in `values.yaml`. Set `deployment.cavern.uws.db.auth.existingSecret` to a `Secret` in the release namespace whose data keys default to `username` and `password` (override with `deployment.cavern.uws.db.auth.secretKeys`). The Cavern pod init container merges them into `catalina.properties`; when `uws.db.install` is true, the bundled PostgreSQL reads the same Secret via `env`.
+
+Example:
+
+`kubectl create secret generic cavern-uws-db --from-literal=username=uwsuser --from-literal=password='YOUR_PASSWORD' -n YOUR_NAMESPACE`
 
 ## Requirements
 

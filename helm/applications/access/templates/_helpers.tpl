@@ -62,24 +62,26 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Secret that holds RsaSignaturePub.key / RsaSignaturePriv.key (chart-created or existing).
+Secret that holds RsaSignaturePub.key (chart-created or existing).
 */}}
-{{- define "access.rsaSignatureSecretName" -}}
-{{- if .Values.rsaSignatureKeys.existingSecret -}}
-{{- .Values.rsaSignatureKeys.existingSecret -}}
+{{- define "access.rsaSignaturePublicKeySecretName" -}}
+{{- $rk := .Values.rsaSignaturePublicKey | default dict -}}
+{{- if $rk.existingSecret -}}
+{{- $rk.existingSecret -}}
 {{- else -}}
-{{- printf "%s-rsa-signature-keys" (include "access.fullname" .) -}}
+{{- printf "%s-rsa-signature-public-key" (include "access.fullname" .) -}}
 {{- end -}}
 {{- end }}
 
 {{/*
-Fail the render unless either an existing Secret is set or both PEMs are provided for a chart Secret.
+Fail unless an existing Secret is set or PEM value is provided for a chart-managed Secret.
 */}}
-{{- define "access.validateRsaSignatureKeys" -}}
-{{- if .Values.rsaSignatureKeys.existingSecret -}}
-{{- else if and .Values.rsaSignatureKeys.publicKey .Values.rsaSignatureKeys.privateKey -}}
+{{- define "access.validateRsaSignaturePublicKey" -}}
+{{- $rk := .Values.rsaSignaturePublicKey | default dict -}}
+{{- if $rk.existingSecret -}}
+{{- else if $rk.value -}}
 {{- else -}}
-{{- fail "access: set rsaSignatureKeys.existingSecret to a Secret containing RsaSignaturePub.key and RsaSignaturePriv.key, or set rsaSignatureKeys.publicKey and rsaSignatureKeys.privateKey (PEM) for a chart-managed Secret" -}}
+{{- fail "access: set rsaSignaturePublicKey.existingSecret to a Secret containing RsaSignaturePub.key, or set rsaSignaturePublicKey.value (PEM) for a chart-managed Secret" -}}
 {{- end -}}
 {{- end }}
 

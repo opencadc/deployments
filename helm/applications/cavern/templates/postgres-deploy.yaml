@@ -1,6 +1,10 @@
 {{ $releaseName := .Release.Name }}
 {{- with required "UWS Database configuration is required." .Values.deployment.cavern.uws.db }}
 {{- if .install }}
+{{- $auth := .auth | default dict }}
+{{- $sk := $auth.secretKeys | default dict }}
+{{- $userKey := $sk.username | default "username" }}
+{{- $passKey := $sk.password | default "password" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,9 +30,22 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432  # Exposes container port
-          envFrom:
-            - configMapRef:
-                name: {{ $releaseName }}-uws-postgres-config
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $releaseName }}-uws-postgres-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $auth.existingSecret }}
+                  key: {{ $userKey }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $auth.existingSecret }}
+                  key: {{ $passKey }}
           volumeMounts:
             - mountPath: /docker-entrypoint-initdb.d
               name: postgresinit

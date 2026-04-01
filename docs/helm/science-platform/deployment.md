@@ -249,12 +249,14 @@ deployment:
       prepareData: "32fjd93jfn93n3nFjsl293jfn93jf="
       skaha: "88shdj3en1rBuMVSllWVuuz190HJpF="
 
-    # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set the uws.db.url property, with authentication.
+    # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set uws.db.url, with uws.db.auth.existingSecret for credentials (not in Git).
     uws:
       db:
         install: true
         schema: uws
         maxActive: 2
+        auth:
+          existingSecret: cavern-uws-db
 
     # Optional rename of the application from the default "cavern"
     # applicationName: "cavern"
