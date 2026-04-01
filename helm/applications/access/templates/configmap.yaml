@@ -35,6 +35,7 @@ data:
     http://www.opencadc.org/std/UMS#login-1.0 = ivo://cadc.nrc.ca/gms
     ivo://ivoa.net/sso#OAuth = ivo://cadc.nrc.ca/gms
     ivo://ivoa.net/sso#OpenID = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/sso#tls-with-password = ivo://cadc.nrc.ca/gms
     
     {{ range .Values.registryURLs }}
     ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ . }}
