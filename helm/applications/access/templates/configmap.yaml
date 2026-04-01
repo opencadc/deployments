@@ -39,6 +39,28 @@ data:
     {{ range .Values.registryURLs }}
     ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ . }}
     {{ end }}
+
+{{- with .Values.logging }}
+  cadc-log.properties:
+{{ with .userDistinguishedNames }}
+    {{- range $index, $element := . }}
+    user = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .usernames }}
+    {{- range $index, $element := . }}
+    username = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .groups }}
+    {{- range $index, $element := . }}
+    group = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .secret }}
+  secret = {{ . }}
+{{ end }}
+{{ end }}
   
   catalina.properties: |-
     tomcat.connector.scheme={{ include "access.tomcatConnectorScheme" . }}

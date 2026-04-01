@@ -29,6 +29,25 @@ rsaSignaturePublicKey:
   # PEM contents embedded in the ConfigMap when existingSecret is empty.
   value: ""
 
+# Logging configuration.
+logging:
+  # List of distinguished names that should have enhanced logging.
+  # Example:
+  #  - "CN=Audit User,OU=CADC,O=CADC,C=CA"
+  #  - "CN=Another Audit,OU=CADC,O=CADC,C=CA"
+  # userDistinguishedNames: []
+
+  # List of usernames that should have enhanced logging.
+  # Example:
+  #  - "audituser"
+  #  - "anotheraudit"
+  # usernames: []
+
+  # Secret string for enhanced logging.  Passed with a POST request to the /access/logControl endpoint.
+  # Example:
+  #  secret: "mysecret"
+  # secret: 
+
 # Optional extra RegistryClient base URLs (see configmap cadc-registry.properties).
 registryURLs: []
 
