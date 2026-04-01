@@ -32,9 +32,9 @@ data:
 
 {{ with .Values.application.userInterfaceEntries }}
   reg-applications.properties:
-    {{- range $index, $element := . }}
+  {{ range $index, $element := . }}
     {{ $element.id }} = {{ $element.url }}
-    {{- end }}
+  {{ end }}
 {{ end }}
 
 {{- with .Values.application.logging }}
