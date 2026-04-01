@@ -1,8 +1,9 @@
 {{- if empty .Values.application.serviceEntries }}
 {{- fail "Service entries must be provided in reg application values." }}
 {{- end }}
-{{- if empty .Values.application.authority }}
-{{- fail "Authority must be provided in reg application values." }}
+{{- $oai := .Values.application.oaiPublishing | default dict }}
+{{- if and $oai.enabled (empty $oai.authority) }}
+{{- fail "When application.oaiPublishing.enabled is true, application.oaiPublishing.authority must be set." }}
 {{- end }}
 apiVersion: v1
 kind: ConfigMap
@@ -18,9 +19,9 @@ data:
     ca.nrc.cadc.util.Log4jInit.messageOnly=true
 
   reg.properties: |
-{{ with .Values.application.authority }}
-    org.opencadc.reg.authority = {{ . -}}
-{{ end }}
+{{- if and $oai.enabled $oai.authority }}
+    org.opencadc.reg.authority = {{ $oai.authority }}
+{{- end }}
 
   reg-resource-caps.properties:
 {{ with .Values.application.serviceEntries }}
