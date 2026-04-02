@@ -29,7 +29,10 @@ spec:
 {{ . | toYaml | indent 10 }}
 {{- end }}
       securityContext:
-        fsGroup: {{ .Values.deployment.cavern.filesystem.rootOwner.gid | required ".deployment.cavern.filesystem.rootOwner.gid is required" }}
+        {{- $ro := .Values.deployment.cavern.filesystem.rootOwner | default dict }}
+        {{- if and $ro (hasKey $ro "gid") (ne (index $ro "gid") nil) }}
+        fsGroup: {{ index $ro "gid" }}
+        {{- end }}
         runAsUser: 0
         seccompProfile:
           type: RuntimeDefault

@@ -4,7 +4,7 @@
 
 A Helm chart for Science Portal Next.js application
 
-**Homepage:** <https://github.com/opencadc/science-portal>
+**Homepage:** <https://github.com/canfar/science-portal>
 
 ## Maintainers
 

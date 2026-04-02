@@ -4,7 +4,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.5.2<!-- x-release-please-version --> | 1.2.1 | application |
+|2.0.0<!-- x-release-please-version --> | 1.2.1 | application |
 
 ## Requirements
 
@@ -46,6 +46,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.maxCount | string | `"5"` |  |
 | deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` |  |
 | deployment.skaha.sessions.minEphemeralStorage | string | `"20Gi"` |  |
+| deployment.skaha.sessions.namespace | string | `"canfar-workload"` |  |
 | deployment.skaha.sessions.nodeLabelSelector | string | `nil` |  |
 | deployment.skaha.sessions.tolerations | list | `[]` |  |
 | deployment.skaha.sessions.userStorage.admin.auth | string | `nil` |  |
@@ -59,6 +60,8 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | ingress.path | string | `"/skaha"` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
 | podSecurityContext | object | `{}` |  |
+| rbac.clusterRole.create | bool | `false` |  |
+| rbac.create | bool | `true` |  |
 | redis.architecture | string | `"standalone"` |  |
 | redis.auth.enabled | bool | `false` |  |
 | redis.image.repository | string | `"redis"` |  |
@@ -75,5 +78,9 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | secrets | string | `nil` |  |
 | securityContext | object | `{}` |  |
 | service.port | int | `8080` |  |
+| serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.automount | bool | `true` |  |
+| serviceAccount.create | bool | `true` |  |
+| serviceAccount.name | string | `""` |  |
 | skahaWorkload.namespace | string | `"skaha-workload"` |  |
 | tolerations | list | `[]` |  |

@@ -19,8 +19,10 @@ This section is automatically generated. Do not edit manually.
 
 | Chart | Description |
 | --- | --- |
-| [base](helm/applications/base) | A Helm chart to install base components of the CANFAR Science Platform |
+| [access](helm/applications/access) | A Helm chart for the Access web service, responsible for managing user cookie access CADC and CANFAR services and applications. |
 | [science-portal](helm/applications/canfar-next/science-portal) | A Helm chart for Science Portal Next.js application |
+| [canfar-web-portal](helm/applications/canfar-web-portal) | A Helm chart for Kubernetes |
+| [canfar-web-root](helm/applications/canfar-web-root) | A Helm chart for Kubernetes |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
 | [posixmapper](helm/applications/posix-mapper) | A Helm chart to install the UID/GID POSIX Mapper |
 | [reg](helm/applications/reg) | IVOA Registry Service Helm Chart |

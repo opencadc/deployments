@@ -69,13 +69,13 @@ deployment:
       # This will be used in a `dataDir`/`subPath` manner to remove shared data from the root folder.
       # subPath: "cavern"
 
-      # The adminUsername is required to be set whomever has admin access over the
-      # filesystem.dataDir above.
+      # rootOwner: only adminUsername is required (who has admin access over filesystem.dataDir).
+      # username, uid, and gid are optional. If uid or gid are omitted, see post-install NOTES.txt.
       rootOwner:
-        # adminUsername: "root"
-        username: ""
-        uid:
-        gid:
+        adminUsername: ""
+        # username: ""
+        # uid: 1000
+        # gid: 1000
 
       # (optional) base directory exposed for sshfs mounts
       # sshfs:

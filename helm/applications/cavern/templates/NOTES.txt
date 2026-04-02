@@ -4,6 +4,16 @@ kubectl -n {{ .Release.Namespace }} get pods
 
 Your release is named {{ .Release.Name }}.
 
+{{- $ro := .Values.deployment.cavern.filesystem.rootOwner | default dict }}
+{{- $uidAbsent := or (not (hasKey $ro "uid")) (eq (index $ro "uid") nil) }}
+{{- $gidAbsent := or (not (hasKey $ro "gid")) (eq (index $ro "gid") nil) }}
+{{- if or $uidAbsent $gidAbsent }}
+
+WARNING: deployment.cavern.filesystem.rootOwner is missing uid and/or gid.
+The arc system must be able to identify the root owner from the username alone;
+that username may or may not be configured for this install.
+{{- end }}
+
 To learn more about the release, try:
 
   $ helm -n {{ .Release.Namespace }} status {{ .Release.Name }}
