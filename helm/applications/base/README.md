@@ -4,7 +4,7 @@ A Helm chart to install base components of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.4.1<!-- x-release-please-version --> | 0.1.4 | application |
+|0.5.0<!-- x-release-please-version --> | 0.1.4 | application |
 
 ## Requirements
 
