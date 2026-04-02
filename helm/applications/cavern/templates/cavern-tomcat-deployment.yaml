@@ -115,7 +115,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       priorityClassName: uber-user-preempt-high
-      serviceAccountName: skaha
+      {{- with .Values.serviceAccount.name }}
+      serviceAccountName: {{ . }}
+      {{- end }}
       volumes:
       - name: config-source
         configMap:

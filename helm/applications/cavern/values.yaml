@@ -164,6 +164,18 @@ deployment:
 #
 tolerations: []
 
+# Service account for the Cavern workload.  See https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created by this chart (requires name to be set).
+  create: false
+  # Automatically mount a ServiceAccount's API credentials
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # When set, the Cavern pod uses this ServiceAccount and (if create is true) the chart creates it with this name.
+  # Leave empty to omit serviceAccountName on the pod (namespace default account).
+  name: ""
+
 # Init container image to merge UWS credentials from the Secret into catalina.properties on the Cavern pod.
 volumeInit:
   image: registry.k8s.io/busybox:1.36
