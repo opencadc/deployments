@@ -74,9 +74,6 @@ deployment:
     # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
     # headlessPriorityGroup: "ivo://example.org/gms?skaha-priority-headless-users"
 
-    # Class name to set for priority headless jobs.
-    # headlessPriorityClass: uber-user-preempt-high
-
     # Array of GMS Group URIs allowed to set the logging level.  If none set, then nobody can change the log level.
     # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2 for GMS Group URIs
     # See https://github.com/opencadc/core/tree/main/cadc-log for Logging control
@@ -385,8 +382,25 @@ deployment:
     # - mountPath: "/config/cacerts"
     #   name: cacert-volume
 
-    # If the base names have changed, then change them here, otherwise leave them.
-    priorityClassName: uber-user-preempt-high
+    # PriorityClass for the Skaha API pod. When create is true, a cluster PriorityClass is installed.
+    # If create is false, name must reference an existing PriorityClass. Omit name to skip setting priorityClassName on the pod.
+    # Do not set create: true on both priorityClass and headlessPriorityClass with the same name.
+    priorityClass:
+      create: true
+      name: uber-user-preempt-high
+      value: 2000
+      preemptionPolicy: PreemptLowerPriority
+      globalDefault: false
+      description: "For high-priority user pods. Preempting."
+
+    headlessPriorityClass:
+      create: false
+      name: ""
+      value: 2000
+      preemptionPolicy: PreemptLowerPriority
+      globalDefault: false
+      description: "For high-priority headless jobs. Preempting."
+
     serviceAccountName: skaha
 
     # The IdentityManager class handling authentication.  This should generally be left alone

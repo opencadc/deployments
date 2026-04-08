@@ -1,36 +1,27 @@
----
+{{- if .Values.deployment.skaha.priorityClass.create }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: uber-user-important
-value: 3000
-preemptionPolicy: Never
-globalDefault: false
-description: "For important user pods. Non-preempting."
+  name: {{ .Values.deployment.skaha.priorityClass.name | required "deployment.skaha.priorityClass.name is required when create is true" }}
+  labels:
+    {{- include "skaha.labels" $ | nindent 4 }}
+value: {{ .Values.deployment.skaha.priorityClass.value }}
+preemptionPolicy: {{ .Values.deployment.skaha.priorityClass.preemptionPolicy }}
+globalDefault: {{ .Values.deployment.skaha.priorityClass.globalDefault }}
+description: {{ .Values.deployment.skaha.priorityClass.description | quote }}
+{{- end }}
+{{- if .Values.deployment.skaha.headlessPriorityClass.create }}
+{{- if .Values.deployment.skaha.priorityClass.create }}
 ---
+{{- end }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: uber-user-preempt-high
-value: 2000
-preemptionPolicy: PreemptLowerPriority
-globalDefault: false
-description: "For high-priority user pods. Preempting."
----
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: uber-user-preempt-medium
-value: 1000
-preemptionPolicy: PreemptLowerPriority
-globalDefault: false
-description: "For medium-priority user pods. Preempting."
----
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: uber-user-significant
-value: 500
-preemptionPolicy: Never
-globalDefault: false
-description: "For slightly prioritizing pods. Non-preempting."
+  name: {{ .Values.deployment.skaha.headlessPriorityClass.name | required "deployment.skaha.headlessPriorityClass.name is required when create is true" }}
+  labels:
+    {{- include "skaha.labels" $ | nindent 4 }}
+value: {{ .Values.deployment.skaha.headlessPriorityClass.value }}
+preemptionPolicy: {{ .Values.deployment.skaha.headlessPriorityClass.preemptionPolicy }}
+globalDefault: {{ .Values.deployment.skaha.headlessPriorityClass.globalDefault }}
+description: {{ .Values.deployment.skaha.headlessPriorityClass.description | quote }}
+{{- end }}

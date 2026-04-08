@@ -94,7 +94,7 @@ spec:
         - name: skaha.headlessprioritygroup
           value: "{{ . }}"
         {{- end }}
-        {{- with .Values.deployment.skaha.headlessPriorityClass }}
+        {{- with .Values.deployment.skaha.headlessPriorityClass.name }}
         - name: SKAHA_HEADLESS_PRIORITY_CLASS
           value: "{{ . }}"
         {{- end }}
@@ -186,7 +186,9 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      priorityClassName: {{ .Values.deployment.skaha.priorityClassName }}
+      {{- with .Values.deployment.skaha.priorityClass.name }}
+      priorityClassName: {{ . }}
+      {{- end }}
       serviceAccountName: {{ .Values.deployment.skaha.serviceAccountName }}
       volumes:
       - name: config-volume

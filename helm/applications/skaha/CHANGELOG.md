@@ -1,5 +1,17 @@
 # Skaha User Session API Helm Chart
 
+## [2.1.0] (2026-04-08)
+
+### ⚠ BREAKING CHANGES
+
+* Removed `deployment.skaha.priorityClassName`. Use `deployment.skaha.priorityClass` with `create`, `name`, `value`, `preemptionPolicy`, `globalDefault`, and `description` instead.
+* Replaced string `deployment.skaha.headlessPriorityClass` with an object `deployment.skaha.headlessPriorityClass` (same shape as `priorityClass`). Set `name` to populate `SKAHA_HEADLESS_PRIORITY_CLASS`.
+* The chart no longer installs the cluster `PriorityClass` resources `uber-user-important`, `uber-user-preempt-medium`, or `uber-user-significant`. Session launch templates still reference `uber-user-preempt-medium`; provision those classes outside this chart if needed.
+
+### Features
+
+* Optional cluster `PriorityClass` creation is gated by `deployment.skaha.priorityClass.create` and `deployment.skaha.headlessPriorityClass.create` (do not use `create: true` on both with the same `name`).
+
 ## [1.5.2](https://github.com/opencadc/deployments/compare/skaha-1.5.1...skaha-1.5.2) (2026-03-03)
 
 

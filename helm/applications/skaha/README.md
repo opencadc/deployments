@@ -4,7 +4,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|2.0.0<!-- x-release-please-version --> | 1.2.1 | application |
+|2.1.0<!-- x-release-please-version --> | 1.2.1 | application |
 
 ## Requirements
 
@@ -20,6 +20,12 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.hostname | string | `"myhost.example.com"` |  |
 | deployment.skaha.apiVersion | string | `"v1"` |  |
 | deployment.skaha.defaultQuotaGB | string | `"10"` |  |
+| deployment.skaha.headlessPriorityClass.create | bool | `false` |  |
+| deployment.skaha.headlessPriorityClass.description | string | `"For high-priority headless jobs. Preempting."` |  |
+| deployment.skaha.headlessPriorityClass.globalDefault | bool | `false` |  |
+| deployment.skaha.headlessPriorityClass.name | string | `""` |  |
+| deployment.skaha.headlessPriorityClass.preemptionPolicy | string | `"PreemptLowerPriority"` |  |
+| deployment.skaha.headlessPriorityClass.value | int | `2000` |  |
 | deployment.skaha.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
 | deployment.skaha.image | string | `"images.opencadc.org/platform/skaha:1.2.1"` |  |
 | deployment.skaha.imageCache.refreshSchedule | string | `"*/30 * * * *"` |  |
@@ -27,7 +33,12 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.init.image | string | `"busybox:1.37.0"` |  |
 | deployment.skaha.init.imagePullPolicy | string | `"IfNotPresent"` |  |
 | deployment.skaha.posixMapperCacheTTLSeconds | string | `"86400"` |  |
-| deployment.skaha.priorityClassName | string | `"uber-user-preempt-high"` |  |
+| deployment.skaha.priorityClass.create | bool | `true` |  |
+| deployment.skaha.priorityClass.description | string | `"For high-priority user pods. Preempting."` |  |
+| deployment.skaha.priorityClass.globalDefault | bool | `false` |  |
+| deployment.skaha.priorityClass.name | string | `"uber-user-preempt-high"` |  |
+| deployment.skaha.priorityClass.preemptionPolicy | string | `"PreemptLowerPriority"` |  |
+| deployment.skaha.priorityClass.value | int | `2000` |  |
 | deployment.skaha.registryHosts | string | `"images.canfar.net"` |  |
 | deployment.skaha.resources.limits.cpu | string | `"2000m"` |  |
 | deployment.skaha.resources.limits.memory | string | `"3Gi"` |  |
