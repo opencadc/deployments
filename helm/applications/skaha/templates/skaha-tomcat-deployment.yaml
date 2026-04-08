@@ -189,7 +189,7 @@ spec:
       {{- with .Values.deployment.skaha.priorityClass.name }}
       priorityClassName: {{ . }}
       {{- end }}
-      serviceAccountName: {{ .Values.deployment.skaha.serviceAccountName }}
+      serviceAccountName: {{ include "skaha.serviceAccountName" . }}
       volumes:
       - name: config-volume
         configMap:

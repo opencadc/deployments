@@ -44,7 +44,6 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.resources.limits.memory | string | `"3Gi"` |  |
 | deployment.skaha.resources.requests.cpu | string | `"1000m"` |  |
 | deployment.skaha.resources.requests.memory | string | `"2Gi"` |  |
-| deployment.skaha.serviceAccountName | string | `"skaha"` |  |
 | deployment.skaha.sessions.expirySeconds | string | `"345600"` |  |
 | deployment.skaha.sessions.flexResourceRequests.headless.cpuCores | string | `"1"` |  |
 | deployment.skaha.sessions.flexResourceRequests.headless.memoryInGB | string | `"4"` |  |

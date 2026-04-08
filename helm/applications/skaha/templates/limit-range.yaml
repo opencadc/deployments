@@ -61,7 +61,7 @@ roleRef:
   name: {{ $.Release.Name }}-session-limit-range-role
 subjects:
 - kind: ServiceAccount
-  name: {{ $.Values.deployment.skaha.serviceAccountName | required ".Values.deployment.skaha.serviceAccountName value is required" }}
+  name: {{ include "skaha.serviceAccountName" $ }}
   namespace: {{ $.Release.Namespace }}
 {{- end }}
 {{- end }}

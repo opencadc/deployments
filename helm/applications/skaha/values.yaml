@@ -401,8 +401,6 @@ deployment:
       globalDefault: false
       description: "For high-priority headless jobs. Preempting."
 
-    serviceAccountName: skaha
-
     # The IdentityManager class handling authentication.  This should generally be left alone
     identityManagerClass: org.opencadc.auth.StandardIdentityManager
 
