@@ -15,6 +15,10 @@ spec:
       labels:
         run: science-portal-tomcat
     spec:
+      {{- with .Values.deployment.sciencePortal.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.deployment.sciencePortal.nodeAffinity }}
       affinity:
         nodeAffinity:
