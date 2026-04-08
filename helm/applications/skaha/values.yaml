@@ -280,7 +280,15 @@ deployment:
       #      default:
       #        queueName: "all-user-sessions-local-queue"
       #        priorityClass: "medium"
-      kueue: {}
+      #
+      # Optional RBAC: grant the Skaha service account permission to read LocalQueues in this chart's
+      # release namespace and in skahaWorkload.namespace (see top-level skahaWorkload).
+      #    kueue:
+      #      rbac:
+      #        create: true
+      kueue:
+        rbac:
+          create: false
 
       # This is a list of tolerations that will be added to the Pod spec of the User Sessions.
       # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

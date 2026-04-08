@@ -24,8 +24,8 @@ User Sessions Ingress Configurations:
 Kueue:
 {{- if .Values.deployment.skaha.sessions.kueue }}
   - It's expected that the Kueue CRDs and controllers to be present if you set session queues.
-{{- $queues := (default dict .Values.deployment.skaha.sessions.kueue) }}
-{{- if $queues }}
+{{- $queues := omit (default dict .Values.deployment.skaha.sessions.kueue) "rbac" }}
+{{- if gt (len $queues) 0 }}
 {{- range $type, $cfg := $queues }}
   - {{ $cfg.queueName | default (printf "%s-%s" $.Release.Name $type) }} (type: {{ $type }})
 {{- end }}

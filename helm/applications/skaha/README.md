@@ -51,7 +51,8 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.ingress.customResponseHeaders | object | `{}` |  |
 | deployment.skaha.sessions.ingress.tls | object | `{}` |  |
 | deployment.skaha.sessions.initContainerImage | string | `"redis:8.2.2-bookworm"` |  |
-| deployment.skaha.sessions.kueue | object | `{}` |  |
+| deployment.skaha.sessions.kueue | object | `{"rbac":{"create":false}}` |  |
+| deployment.skaha.sessions.kueue.rbac.create | bool | `false` | When true, create Role/RoleBinding for localqueues in the release namespace and skahaWorkload.namespace |
 | deployment.skaha.sessions.limitRange.enabled | bool | `false` |  |
 | deployment.skaha.sessions.maxCount | string | `"5"` |  |
 | deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` |  |

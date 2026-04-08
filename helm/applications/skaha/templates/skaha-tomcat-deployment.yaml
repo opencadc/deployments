@@ -104,10 +104,12 @@ spec:
         {{- end }}
         {{- with .Values.deployment.skaha.sessions.kueue }}
         {{- range $queueConfigKey, $queueConfig := . }}
+        {{- if ne $queueConfigKey "rbac" }}
         - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_NAME
           value: "{{ $queueConfig.queueName | required (printf "Missing .Values.deployment.skaha.sessions.kueue.%s.queueName" $queueConfigKey) }}"
         - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_PRIORITY_CLASS
           value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.deployment.skaha.sessions.kueue.%s.priorityClass" $queueConfigKey) }}"
+        {{- end }}
         {{- end }}
         {{- end }}
         {{- if or .Values.deployment.skaha.sessions.limitRange.enabled (and .Values.experimentalFeatures.enabled .Values.experimentalFeatures.sessionLimitRange.enabled) }}
