@@ -49,9 +49,19 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
-          {{- with .Values.env }}
+          {{- $skipNames := dict }}
+          {{- range .Values.env }}
+          {{- $_ := set $skipNames .name true }}
+          {{- end }}
+          {{- $genEnv := include "science-portal.generatedEnv" (dict "root" . "skipNames" $skipNames) | trim }}
+          {{- if or $genEnv .Values.env }}
           env:
+            {{- if $genEnv }}
+            {{- $genEnv | nindent 12 }}
+            {{- end }}
+            {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           {{- with .Values.envFrom }}
           envFrom:

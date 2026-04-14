@@ -1,13 +1,12 @@
 # Default values for science-portal (CANFAR Next.js Science Portal).
 # https://github.com/canfar/science-portal
-# Deployers supply runtime env (NextAuth, APIs, etc.); see upstream .env.example.
 
 replicaCount: 1
 
+# -- Container image (repository and tag).
 image:
   repository: ghcr.io/canfar/science-portal
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
   tag: a533c61377855853f23a0fc9dba9592e21fe688d
 
 imagePullSecrets: []
@@ -24,7 +23,6 @@ podAnnotations: {}
 podLabels: {}
 
 # Optional pod security context (image runs as nextjs uid 1001).
-# Next.js may need a writable /tmp; readOnlyRootFilesystem is often false.
 podSecurityContext: {}
 # podSecurityContext:
 #   runAsNonRoot: true
@@ -42,15 +40,50 @@ securityContext: {}
 #       - ALL
 #   readOnlyRootFilesystem: false
 
-# Must match NEXT_PUBLIC_BASE_PATH in the container image when non-empty (e.g. /canfar-app).
+# -- Product / application settings mapped to container env. Prefer over raw `env` for options from [upstream .env.example](https://github.com/canfar/science-portal/blob/main/.env.example). Many `NEXT_PUBLIC_*` values are fixed at **image build**; runtime env here mainly affects the server unless your image supports overrides.
 app:
+  # -- URL path prefix; must match `NEXT_PUBLIC_BASE_PATH` in the image for probes. When non-empty, sets env `NEXT_PUBLIC_BASE_PATH`.
   basePath: ""
+  # -- Server-side API URLs (`SERVICE_STORAGE_API`, `LOGIN_API`, `SKAHA_API`, `SRC_*`, `API_TIMEOUT`). Empty keys are omitted.
+  api:
+    storage: ""
+    login: ""
+    skaha: ""
+    srcSkaha: ""
+    srcCavern: ""
+    timeoutMs: ""
+  # -- Client-side API URLs (`NEXT_PUBLIC_*`). Empty keys are omitted (image build defaults apply).
+  publicApi:
+    login: ""
+    skaha: ""
+    srcSkaha: ""
+    srcCavern: ""
+    timeoutMs: ""
+  # useCanfar: true  # boolean: sets NEXT_USE_CANFAR and NEXT_PUBLIC_USE_CANFAR (omit key for image defaults)
+  # experimental: false  # boolean -> NEXT_PUBLIC_EXPERIMENTAL
+  # enableQueryDevtools: false  # boolean -> NEXT_PUBLIC_ENABLE_QUERY_DEVTOOLS
+  # -- OIDC settings. When `enabled` and `uri` are set, emits paired NEXT_OIDC_* / NEXT_PUBLIC_OIDC_* env vars. Use with useCanfar: false. Client secret via existingSecret + secretKey only.
+  oidc:
+    enabled: false
+    uri: ""
+    clientId: ""
+    callbackUri: ""
+    redirectUri: ""
+    scope: ""
+    clientSecret:
+      existingSecret: ""
+      secretKey: ""
+  # -- NextAuth (`AUTH_TRUST_HOST`, `NEXTAUTH_URL`, optional `AUTH_SECRET` from Secret refs).
+  auth:
+    # trustHost: false
+    nextauthUrl: ""
+    authSecret:
+      existingSecret: ""
+      secretKey: ""
 
 service:
   type: ClusterIP
-  # Port exposed on the Service (Ingress/Gateway often expect 80).
   port: 80
-  # Port the Next.js process listens on inside the container.
   targetPort: 3000
 
 ingress:
@@ -64,7 +97,6 @@ ingress:
           pathType: Prefix
   tls: []
 
-# Gateway API HTTPRoute (https://gateway-api.sigs.k8s.io/guides/)
 httpRoute:
   enabled: false
   annotations: {}
@@ -80,15 +112,7 @@ httpRoute:
             value: /
 
 resources: {}
-# resources:
-#   limits:
-#     cpu: 1000m
-#     memory: 1Gi
-#   requests:
-#     cpu: 100m
-#     memory: 256Mi
 
-# Probe httpGet.path is set in the chart from app.basePath + /api/health (or .../ready).
 livenessProbe:
   httpGet:
     port: http
@@ -105,7 +129,6 @@ readinessProbe:
   timeoutSeconds: 3
   failureThreshold: 3
 
-# Gives the app time to listen before liveness failures (Next.js standalone cold start).
 startupProbe:
   httpGet:
     port: http
@@ -118,27 +141,18 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
-# Kubernetes container env entries (name / value / valueFrom).
-# See upstream .env.example for NEXT_PUBLIC_*, AUTH_SECRET, NEXTAUTH_URL, etc.
+# -- Extra container `env` entries (Kubernetes native). Merged **after** chart-generated env from `app`. If a variable name appears here, the chart **skips** emitting that name from `app` (no duplicate keys). Use for secrets and overrides.
 env: []
 # env:
-#   - name: NEXTAUTH_URL
-#     value: "https://example.org"
-#   - name: AUTH_SECRET
-#     valueFrom:
-#       secretKeyRef:
-#         name: science-portal-secrets
-#         key: auth-secret
+#   - name: EXTRA_VAR
+#     value: "x"
 
+# -- Optional `envFrom` (Secret/ConfigMap refs).
 envFrom: []
 # envFrom:
 #   - secretRef:
 #       name: science-portal-secrets
-# envFrom:
-#   - configMapRef:
-#       name: science-portal-config
 
 volumes: []
 volumeMounts: []
