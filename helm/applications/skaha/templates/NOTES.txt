@@ -7,6 +7,17 @@ Namespace: {{ .Release.Namespace }}
 
 Skaha workload namespace: {{ .Values.deployment.skaha.sessions.namespace | default "skaha-workload" }}
 
+{{- $legacyPVCName := hasKey (.Values.deployment.skaha.sessions.userStorage | default dict) "persistentVolumeClaimName" }}
+{{- if $legacyPVCName }}
+WARNING — User session storage configuration:
+  The value deployment.skaha.sessions.userStorage.persistentVolumeClaimName is no longer supported and is ignored.
+  Use deployment.skaha.sessions.userStorage.storageSpec instead (a Kubernetes Pod volume source), for example:
+    storageSpec:
+      persistentVolumeClaim:
+        claimName: skaha-workload-cavern-pvc
+  Other volume types (e.g. cephfs) are supported via the same storageSpec map.
+
+{{- end }}
 User Sessions:
 - Ensure CARTA images being used are at version 5.0.3 or higher.
 
@@ -47,11 +58,16 @@ If user Jobs remain Pending:
 - Confirm priority classes referenced by sessions exist or are created.
 
 !! ISSUES !!:
-{{- if and .Values.skahaWorkload .Values.deployment.skaha.sessions.namespace }}
-Please use the deployment.skaha.sessions.namespace to set the workload (User Session) Namespace.  The .skahaWorkload value is deprecated.
-{{- else }}
+{{- $skahaWorkloadDeprecated := and .Values.skahaWorkload .Values.deployment.skaha.sessions.namespace }}
+{{- if and (not $skahaWorkloadDeprecated) (not $legacyPVCName) }}
 None.
-{{- end}}
+{{- end }}
+{{- if $skahaWorkloadDeprecated }}
+Please use the deployment.skaha.sessions.namespace to set the workload (User Session) Namespace.  The .skahaWorkload value is deprecated.
+{{- end }}
+{{- if $legacyPVCName }}
+Your values still set deployment.skaha.sessions.userStorage.persistentVolumeClaimName — that key is ignored. Migrate to deployment.skaha.sessions.userStorage.storageSpec (see WARNING above).
+{{- end }}
 
 Experimental Features Configured:
 {{- if and .Values.experimentalFeatures .Values.experimentalFeatures.enabled }}

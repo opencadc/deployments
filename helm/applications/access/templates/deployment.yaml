@@ -63,9 +63,24 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
       volumes:
+        {{- $rk := .Values.rsaSignaturePublicKey | default dict }}
+        {{- if $rk.existingSecret }}
+        - name: config
+          projected:
+            defaultMode: 0444
+            sources:
+              - configMap:
+                  name: {{ include "access.fullname" . }}-config
+              - secret:
+                  name: {{ $rk.existingSecret }}
+                  items:
+                    - key: RsaSignaturePub.key
+                      path: RsaSignaturePub.key
+        {{- else }}
         - name: config
           configMap:
             name: {{ include "access.fullname" . }}-config
+        {{- end }}
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

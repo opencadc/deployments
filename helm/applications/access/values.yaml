@@ -20,13 +20,12 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-# RSA public key for access cookie signing, mounted as /config/RsaSignaturePub.key (ConfigMap
-# binaryData). Do not commit real keys; use an existing Secret or --set-file when installing.
+# RSA public key for access cookie signing at /config/RsaSignaturePub.key.
+# - If existingSecret is set: mount that Secret key as a file (GitOps/Argo-friendly; no Helm lookup).
+#   Secret must exist in the release namespace before the pod starts; key name RsaSignaturePub.key.
+# - Otherwise: embed PEM in ConfigMap binaryData from value (e.g. --set-file rsaSignaturePublicKey.value=...).
 rsaSignaturePublicKey:
-  # If non-empty, read RsaSignaturePub.key from this Secret into the ConfigMap (requires a live
-  # cluster at install/upgrade so Helm can look up the Secret).
   existingSecret: ""
-  # PEM contents embedded in the ConfigMap when existingSecret is empty.
   value: ""
 
 # Logging configuration.
@@ -160,10 +159,18 @@ livenessProbe:
   httpGet:
     path: /access/availability
     port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
 readinessProbe:
   httpGet:
     path: /access/availability
     port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:

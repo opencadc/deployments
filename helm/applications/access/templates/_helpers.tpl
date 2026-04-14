@@ -62,14 +62,14 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Fail unless an existing Secret is set or PEM value is provided (embedded in ConfigMap binaryData).
+Fail unless an existing Secret is set or non-empty PEM value is provided (embedded in ConfigMap binaryData when not using existingSecret).
 */}}
 {{- define "access.validateRsaSignaturePublicKey" -}}
 {{- $rk := .Values.rsaSignaturePublicKey | default dict -}}
 {{- if $rk.existingSecret -}}
-{{- else if $rk.value -}}
+{{- else if ($rk.value | trim) -}}
 {{- else -}}
-{{- fail "access: set rsaSignaturePublicKey.existingSecret to a Secret containing RsaSignaturePub.key, or set rsaSignaturePublicKey.value (PEM) to embed in the ConfigMap" -}}
+{{- fail "access: set rsaSignaturePublicKey.existingSecret to a Secret containing RsaSignaturePub.key (mounted under /config), or set rsaSignaturePublicKey.value (PEM) to embed in the ConfigMap" -}}
 {{- end -}}
 {{- end }}
 

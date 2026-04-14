@@ -3,13 +3,20 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
+# @param podSecurityContext - Optional security context for the Pod.  This is a security feature to restrict system calls.
+# podSecurityContext: {}
+#
+# Example:
+# podSecurityContext:
+#   seccompProfile:
+#     type: RuntimeDefault
+
 # @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
 # securityContext: {}
 #
 # Example:
 # securityContext:
-#   seccompProfile:
-#     type: RuntimeDefault
+#   allowPrivilegeEscalation: false
 
 # @param applicationName - The name of the application.  This will rename the underlying WAR file, thus changing the endpoint.  Defaults to storage.
 # applicationName: storage

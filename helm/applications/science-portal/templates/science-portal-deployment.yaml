@@ -24,7 +24,7 @@ spec:
         nodeAffinity:
           {{- toYaml . | nindent 10 }}
       {{- end }}
-      {{- with .Values.securityContext }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -53,19 +53,13 @@ spec:
         {{- with .Values.deployment.sciencePortal.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        {{- with .Values.podSecurityContext }}
+        {{- with .Values.securityContext }}
         securityContext:
         {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- if .Values.deployment.sciencePortal.extraEnv }}
-        envFrom:
-        - configMapRef:
-            name: science-portal-env-config
         {{- end }}
         env:
         {{- with .Values.deployment.sciencePortal.extraEnv }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
         {{- end }}
     {{- range $extraHost := .Values.deployment.extraHosts }}
       hostAliases:

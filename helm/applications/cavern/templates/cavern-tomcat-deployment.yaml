@@ -33,9 +33,9 @@ spec:
         {{- if and $ro (hasKey $ro "gid") (ne (index $ro "gid") nil) }}
         fsGroup: {{ index $ro "gid" }}
         {{- end }}
-        runAsUser: 0
-        seccompProfile:
-          type: RuntimeDefault
+        {{- with .Values.volumeInit.podSecurityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       initContainers:
         - name: merge-uws-db-credentials
           image: {{ .Values.volumeInit.image | quote }}
@@ -44,7 +44,7 @@ spec:
           args:
             - |
               set -e
-              cp -a /config-src/. /config-dst/
+              cp -R /config-src/. /config-dst/
               USER=$(tr -d '\n' < "/secret/${USER_KEY}")
               PASS=$(tr -d '\n' < "/secret/${PASS_KEY}")
               printf '\norg.opencadc.cavern.uws.username=%s\n' "$USER" >> /config-dst/catalina.properties
@@ -63,6 +63,10 @@ spec:
               readOnly: true
             - name: config-merged
               mountPath: /config-dst
+          {{- with .Values.volumeInit.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       containers:
       - image: {{ .Values.deployment.cavern.image }}
         imagePullPolicy: {{ .Values.deployment.cavern.imagePullPolicy }}

@@ -7,11 +7,6 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
-# It's best to keep this set as such, unless you're willing to change these in several places.
-# @deprecated Use deployment.skaha.sessions.namespace instead.  Here for backward compatibility.
-skahaWorkload:
-  namespace: skaha-workload
-
 # @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
 # securityContext: {}
 #
@@ -102,7 +97,7 @@ deployment:
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     sessions:
       # Namespace to create User Sessions in.  This should be a Namespace that is designated for user workloads, and should have appropriate resource quotas and limits set.  Defaults to "skaha-workload", but can be overridden.
-      namespace: canfar-workload
+      namespace: skaha-workload
       
       expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
       maxCount: "5"  # Max number of sessions per user.
@@ -186,10 +181,24 @@ deployment:
         #
         projectsDirectory: "projects"
 
-        # Optional. Name of the Persistent Volume Claim to use for User Storage when mounted into sessions.  Defaults to "skaha-workload-cavern-pvc".
-        # Example:
-        #   persistentVolumeClaimName: "skaha-workload-cavern-pvc"
-        persistentVolumeClaimName: "skaha-workload-cavern-pvc"
+        # Required. Kubernetes Pod volume source for User Storage (the content under .spec.volumes[].<name>
+        # for volume `cavern-volume`). May be persistentVolumeClaim, cephfs, nfs, csi, or any other
+        # supported volume type. See https://kubernetes.io/docs/concepts/storage/volumes/
+        # Example (existing PVC):
+        #   storageSpec:
+        #     persistentVolumeClaim:
+        #       claimName: skaha-workload-cavern-pvc
+        # Example (CephFS — fields depend on your cluster):
+        #   storageSpec:
+        #     cephfs:
+        #       monitors:
+        #         - 10.0.0.1:6789
+        #       user: myuser
+        #       secretRef:
+        #         name: ceph-secret
+        storageSpec:
+          persistentVolumeClaim:
+            claimName: skaha-workload-cavern-pvc
 
         # Required.  The VOSpace Service URI (uses ivo:// scheme) for the Cavern Service.
         # This is the VOSpace location where user home directories will be created, as well as any other user data.  Requires Cavern to be running.
@@ -213,8 +222,16 @@ deployment:
             #   apiKey: "jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I="  # Ensure this value is also used in the Cavern deployment's apiKeys object as "skaha:jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I=".
             # apiKey:
 
+            # Recommended for production: reference a Kubernetes Secret (create out-of-band) instead of plain apiKey in values.
+            # The key holds the raw API key string. Default data key name is "api-key".
+            # Example:
+            #   apiKeySecret:
+            #     name: science-platform-skaha-user-storage-admin-api-key
+            #     key: api-key
+            # apiKeySecret:
+
             # Alternatively, you can specify a Kubernetes Secret that contains a PEM Client Certificate representing the User Storage Admin.
-            # If both this and the OIDC Client are specified, Helm will throw an error.
+            # Only one of certificateSecret, apiKeySecret, or apiKey may be set; Helm will fail otherwise.
             # Default key is "cadcproxy.pem", but you can override it.
             # Example:
             #   certificateSecret:

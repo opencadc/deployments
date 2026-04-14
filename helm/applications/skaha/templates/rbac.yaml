@@ -8,7 +8,7 @@ metadata:
   namespace: {{ $.Values.deployment.skaha.sessions.namespace }}
 rules:
 - apiGroups: [""]
-  resources: ["events"]
+  resources: ["events", "limitranges"]
   verbs: ["get", "list", "watch"]
 
 - apiGroups: ["batch"]
