@@ -1,3 +1,6 @@
+{{- $oai := .Values.application.oaiPublishing | default dict }}
+OAI publishing is {{ ternary "enabled" "not enabled" $oai.enabled }}.
+
 1. Get the application URL by running these commands:
 {{- if .Values.httpRoute.enabled }}
 {{- if .Values.httpRoute.hostnames }}
