@@ -7,6 +7,8 @@ Expand the name of the chart.
 
 {{/*
 Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
 */}}
 {{- define "science-portal.fullname" -}}
 {{- if .Values.fullnameOverride }}
@@ -57,4 +59,24 @@ Create the name of the service account to use
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
+{{- end }}
+
+{{/*
+Trim slashes from app.basePath for joining (NEXT_PUBLIC_BASE_PATH style).
+*/}}
+{{- define "science-portal.trimmedBasePath" -}}
+{{- trimPrefix "/" (trimSuffix "/" (default "" .Values.app.basePath)) -}}
+{{- end }}
+
+{{/*
+HTTP paths for probes; must match NEXT_PUBLIC_BASE_PATH baked into the image when non-empty.
+*/}}
+{{- define "science-portal.healthPathLiveness" -}}
+{{- $b := include "science-portal.trimmedBasePath" . -}}
+{{- if $b }}/{{ $b }}/api/health{{- else -}}/api/health{{- end -}}
+{{- end }}
+
+{{- define "science-portal.healthPathReadiness" -}}
+{{- $b := include "science-portal.trimmedBasePath" . -}}
+{{- if $b }}/{{ $b }}/api/health/ready{{- else -}}/api/health/ready{{- end -}}
 {{- end }}

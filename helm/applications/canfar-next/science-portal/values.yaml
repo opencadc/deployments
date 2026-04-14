@@ -1,13 +1,14 @@
-# Default values for science-portal
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Default values for science-portal (CANFAR Next.js Science Portal).
+# https://github.com/canfar/science-portal
+# Deployers supply runtime env (NextAuth, APIs, etc.); see upstream .env.example.
 
-replicaCount: 2
+replicaCount: 1
 
 image:
-  repository: science-portal-nextjs
+  repository: ghcr.io/canfar/science-portal
   pullPolicy: IfNotPresent
-  tag: "" # Overrides the image tag whose default is the chart appVersion.
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: a533c61377855853f23a0fc9dba9592e21fe688d
 
 imagePullSecrets: []
 nameOverride: ""
@@ -15,191 +16,133 @@ fullnameOverride: ""
 
 serviceAccount:
   create: true
+  automount: true
   annotations: {}
   name: ""
 
 podAnnotations: {}
+podLabels: {}
 
-podSecurityContext:
-  runAsNonRoot: true
-  runAsUser: 1001
-  runAsGroup: 1001
-  fsGroup: 1001
-  seccompProfile:
-    type: RuntimeDefault
+# Optional pod security context (image runs as nextjs uid 1001).
+# Next.js may need a writable /tmp; readOnlyRootFilesystem is often false.
+podSecurityContext: {}
+# podSecurityContext:
+#   runAsNonRoot: true
+#   runAsUser: 1001
+#   runAsGroup: 1001
+#   fsGroup: 1001
+#   seccompProfile:
+#     type: RuntimeDefault
 
-securityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: false # Next.js needs write access to /tmp
+securityContext: {}
+# securityContext:
+#   allowPrivilegeEscalation: false
+#   capabilities:
+#     drop:
+#       - ALL
+#   readOnlyRootFilesystem: false
+
+# Must match NEXT_PUBLIC_BASE_PATH in the container image when non-empty (e.g. /canfar-app).
+app:
+  basePath: ""
 
 service:
   type: ClusterIP
+  # Port exposed on the Service (Ingress/Gateway often expect 80).
   port: 80
+  # Port the Next.js process listens on inside the container.
   targetPort: 3000
-  annotations: {}
 
 ingress:
-  enabled: true
-  className: "nginx"
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  enabled: false
+  className: ""
+  annotations: {}
   hosts:
-    - host: science-portal.example.com
+    - host: science-portal.example.local
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - secretName: science-portal-tls
-      hosts:
-        - science-portal.example.com
+  tls: []
 
-resources:
-  limits:
-    cpu: 1000m
-    memory: 1Gi
-  requests:
-    cpu: 100m
-    memory: 256Mi
+# Gateway API HTTPRoute (https://gateway-api.sigs.k8s.io/guides/)
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+    - name: gateway
+      sectionName: http
+  hostnames:
+    - science-portal.example.local
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
 
-autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 80
+resources: {}
+# resources:
+#   limits:
+#     cpu: 1000m
+#     memory: 1Gi
+#   requests:
+#     cpu: 100m
+#     memory: 256Mi
 
+# Probe httpGet.path is set in the chart from app.basePath + /api/health (or .../ready).
 livenessProbe:
   httpGet:
-    path: /api/health
-    port: 3000
-  initialDelaySeconds: 30
+    port: http
+  initialDelaySeconds: 10
   periodSeconds: 10
   timeoutSeconds: 3
   failureThreshold: 3
 
 readinessProbe:
   httpGet:
-    path: /api/health/ready
-    port: 3000
-  initialDelaySeconds: 10
+    port: http
+  initialDelaySeconds: 5
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 3
 
+# Gives the app time to listen before liveness failures (Next.js standalone cold start).
+startupProbe:
+  httpGet:
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 30
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Kubernetes container env entries (name / value / valueFrom).
+# See upstream .env.example for NEXT_PUBLIC_*, AUTH_SECRET, NEXTAUTH_URL, etc.
+env: []
+# env:
+#   - name: NEXTAUTH_URL
+#     value: "https://example.org"
+#   - name: AUTH_SECRET
+#     valueFrom:
+#       secretKeyRef:
+#         name: science-portal-secrets
+#         key: auth-secret
+
+envFrom: []
+# envFrom:
+#   - secretRef:
+#       name: science-portal-secrets
+# envFrom:
+#   - configMapRef:
+#       name: science-portal-config
+
+volumes: []
+volumeMounts: []
+
 nodeSelector: {}
-
 tolerations: []
-
-affinity:
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-              - key: app.kubernetes.io/name
-                operator: In
-                values:
-                  - science-portal
-          topologyKey: kubernetes.io/hostname
-
-# Environment variables
-env:
-  # Server-side API configuration
-  - name: SERVICE_STORAGE_API
-    value: "https://ws-uv.canfar.net/arc/nodes/home/"
-  - name: LOGIN_API
-    value: "https://ws-cadc.canfar.net/ac"
-  - name: SKAHA_API
-    value: "https://ws-uv.canfar.net/skaha"
-  - name: SRC_SKAHA_API
-    value: "https://src.canfar.net/skaha"
-  - name: SRC_CAVERN_API
-    value: "https://src.canfar.net/cavern"
-  - name: API_TIMEOUT
-    value: "30000"
-
-  # Client-side configuration (NEXT_PUBLIC_)
-  - name: NEXT_PUBLIC_LOGIN_API
-    value: "https://ws-cadc.canfar.net/ac"
-  - name: NEXT_PUBLIC_SKAHA_API
-    value: "https://ws-uv.canfar.net/skaha"
-  - name: NEXT_PUBLIC_SRC_SKAHA_API
-    value: "https://src.canfar.net/skaha"
-  - name: NEXT_PUBLIC_SRC_CAVERN_API
-    value: "https://src.canfar.net/cavern"
-  - name: NEXT_PUBLIC_API_TIMEOUT
-    value: "30000"
-  - name: NEXT_PUBLIC_ENABLE_QUERY_DEVTOOLS
-    value: "false"
-  - name: NEXT_PUBLIC_EXPERIMENTAL
-    value: "true"
-
-  # Authentication mode
-  - name: NEXT_USE_CANFAR
-    value: "true"
-  - name: NEXT_PUBLIC_USE_CANFAR
-    value: "true"
-
-  # NextAuth configuration
-  - name: AUTH_TRUST_HOST
-    value: "true"
-  - name: NEXTAUTH_URL
-    value: "https://science-portal.example.com"
-
-# Secrets (should be stored in Kubernetes secrets)
-# Create these secrets separately:
-# kubectl create secret generic science-portal-secrets \
-#   --from-literal=auth-secret=$(openssl rand -base64 32) \
-#   --from-literal=oidc-client-secret=your-secret
-secrets:
-  # Reference to existing secret containing:
-  # - auth-secret (AUTH_SECRET)
-  # - oidc-client-secret (NEXT_OIDC_CLIENT_SECRET)
-  existingSecret: "science-portal-secrets"
-  keys:
-    authSecret: "auth-secret"
-    oidcClientSecret: "oidc-client-secret"
-
-# OIDC Configuration
-oidc:
-  uri: "https://ska-iam.stfc.ac.uk/"
-  clientId: "" # Set this in your values override
-  callbackUri: "https://science-portal.example.com/science-portal"
-  redirectUri: "https://science-portal.example.com/api/auth/callback/oidc"
-  scope: "openid profile offline_access"
-
-# Network Policy
-networkPolicy:
-  enabled: true
-  policyTypes:
-    - Ingress
-    - Egress
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: ingress-nginx
-      ports:
-        - protocol: TCP
-          port: 3000
-  egress:
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - protocol: TCP
-          port: 443 # HTTPS for external APIs
-        - protocol: TCP
-          port: 53 # DNS
-        - protocol: UDP
-          port: 53 # DNS
-
-# Pod Disruption Budget
-podDisruptionBudget:
-  enabled: true
-  minAvailable: 1
+affinity: {}

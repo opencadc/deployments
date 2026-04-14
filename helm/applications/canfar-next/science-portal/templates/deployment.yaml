@@ -18,78 +18,71 @@ spec:
       maxUnavailable: 0
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "science-portal.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      labels:
-        {{- include "science-portal.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "science-portal.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
-      - name: {{ .Chart.Name }}
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        ports:
-        - name: http
-          containerPort: {{ .Values.service.targetPort }}
-          protocol: TCP
-        livenessProbe:
-          {{- toYaml .Values.livenessProbe | nindent 12 }}
-        readinessProbe:
-          {{- toYaml .Values.readinessProbe | nindent 12 }}
-        resources:
-          {{- toYaml .Values.resources | nindent 12 }}
-        env:
-          {{- range .Values.env }}
-          - name: {{ .name }}
-            value: {{ .value | quote }}
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-          # OIDC Configuration
-          - name: NEXT_OIDC_URI
-            value: {{ .Values.oidc.uri | quote }}
-          - name: NEXT_PUBLIC_OIDC_URI
-            value: {{ .Values.oidc.uri | quote }}
-          - name: NEXT_OIDC_CLIENT_ID
-            value: {{ .Values.oidc.clientId | quote }}
-          - name: NEXT_PUBLIC_OIDC_CLIENT_ID
-            value: {{ .Values.oidc.clientId | quote }}
-          - name: NEXT_OIDC_CALLBACK_URI
-            value: {{ .Values.oidc.callbackUri | quote }}
-          - name: NEXT_PUBLIC_OIDC_CALLBACK_URI
-            value: {{ .Values.oidc.callbackUri | quote }}
-          - name: NEXT_OIDC_REDIRECT_URI
-            value: {{ .Values.oidc.redirectUri | quote }}
-          - name: NEXT_PUBLIC_OIDC_REDIRECT_URI
-            value: {{ .Values.oidc.redirectUri | quote }}
-          - name: NEXT_OIDC_SCOPE
-            value: {{ .Values.oidc.scope | quote }}
-          - name: NEXT_PUBLIC_OIDC_SCOPE
-            value: {{ .Values.oidc.scope | quote }}
-          # Secrets from Kubernetes Secret
-          - name: AUTH_SECRET
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.secrets.existingSecret }}
-                key: {{ .Values.secrets.keys.authSecret }}
-          - name: NEXT_OIDC_CLIENT_SECRET
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.secrets.existingSecret }}
-                key: {{ .Values.secrets.keys.oidcClientSecret }}
-        {{- with .Values.volumeMounts }}
-        volumeMounts:
-          {{- toYaml . | nindent 12 }}
-        {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.livenessProbe }}
+          {{- $live := deepCopy .Values.livenessProbe }}
+          {{- $_ := set $live.httpGet "path" (include "science-portal.healthPathLiveness" .) }}
+          livenessProbe:
+            {{- toYaml $live | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          {{- $ready := deepCopy .Values.readinessProbe }}
+          {{- $_ := set $ready.httpGet "path" (include "science-portal.healthPathReadiness" .) }}
+          readinessProbe:
+            {{- toYaml $ready | nindent 12 }}
+          {{- end }}
+          {{- with .Values.startupProbe }}
+          {{- $start := deepCopy . }}
+          {{- $_ := set $start.httpGet "path" (include "science-portal.healthPathLiveness" $) }}
+          startupProbe:
+            {{- toYaml $start | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
