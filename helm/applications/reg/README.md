@@ -4,15 +4,16 @@ IVOA Registry Service Helm Chart
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.0.0<!-- x-release-please-version --> | 1.2.1 | application |
+|1.1.0<!-- x-release-please-version --> | 1.2.1 | application |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| application.authority | string | `""` |  |
 | application.logging | string | `nil` |  |
+| application.oaiPublishing.authority | string | `""` |  |
+| application.oaiPublishing.enabled | bool | `false` |  |
 | application.serviceEntries | list | `[]` |  |
 | application.vosi | string | `nil` |  |
 | autoscaling.enabled | bool | `false` |  |

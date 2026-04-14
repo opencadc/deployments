@@ -27,10 +27,13 @@ application:
   #    url: "https://example.com/mylink"
   serviceEntries: []
 
-  # Mandatory authority identifier for this registry instance as an IVOA identifier (URI).
-  # Example:
-  #   authority: "ivo://cadc.nrc.ca/reg"
-  authority: ""
+  # Optional OAI publishing; when enabled, authority is required (IVOA identifier URI).
+  oaiPublishing:
+    enabled: false
+    # Required when enabled is true.
+    # Example:
+    #   authority: "ivo://cadc.nrc.ca/reg"
+    authority: ""
 
   vosi:
     # The distinguished names of users that are allowed to control VOSI functions, namely POSTing to /availability to make the application read-only.
