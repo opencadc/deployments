@@ -30,11 +30,7 @@ source (the map under a volume entry: persistentVolumeClaim, cephfs, nfs, csi, e
       {{- end }}
       {{ $storageSpec := required "Missing .Values.deployment.skaha.sessions.userStorage.storageSpec. Set a Kubernetes Pod volume source (e.g. persistentVolumeClaim with claimName, or cephfs)." .Values.deployment.skaha.sessions.userStorage.storageSpec }}
       - name: cavern-volume
-<<<<<<< Updated upstream
-{{ toYaml $storageSpec | nindent 8 }}
-=======
 {{ include "skaha.session.userStorageVolumeSpec" . }}
->>>>>>> Stashed changes
       - name: scratch-dir
         emptyDir: {}
 {{- end }}

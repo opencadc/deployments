@@ -7,19 +7,6 @@ Namespace: {{ .Release.Namespace }}
 
 Skaha workload namespace: {{ .Values.deployment.skaha.sessions.namespace | default "skaha-workload" }}
 
-<<<<<<< Updated upstream
-{{- $legacyPVCName := hasKey (.Values.deployment.skaha.sessions.userStorage | default dict) "persistentVolumeClaimName" }}
-{{- if $legacyPVCName }}
-WARNING — User session storage configuration:
-  The value deployment.skaha.sessions.userStorage.persistentVolumeClaimName is no longer supported and is ignored.
-  Use deployment.skaha.sessions.userStorage.storageSpec instead (a Kubernetes Pod volume source), for example:
-    storageSpec:
-      persistentVolumeClaim:
-        claimName: skaha-workload-cavern-pvc
-  Other volume types (e.g. cephfs) are supported via the same storageSpec map.
-
-{{- end }}
-=======
 {{- $userStorage := .Values.deployment.skaha.sessions.userStorage }}
 {{- if and $userStorage (hasKey $userStorage "persistentVolumeClaimName") }}
 
@@ -30,20 +17,19 @@ WARNING — User session storage configuration:
 #  deployment.skaha.sessions.userStorage.persistentVolumeClaimName is set.   #
 #  That field is deprecated.                                                   #
 #                                                                              #
-#  Use deployment.skaha.sessions.userStorage.spec instead (Pod volume body     #
+#  Use deployment.skaha.sessions.userStorage.storageSpec instead (Pod volume body     #
 #  without "name"), for example:                                               #
-#    spec:                                                                     #
+#    storageSpec:                                                                     #
 #      persistentVolumeClaim:                                                  #
 #        claimName: <your-claim>                                               #
 #                                                                              #
-#  The legacy field is still applied when spec is empty; remove it to stay     #
+#  The legacy field is still applied when storageSpec is empty; remove it to stay     #
 #  aligned with future chart defaults.                                         #
 #                                                                              #
 ################################################################################
 
 {{- end }}
 
->>>>>>> Stashed changes
 User Sessions:
 - Ensure CARTA images being used are at version 5.0.3 or higher.
 
