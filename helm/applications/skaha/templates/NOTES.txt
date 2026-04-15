@@ -7,6 +7,7 @@ Namespace: {{ .Release.Namespace }}
 
 Skaha workload namespace: {{ .Values.deployment.skaha.sessions.namespace | default "skaha-workload" }}
 
+<<<<<<< Updated upstream
 {{- $legacyPVCName := hasKey (.Values.deployment.skaha.sessions.userStorage | default dict) "persistentVolumeClaimName" }}
 {{- if $legacyPVCName }}
 WARNING — User session storage configuration:
@@ -18,6 +19,31 @@ WARNING — User session storage configuration:
   Other volume types (e.g. cephfs) are supported via the same storageSpec map.
 
 {{- end }}
+=======
+{{- $userStorage := .Values.deployment.skaha.sessions.userStorage }}
+{{- if and $userStorage (hasKey $userStorage "persistentVolumeClaimName") }}
+
+################################################################################
+#                                                                              #
+#  DEPRECATION WARNING                                                         #
+#                                                                              #
+#  deployment.skaha.sessions.userStorage.persistentVolumeClaimName is set.   #
+#  That field is deprecated.                                                   #
+#                                                                              #
+#  Use deployment.skaha.sessions.userStorage.spec instead (Pod volume body     #
+#  without "name"), for example:                                               #
+#    spec:                                                                     #
+#      persistentVolumeClaim:                                                  #
+#        claimName: <your-claim>                                               #
+#                                                                              #
+#  The legacy field is still applied when spec is empty; remove it to stay     #
+#  aligned with future chart defaults.                                         #
+#                                                                              #
+################################################################################
+
+{{- end }}
+
+>>>>>>> Stashed changes
 User Sessions:
 - Ensure CARTA images being used are at version 5.0.3 or higher.
 

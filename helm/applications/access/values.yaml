@@ -45,7 +45,7 @@ logging:
   # Secret string for enhanced logging.  Passed with a POST request to the /access/logControl endpoint.
   # Example:
   #  secret: "mysecret"
-  # secret: 
+  # secret:
 
 # Optional extra RegistryClient base URLs (see configmap cadc-registry.properties).
 registryURLs: []

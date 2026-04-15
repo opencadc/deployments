@@ -98,7 +98,7 @@ deployment:
     sessions:
       # Namespace to create User Sessions in.  This should be a Namespace that is designated for user workloads, and should have appropriate resource quotas and limits set.  Defaults to "skaha-workload", but can be overridden.
       namespace: skaha-workload
-      
+
       expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
       maxCount: "5"  # Max number of sessions per user.
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
@@ -181,6 +181,7 @@ deployment:
         #
         projectsDirectory: "projects"
 
+<<<<<<< Updated upstream
         # Required. Kubernetes Pod volume source for User Storage (the content under .spec.volumes[].<name>
         # for volume `cavern-volume`). May be persistentVolumeClaim, cephfs, nfs, csi, or any other
         # supported volume type. See https://kubernetes.io/docs/concepts/storage/volumes/
@@ -199,6 +200,24 @@ deployment:
         storageSpec:
           persistentVolumeClaim:
             claimName: skaha-workload-cavern-pvc
+=======
+        # Volume source for User Storage when mounted into sessions (same shape as under a Pod volume entry, excluding "name").
+        # Default matches the former persistentVolumeClaim-only behaviour.
+        # Example (CSI or other volume types): set spec to any valid Kubernetes volume block.
+        # Example:
+        #   spec:
+        #     csi:
+        #       driver: example.driver
+        #       volumeAttributes: {}
+        #
+        spec:
+          persistentVolumeClaim:
+            claimName: "skaha-workload-cavern-pvc"
+
+        # Deprecated: use spec.persistentVolumeClaim.claimName (or another volume type under spec) instead.
+        # If spec is empty or omitted, this is still honoured for backward compatibility.
+        # persistentVolumeClaimName: "skaha-workload-cavern-pvc"
+>>>>>>> Stashed changes
 
         # Required.  The VOSpace Service URI (uses ivo:// scheme) for the Cavern Service.
         # This is the VOSpace location where user home directories will be created, as well as any other user data.  Requires Cavern to be running.

@@ -1,6 +1,6 @@
 # access
 
-![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.1](https://img.shields.io/badge/AppVersion-1.0.1-informational?style=flat-square)
+![Version: 0.3.2](https://img.shields.io/badge/Version-0.3.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.1](https://img.shields.io/badge/AppVersion-1.0.1-informational?style=flat-square)
 
 A Helm chart for the Access web service, responsible for managing user cookie access CADC and CANFAR services and applications.
 
@@ -26,16 +26,24 @@ A Helm chart for the Access web service, responsible for managing user cookie ac
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.hosts[0].paths[0].pathType | string | `"ImplementationSpecific"` |  |
 | ingress.tls | list | `[]` |  |
+| livenessProbe.failureThreshold | int | `3` |  |
 | livenessProbe.httpGet.path | string | `"/access/availability"` |  |
 | livenessProbe.httpGet.port | string | `"http"` |  |
+| livenessProbe.initialDelaySeconds | int | `10` |  |
+| livenessProbe.periodSeconds | int | `10` |  |
+| livenessProbe.timeoutSeconds | int | `5` |  |
 | logging | string | `nil` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
 | podLabels | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| readinessProbe.failureThreshold | int | `3` |  |
 | readinessProbe.httpGet.path | string | `"/access/availability"` |  |
 | readinessProbe.httpGet.port | string | `"http"` |  |
+| readinessProbe.initialDelaySeconds | int | `10` |  |
+| readinessProbe.periodSeconds | int | `10` |  |
+| readinessProbe.timeoutSeconds | int | `5` |  |
 | registryURLs | list | `[]` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |

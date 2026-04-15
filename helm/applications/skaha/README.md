@@ -63,7 +63,11 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.userStorage.admin.auth | string | `nil` |  |
 | deployment.skaha.sessions.userStorage.admin.auth.apiKeySecret | object | `nil` | Kubernetes Secret reference for the Cavern admin API key (`name`, optional `key` default `api-key`) |
 | deployment.skaha.sessions.userStorage.homeDirectory | string | `"home"` |  |
+<<<<<<< Updated upstream
 | deployment.skaha.sessions.userStorage.storageSpec | object | `{"persistentVolumeClaim":{"claimName":"skaha-workload-cavern-pvc"}}` | Kubernetes Pod volume source for session user storage (e.g. persistentVolumeClaim, cephfs) |
+=======
+| deployment.skaha.sessions.userStorage.spec | object | `{"persistentVolumeClaim":{"claimName":"skaha-workload-cavern-pvc"}}` | Volume source for session user storage (Pod volume body without `name`). |
+>>>>>>> Stashed changes
 | deployment.skaha.sessions.userStorage.projectsDirectory | string | `"projects"` |  |
 | deployment.skaha.sessions.userStorage.topLevelDirectory | string | `"/cavern"` |  |
 | experimentalFeatures.enabled | bool | `false` |  |

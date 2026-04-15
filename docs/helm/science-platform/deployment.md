@@ -532,7 +532,9 @@ deployment:
       nodeLabelSelector:
 
       userStorage:
-        persistentVolumeClaimName: skaha-workload-cavern-pvc
+        spec:
+          persistentVolumeClaim:
+            claimName: skaha-workload-cavern-pvc
         nodeURIPrefix: "vos://canfar.net~src~cavern"
         serviceURI: "ivo://canfar.net/src/cavern"
         admin:

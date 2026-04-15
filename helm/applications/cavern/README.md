@@ -4,7 +4,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.10.0<!-- x-release-please-version --> | 0.9.2 | application |
+|0.10.3<!-- x-release-please-version --> | 0.9.2 | application |
 
 ## Requirements
 
@@ -47,7 +47,16 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | readinessProbe | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
+| serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.automount | bool | `true` |  |
+| serviceAccount.create | bool | `false` |  |
+| serviceAccount.name | string | `""` |  |
 | storage.service.spec | string | `nil` |  |
 | tolerations | list | `[]` |  |
-| volumeInit.image | string | `"registry.k8s.io/busybox:1.36"` |  |
+| volumeInit.image | string | `"busybox:1.36"` |  |
 | volumeInit.imagePullPolicy | string | `"IfNotPresent"` |  |
+| volumeInit.podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| volumeInit.securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| volumeInit.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| volumeInit.securityContext.runAsNonRoot | bool | `true` |  |
+| volumeInit.securityContext.runAsUser | int | `8675309` |  |

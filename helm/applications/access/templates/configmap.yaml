@@ -15,7 +15,7 @@ data:
     # local authority map
     #
     # <base standardID> = <authority>
-  
+
     ivo://ivoa.net/std/UMS#resetpass-0.1 = ivo://cadc.nrc.ca/gms
     ivo://ivoa.net/std/GMS#search-1.0 = ivo://cadc.nrc.ca/gms
     ivo://ivoa.net/std/GMS#search-0.1 = ivo://cadc.nrc.ca/gms
