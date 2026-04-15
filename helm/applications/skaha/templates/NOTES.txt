@@ -7,27 +7,15 @@ Namespace: {{ .Release.Namespace }}
 
 Skaha workload namespace: {{ .Values.deployment.skaha.sessions.namespace | default "skaha-workload" }}
 
-{{- $userStorage := .Values.deployment.skaha.sessions.userStorage }}
-{{- if and $userStorage (hasKey $userStorage "persistentVolumeClaimName") }}
-
-################################################################################
-#                                                                              #
-#  DEPRECATION WARNING                                                         #
-#                                                                              #
-#  deployment.skaha.sessions.userStorage.persistentVolumeClaimName is set.   #
-#  That field is deprecated.                                                   #
-#                                                                              #
-#  Use deployment.skaha.sessions.userStorage.storageSpec instead (Pod volume body     #
-#  without "name"), for example:                                               #
-#    storageSpec:                                                                     #
-#      persistentVolumeClaim:                                                  #
-#        claimName: <your-claim>                                               #
-#                                                                              #
-#  The legacy field is still applied when storageSpec is empty; remove it to stay     #
-#  aligned with future chart defaults.                                         #
-#                                                                              #
-################################################################################
-
+{{- $legacyPVCName := hasKey (.Values.deployment.skaha.sessions.userStorage | default dict) "persistentVolumeClaimName" }}
+{{- if $legacyPVCName }}
+WARNING — User session storage configuration:
+  The value deployment.skaha.sessions.userStorage.persistentVolumeClaimName is no longer supported and is ignored.
+  Use deployment.skaha.sessions.userStorage.storageSpec instead (a Kubernetes Pod volume source), for example:
+    storageSpec:
+      persistentVolumeClaim:
+        claimName: skaha-workload-cavern-pvc
+  Other volume types (e.g. cephfs) are supported via the same storageSpec map.
 {{- end }}
 
 User Sessions:
