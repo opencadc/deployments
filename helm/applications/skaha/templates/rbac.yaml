@@ -20,7 +20,7 @@ rules:
   verbs: ["create", "deletecollection", "delete", "get", "list"]
 
 - apiGroups: ["traefik.io"]
-  resources: ["ingressroutes"]
+  resources: ["ingressroutes", "middlewares"]
   verbs: ["create", "deletecollection", "delete", "get", "list"]
 
 - apiGroups: ["metrics.k8s.io"]

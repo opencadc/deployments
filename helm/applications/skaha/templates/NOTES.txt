@@ -7,15 +7,20 @@ Namespace: {{ .Release.Namespace }}
 
 Skaha workload namespace: {{ .Values.deployment.skaha.sessions.namespace | default "skaha-workload" }}
 
-{{- $legacyPVCName := hasKey (.Values.deployment.skaha.sessions.userStorage | default dict) "persistentVolumeClaimName" }}
+{{- $userStorage := .Values.deployment.skaha.sessions.userStorage | default dict }}
+{{- $legacyPVCName := hasKey $userStorage "persistentVolumeClaimName" }}
 {{- if $legacyPVCName }}
-WARNING — User session storage configuration:
-  The value deployment.skaha.sessions.userStorage.persistentVolumeClaimName is no longer supported and is ignored.
-  Use deployment.skaha.sessions.userStorage.storageSpec instead (a Kubernetes Pod volume source), for example:
-    storageSpec:
-      persistentVolumeClaim:
-        claimName: skaha-workload-cavern-pvc
-  Other volume types (e.g. cephfs) are supported via the same storageSpec map.
+
+################################################################################
+#                                                                              #
+#  USER SESSION STORAGE — configuration notice                                 #
+#                                                                              #
+#  deployment.skaha.sessions.userStorage.persistentVolumeClaimName is         #
+#  deprecated. Prefer userStorage.spec (e.g. spec.persistentVolumeClaim).      #
+#  The legacy field is still used when spec is unset or empty.               #
+#                                                                              #
+################################################################################
+
 {{- end }}
 
 User Sessions:
@@ -66,7 +71,7 @@ None.
 Please use the deployment.skaha.sessions.namespace to set the workload (User Session) Namespace.  The .skahaWorkload value is deprecated.
 {{- end }}
 {{- if $legacyPVCName }}
-Your values still set deployment.skaha.sessions.userStorage.persistentVolumeClaimName — that key is ignored. Migrate to deployment.skaha.sessions.userStorage.storageSpec (see WARNING above).
+Your values still set deployment.skaha.sessions.userStorage.persistentVolumeClaimName — migrate to userStorage.spec (see notice above). The legacy field remains honoured when spec is unset or empty.
 {{- end }}
 
 Experimental Features Configured:

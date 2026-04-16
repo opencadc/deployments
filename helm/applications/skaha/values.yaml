@@ -181,24 +181,24 @@ deployment:
         #
         projectsDirectory: "projects"
 
-        # Required. Kubernetes Pod volume source for User Storage (the content under .spec.volumes[].<name>
+        # Kubernetes Pod volume source for User Storage (the content under .spec.volumes[].<name>
         # for volume `cavern-volume`). May be persistentVolumeClaim, cephfs, nfs, csi, or any other
         # supported volume type. See https://kubernetes.io/docs/concepts/storage/volumes/
+        # If omitted or empty, the chart falls back to persistentVolumeClaim.claimName from
+        # persistentVolumeClaimName (deprecated) or the default claim skaha-workload-cavern-pvc.
         # Example (existing PVC):
-        #   storageSpec:
+        #   spec:
         #     persistentVolumeClaim:
         #       claimName: skaha-workload-cavern-pvc
         # Example (CephFS — fields depend on your cluster):
-        #   storageSpec:
+        #   spec:
         #     cephfs:
         #       monitors:
         #         - 10.0.0.1:6789
         #       user: myuser
         #       secretRef:
         #         name: ceph-secret
-        storageSpec:
-          persistentVolumeClaim:
-            claimName: skaha-workload-cavern-pvc
+        spec: {}
 
         # Required.  The VOSpace Service URI (uses ivo:// scheme) for the Cavern Service.
         # This is the VOSpace location where user home directories will be created, as well as any other user data.  Requires Cavern to be running.

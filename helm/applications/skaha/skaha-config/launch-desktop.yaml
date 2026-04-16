@@ -86,7 +86,7 @@ spec:
           httpGet:
             path: /
             port: 6901
-          initialDelaySeconds: 10
+          initialDelaySeconds: 30
           timeoutSeconds: 300
           periodSeconds: 10
           failureThreshold: 30

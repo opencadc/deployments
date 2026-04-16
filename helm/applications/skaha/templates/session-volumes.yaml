@@ -1,5 +1,5 @@
 {{/**
-Fragment of Pod .spec.volumes for user sessions. `userStorage.storageSpec` is a Kubernetes volume
+Fragment of Pod .spec.volumes for user sessions. `userStorage.spec` is a Kubernetes volume
 source (the map under a volume entry: persistentVolumeClaim, cephfs, nfs, csi, etc.), mounted as `cavern-volume`.
 */}}
 {{- define "skaha.session.commonVolumes" -}}
@@ -28,7 +28,6 @@ source (the map under a volume entry: persistentVolumeClaim, cephfs, nfs, csi, e
         {{- end }}
       {{- end }}
       {{- end }}
-      {{ $storageSpec := required "Missing .Values.deployment.skaha.sessions.userStorage.storageSpec. Set a Kubernetes Pod volume source (e.g. persistentVolumeClaim with claimName, or cephfs)." .Values.deployment.skaha.sessions.userStorage.storageSpec }}
       - name: cavern-volume
 {{ include "skaha.session.userStorageVolumeSpec" . }}
       - name: scratch-dir

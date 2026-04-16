@@ -136,12 +136,11 @@ The Projects Directory base absolute path.
 
 {{/*
 Volume source YAML for the session "cavern-volume" (content below volume name in a Pod spec).
-Uses userStorage.storageSpec when set (non-empty); otherwise persistentVolumeClaimName for backward compatibility;
-otherwise defaults to the historical PVC name.
+Uses userStorage.spec when non-empty; else persistentVolumeClaimName or default claim skaha-workload-cavern-pvc.
 */}}
 {{- define "skaha.session.userStorageVolumeSpec" -}}
 {{- $us := .Values.deployment.skaha.sessions.userStorage }}
-{{- $spec := $us.storageSpec }}
+{{- $spec := $us.spec }}
 {{- if and $spec (gt (len $spec) 0) }}
 {{- toYaml $spec | indent 8 }}
 {{- else }}
