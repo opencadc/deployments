@@ -1,41 +1,60 @@
 {{/*
-Obtain a comma-delimited string of Experimental Features and a flag to set if any are enabled.
+Expand the name of the chart.
 */}}
-{{- define "sciencePortal.experimentalFeatureGates" -}}
-{{- $features := "" -}}
-{{- $featureEnabled := false -}}
-
-{{- with .Values.experimentalFeatures -}}
-
-{{- if .enabled -}}
-{{- range $feature, $map := . -}}
-
-{{/* Skip the 'enabled' key itself */}}
-{{- if and (ne $feature "enabled") (ne $feature "") -}}
-{{- $thisMap := $map | default dict }}
-
-{{- if or (not (hasKey $thisMap "enabled")) (not (kindIs "bool" $thisMap.enabled)) -}}
-{{- fail ( printf "Feature gate '%s' must have 'enabled' (false | true) key" $feature ) -}}
+{{- define "science-portal.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
-{{- if eq $features "" -}}
-{{- $features = printf "%s=%t" $feature $thisMap.enabled -}}
-{{- else -}}
-{{- $features = printf "%s,%s=%t" $features $feature $thisMap.enabled -}}
-{{- end -}}
+{{/*
+Create a default fully qualified app name.
+*/}}
+{{- define "science-portal.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
 
-{{- end -}}
-{{/* End check for enabled key to skip */}}
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "science-portal.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
 
-{{- end -}}
-{{/* End range */}}
+{{/*
+Common labels
+*/}}
+{{- define "science-portal.labels" -}}
+helm.sh/chart: {{ include "science-portal.chart" . }}
+{{ include "science-portal.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
 
-{{- printf "%s" $features -}}
+{{/*
+Selector labels
+*/}}
+{{- define "science-portal.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "science-portal.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
 
-{{- end -}}
-{{/* End global if enabled */}}
-
-{{- end -}}
-{{/* End with */}}
-
-{{- end -}}
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "science-portal.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "science-portal.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
