@@ -42,7 +42,7 @@ securityContext: {}
 
 # -- Product / application settings mapped to container env. Prefer over raw `env` for options from [upstream .env.example](https://github.com/canfar/science-portal/blob/main/.env.example). Many `NEXT_PUBLIC_*` values are fixed at **image build**; runtime env here mainly affects the server unless your image supports overrides.
 app:
-  # -- URL path prefix; must match `NEXT_PUBLIC_BASE_PATH` in the image for probes. When non-empty, sets env `NEXT_PUBLIC_BASE_PATH`.
+  # -- URL path prefix; must match `NEXT_PUBLIC_BASE_PATH` in the image. When non-empty, sets env `NEXT_PUBLIC_BASE_PATH`. HTTP probes hit this path (or /science-portal when empty).
   basePath: ""
   # -- Server-side API URLs (`SERVICE_STORAGE_API`, `LOGIN_API`, `SKAHA_API`, `SRC_*`, `API_TIMEOUT`). Empty keys are omitted.
   api:
@@ -83,8 +83,7 @@ app:
 
 service:
   type: ClusterIP
-  port: 80
-  targetPort: 3000
+  port: 3000
 
 ingress:
   enabled: false

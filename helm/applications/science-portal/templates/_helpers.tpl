@@ -69,14 +69,18 @@ Trim slashes from app.basePath for joining (NEXT_PUBLIC_BASE_PATH style).
 {{- end }}
 
 {{/*
-HTTP paths for probes; must match NEXT_PUBLIC_BASE_PATH baked into the image when non-empty.
+HTTP path for probes: app root (returns 200). Must match the URL prefix the app serves
+(NEXT_PUBLIC_BASE_PATH / app.basePath). When basePath is unset, defaults to /science-portal.
 */}}
-{{- define "science-portal.healthPathLiveness" -}}
+{{- define "science-portal.httpProbePath" -}}
 {{- $b := include "science-portal.trimmedBasePath" . -}}
-{{- if $b }}/{{ $b }}/api/health{{- else -}}/api/health{{- end -}}
+{{- if $b }}/{{ $b }}{{- else -}}/science-portal{{- end -}}
+{{- end }}
+
+{{- define "science-portal.healthPathLiveness" -}}
+{{- include "science-portal.httpProbePath" . -}}
 {{- end }}
 
 {{- define "science-portal.healthPathReadiness" -}}
-{{- $b := include "science-portal.trimmedBasePath" . -}}
-{{- if $b }}/{{ $b }}/api/health/ready{{- else -}}/api/health/ready{{- end -}}
+{{- include "science-portal.httpProbePath" . -}}
 {{- end }}
