@@ -7,7 +7,7 @@ replicaCount: 1
 deployment:
   hostname: example.org
   cavern:
-    image: images.opencadc.org/platform/cavern:0.9.2
+    image: images.opencadc.org/platform/cavern:0.9.3
     imagePullPolicy: IfNotPresent
 
     # How cavern identifies itself.
