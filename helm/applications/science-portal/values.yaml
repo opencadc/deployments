@@ -1,13 +1,13 @@
-# Default values for science-portal
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Default values for science-portal (CANFAR Next.js Science Portal).
+# https://github.com/canfar/science-portal
 
-replicaCount: 2
+replicaCount: 1
 
+# -- Container image (repository and tag).
 image:
-  repository: science-portal-nextjs
+  repository: ghcr.io/canfar/science-portal
   pullPolicy: IfNotPresent
-  tag: "" # Overrides the image tag whose default is the chart appVersion.
+  tag: a533c61377855853f23a0fc9dba9592e21fe688d
 
 imagePullSecrets: []
 nameOverride: ""
@@ -15,191 +15,148 @@ fullnameOverride: ""
 
 serviceAccount:
   create: true
+  automount: true
   annotations: {}
   name: ""
 
 podAnnotations: {}
+podLabels: {}
 
-podSecurityContext:
-  runAsNonRoot: true
-  runAsUser: 1001
-  runAsGroup: 1001
-  fsGroup: 1001
-  seccompProfile:
-    type: RuntimeDefault
+# Optional pod security context (image runs as nextjs uid 1001).
+podSecurityContext: {}
+# podSecurityContext:
+#   runAsNonRoot: true
+#   runAsUser: 1001
+#   runAsGroup: 1001
+#   fsGroup: 1001
+#   seccompProfile:
+#     type: RuntimeDefault
 
-securityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: false # Next.js needs write access to /tmp
+securityContext: {}
+# securityContext:
+#   allowPrivilegeEscalation: false
+#   capabilities:
+#     drop:
+#       - ALL
+#   readOnlyRootFilesystem: false
+
+# -- Product / application settings mapped to container env. Prefer over raw `env` for options from [upstream .env.example](https://github.com/canfar/science-portal/blob/main/.env.example). Many `NEXT_PUBLIC_*` values are fixed at **image build**; runtime env here mainly affects the server unless your image supports overrides.
+app:
+  # -- URL path prefix; must match `NEXT_PUBLIC_BASE_PATH` in the image for probes. When non-empty, sets env `NEXT_PUBLIC_BASE_PATH`.
+  basePath: ""
+  # -- Server-side API URLs (`SERVICE_STORAGE_API`, `LOGIN_API`, `SKAHA_API`, `SRC_*`, `API_TIMEOUT`). Empty keys are omitted.
+  api:
+    storage: ""
+    login: ""
+    skaha: ""
+    srcSkaha: ""
+    srcCavern: ""
+    timeoutMs: ""
+  # -- Client-side API URLs (`NEXT_PUBLIC_*`). Empty keys are omitted (image build defaults apply).
+  publicApi:
+    login: ""
+    skaha: ""
+    srcSkaha: ""
+    srcCavern: ""
+    timeoutMs: ""
+  # useCanfar: true  # boolean: sets NEXT_USE_CANFAR and NEXT_PUBLIC_USE_CANFAR (omit key for image defaults)
+  # experimental: false  # boolean -> NEXT_PUBLIC_EXPERIMENTAL
+  # enableQueryDevtools: false  # boolean -> NEXT_PUBLIC_ENABLE_QUERY_DEVTOOLS
+  # -- OIDC settings. When `enabled` and `uri` are set, emits paired NEXT_OIDC_* / NEXT_PUBLIC_OIDC_* env vars. Use with useCanfar: false. Client secret via existingSecret + secretKey only.
+  oidc:
+    enabled: false
+    uri: ""
+    clientId: ""
+    callbackUri: ""
+    redirectUri: ""
+    scope: ""
+    clientSecret:
+      existingSecret: ""
+      secretKey: ""
+  # -- NextAuth (`AUTH_TRUST_HOST`, `NEXTAUTH_URL`, optional `AUTH_SECRET` from Secret refs).
+  auth:
+    # trustHost: false
+    nextauthUrl: ""
+    authSecret:
+      existingSecret: ""
+      secretKey: ""
 
 service:
   type: ClusterIP
   port: 80
   targetPort: 3000
-  annotations: {}
 
 ingress:
-  enabled: true
-  className: "nginx"
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  enabled: false
+  className: ""
+  annotations: {}
   hosts:
-    - host: science-portal.example.com
+    - host: science-portal.example.local
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - secretName: science-portal-tls
-      hosts:
-        - science-portal.example.com
+  tls: []
 
-resources:
-  limits:
-    cpu: 1000m
-    memory: 1Gi
-  requests:
-    cpu: 100m
-    memory: 256Mi
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+    - name: gateway
+      sectionName: http
+  hostnames:
+    - science-portal.example.local
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
 
-autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 80
+resources: {}
 
 livenessProbe:
   httpGet:
-    path: /api/health
-    port: 3000
-  initialDelaySeconds: 30
+    port: http
+  initialDelaySeconds: 10
   periodSeconds: 10
   timeoutSeconds: 3
   failureThreshold: 3
 
 readinessProbe:
   httpGet:
-    path: /api/health/ready
-    port: 3000
-  initialDelaySeconds: 10
+    port: http
+  initialDelaySeconds: 5
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 3
 
+startupProbe:
+  httpGet:
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 30
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+# -- Extra container `env` entries (Kubernetes native). Merged **after** chart-generated env from `app`. If a variable name appears here, the chart **skips** emitting that name from `app` (no duplicate keys). Use for secrets and overrides.
+env: []
+# env:
+#   - name: EXTRA_VAR
+#     value: "x"
+
+# -- Optional `envFrom` (Secret/ConfigMap refs).
+envFrom: []
+# envFrom:
+#   - secretRef:
+#       name: science-portal-secrets
+
+volumes: []
+volumeMounts: []
+
 nodeSelector: {}
-
 tolerations: []
-
-affinity:
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-              - key: app.kubernetes.io/name
-                operator: In
-                values:
-                  - science-portal
-          topologyKey: kubernetes.io/hostname
-
-# Environment variables
-env:
-  # Server-side API configuration
-  - name: SERVICE_STORAGE_API
-    value: "https://ws-uv.canfar.net/arc/nodes/home/"
-  - name: LOGIN_API
-    value: "https://ws-cadc.canfar.net/ac"
-  - name: SKAHA_API
-    value: "https://ws-uv.canfar.net/skaha"
-  - name: SRC_SKAHA_API
-    value: "https://src.canfar.net/skaha"
-  - name: SRC_CAVERN_API
-    value: "https://src.canfar.net/cavern"
-  - name: API_TIMEOUT
-    value: "30000"
-
-  # Client-side configuration (NEXT_PUBLIC_)
-  - name: NEXT_PUBLIC_LOGIN_API
-    value: "https://ws-cadc.canfar.net/ac"
-  - name: NEXT_PUBLIC_SKAHA_API
-    value: "https://ws-uv.canfar.net/skaha"
-  - name: NEXT_PUBLIC_SRC_SKAHA_API
-    value: "https://src.canfar.net/skaha"
-  - name: NEXT_PUBLIC_SRC_CAVERN_API
-    value: "https://src.canfar.net/cavern"
-  - name: NEXT_PUBLIC_API_TIMEOUT
-    value: "30000"
-  - name: NEXT_PUBLIC_ENABLE_QUERY_DEVTOOLS
-    value: "false"
-  - name: NEXT_PUBLIC_EXPERIMENTAL
-    value: "true"
-
-  # Authentication mode
-  - name: NEXT_USE_CANFAR
-    value: "true"
-  - name: NEXT_PUBLIC_USE_CANFAR
-    value: "true"
-
-  # NextAuth configuration
-  - name: AUTH_TRUST_HOST
-    value: "true"
-  - name: NEXTAUTH_URL
-    value: "https://science-portal.example.com"
-
-# Secrets (should be stored in Kubernetes secrets)
-# Create these secrets separately:
-# kubectl create secret generic science-portal-secrets \
-#   --from-literal=auth-secret=$(openssl rand -base64 32) \
-#   --from-literal=oidc-client-secret=your-secret
-secrets:
-  # Reference to existing secret containing:
-  # - auth-secret (AUTH_SECRET)
-  # - oidc-client-secret (NEXT_OIDC_CLIENT_SECRET)
-  existingSecret: "science-portal-secrets"
-  keys:
-    authSecret: "auth-secret"
-    oidcClientSecret: "oidc-client-secret"
-
-# OIDC Configuration
-oidc:
-  uri: "https://ska-iam.stfc.ac.uk/"
-  clientId: "" # Set this in your values override
-  callbackUri: "https://science-portal.example.com/science-portal"
-  redirectUri: "https://science-portal.example.com/api/auth/callback/oidc"
-  scope: "openid profile offline_access"
-
-# Network Policy
-networkPolicy:
-  enabled: true
-  policyTypes:
-    - Ingress
-    - Egress
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: ingress-nginx
-      ports:
-        - protocol: TCP
-          port: 3000
-  egress:
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - protocol: TCP
-          port: 443 # HTTPS for external APIs
-        - protocol: TCP
-          port: 53 # DNS
-        - protocol: UDP
-          port: 53 # DNS
-
-# Pod Disruption Budget
-podDisruptionBudget:
-  enabled: true
-  minAvailable: 1
+affinity: {}
