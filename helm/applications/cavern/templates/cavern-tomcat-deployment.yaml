@@ -5,6 +5,7 @@
 {{- $sk := $auth.secretKeys | default dict -}}
 {{- $userKey := $sk.username | default "username" -}}
 {{- $passKey := $sk.password | default "password" -}}
+{{- $uwsDbSecretName := include "cavern.uwsDbAuthSecretName" . -}}
 {{- $hasAdminSecretKeys := false }}
 {{- range $_, $spec := .Values.deployment.cavern.adminAPIKeys }}
 {{- if and (kindIs "map" $spec) $spec.existingSecret }}
@@ -147,7 +148,7 @@ spec:
           name: {{ .Release.Name }}-config
       - name: uws-db-secret
         secret:
-          secretName: {{ $auth.existingSecret }}
+          secretName: {{ $uwsDbSecretName }}
 {{ if $hasAdminSecretKeys }}
       - name: admin-api-keys
         projected:

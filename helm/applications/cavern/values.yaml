@@ -100,7 +100,7 @@ deployment:
     # The IdentityManager class handling authentication.  This should generally be left alone.
     identityManagerClass: org.opencadc.auth.StandardIdentityManager
 
-    # For the UWS PostgreSQL database. Do not put credentials in Git: use auth.existingSecret.
+    # For the UWS PostgreSQL database. Prefer auth.existingSecret; do not commit credentials to Git.
     uws:
       db:
         install: true # Whether to deploy a local PostgreSQL database.  Set to false to use your own.
@@ -111,8 +111,11 @@ deployment:
         schema: "uws"
         maxActive: 2
         # Database credentials: same Secret is used by the Cavern pod (init container) and bundled PostgreSQL when install: true.
+        # Set existingSecret (recommended), or username + password (deprecated — chart creates {{ releaseName }}-uws-db-creds; see NOTES.txt).
         auth:
           existingSecret: ""
+          # username: ""  # deprecated; use existingSecret
+          # password: ""  # deprecated; use existingSecret
           secretKeys:
             username: username
             password: password

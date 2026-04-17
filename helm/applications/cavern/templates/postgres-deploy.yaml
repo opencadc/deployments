@@ -39,12 +39,12 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ $auth.existingSecret }}
+                  name: {{ include "cavern.uwsDbAuthSecretName" $ }}
                   key: {{ $userKey }}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ $auth.existingSecret }}
+                  name: {{ include "cavern.uwsDbAuthSecretName" $ }}
                   key: {{ $passKey }}
           volumeMounts:
             - mountPath: /docker-entrypoint-initdb.d

@@ -49,13 +49,27 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Fail when UWS DB is configured without an existing Secret for credentials (Git-safe / Argo CD).
+Kubernetes Secret name for UWS DB credentials: user-supplied existingSecret, or chart-generated name when using deprecated inline username/password.
+*/}}
+{{- define "cavern.uwsDbAuthSecretName" -}}
+{{- $auth := .Values.deployment.cavern.uws.db.auth | default dict -}}
+{{- if $auth.existingSecret -}}
+{{- $auth.existingSecret -}}
+{{- else -}}
+{{- printf "%s-uws-db-creds" .Release.Name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Require either auth.existingSecret (recommended) or deprecated auth.username + auth.password (chart creates a Secret).
 */}}
 {{- define "cavern.validateUwsDatabaseSecret" -}}
 {{- $db := .Values.deployment.cavern.uws.db -}}
 {{- $auth := $db.auth | default dict -}}
-{{- if not $auth.existingSecret -}}
-{{- fail "deployment.cavern.uws.db.auth.existingSecret must name a Kubernetes Secret (same namespace) with UWS DB credentials. Do not commit passwords in Git; use kubectl create secret, Sealed Secrets, or External Secrets. Default keys: username, password (override with auth.secretKeys)." -}}
+{{- if $auth.existingSecret -}}
+{{- else if and $auth.username $auth.password -}}
+{{- else -}}
+{{- fail "deployment.cavern.uws.db.auth: set existingSecret to a Kubernetes Secret in this namespace (recommended), or set username and password (deprecated; see NOTES.txt). Keys default to username/password (override with auth.secretKeys)." -}}
 {{- end -}}
 {{- end -}}
 

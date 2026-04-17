@@ -28,6 +28,15 @@ secret reference form (existingSecret + key) so tokens live only in Kubernetes
 Secrets. See values.yaml comments for adminAPIKeys.
 {{- end }}
 
+{{- $uwsAuth := .Values.deployment.cavern.uws.db.auth | default dict }}
+{{- if and (not $uwsAuth.existingSecret) $uwsAuth.username $uwsAuth.password }}
+
+DEPRECATION WARNING: deployment.cavern.uws.db.auth uses inline username and password.
+The chart creates Secret {{ .Release.Name }}-uws-db-creds from those values (also stored
+in the Helm release). Migrate to auth.existingSecret referencing a Secret you manage
+out-of-band (Sealed Secrets, External Secrets, etc.).
+{{- end }}
+
 To learn more about the release, try:
 
   $ helm -n {{ .Release.Namespace }} status {{ .Release.Name }}
