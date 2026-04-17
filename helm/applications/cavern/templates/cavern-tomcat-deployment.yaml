@@ -5,6 +5,12 @@
 {{- $sk := $auth.secretKeys | default dict -}}
 {{- $userKey := $sk.username | default "username" -}}
 {{- $passKey := $sk.password | default "password" -}}
+{{- $hasAdminSecretKeys := false }}
+{{- range $_, $spec := .Values.deployment.cavern.adminAPIKeys }}
+{{- if and (kindIs "map" $spec) $spec.existingSecret }}
+{{- $hasAdminSecretKeys = true }}
+{{- end }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,6 +55,14 @@ spec:
               PASS=$(tr -d '\n' < "/secret/${PASS_KEY}")
               printf '\norg.opencadc.cavern.uws.username=%s\n' "$USER" >> /config-dst/catalina.properties
               printf 'org.opencadc.cavern.uws.password=%s\n' "$PASS" >> /config-dst/catalina.properties
+{{ if $hasAdminSecretKeys }}
+{{- range $clientName, $spec := .Values.deployment.cavern.adminAPIKeys }}
+{{- if and (kindIs "map" $spec) $spec.existingSecret }}
+              API_KEY_VAL=$(tr -d '\n' < "/admin-api-keys/{{ $clientName }}")
+              printf '\norg.opencadc.cavern.adminAPIKey = %s:%s\n' '{{ $clientName }}' "$API_KEY_VAL" >> /config-dst/cavern.properties
+{{- end }}
+{{- end }}
+{{ end }}
           env:
             - name: USER_KEY
               value: {{ $userKey | quote }}
@@ -61,6 +75,11 @@ spec:
             - name: uws-db-secret
               mountPath: /secret
               readOnly: true
+{{ if $hasAdminSecretKeys }}
+            - name: admin-api-keys
+              mountPath: /admin-api-keys
+              readOnly: true
+{{ end }}
             - name: config-merged
               mountPath: /config-dst
           {{- with .Values.volumeInit.securityContext }}
@@ -129,6 +148,20 @@ spec:
       - name: uws-db-secret
         secret:
           secretName: {{ $auth.existingSecret }}
+{{ if $hasAdminSecretKeys }}
+      - name: admin-api-keys
+        projected:
+          sources:
+{{- range $clientName, $spec := .Values.deployment.cavern.adminAPIKeys }}
+{{- if and (kindIs "map" $spec) $spec.existingSecret }}
+            - secret:
+                name: {{ $spec.existingSecret }}
+                items:
+                  - key: {{ $spec.key | quote }}
+                    path: {{ $clientName | quote }}
+{{- end }}
+{{- end }}
+{{ end }}
       - name: config-merged
         emptyDir: {}
       {{- if $storageSpecYAML }}

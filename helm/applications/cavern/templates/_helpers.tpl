@@ -58,3 +58,17 @@ Fail when UWS DB is configured without an existing Secret for credentials (Git-s
 {{- fail "deployment.cavern.uws.db.auth.existingSecret must name a Kubernetes Secret (same namespace) with UWS DB credentials. Do not commit passwords in Git; use kubectl create secret, Sealed Secrets, or External Secrets. Default keys: username, password (override with auth.secretKeys)." -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Validate deployment.cavern.adminAPIKeys: each entry is either a string (deprecated) or a map with existingSecret and key.
+*/}}
+{{- define "cavern.validateAdminAPIKeys" -}}
+{{- range $clientName, $spec := .Values.deployment.cavern.adminAPIKeys }}
+{{- if kindIs "map" $spec }}
+{{- $_ := $spec.existingSecret | required (printf "deployment.cavern.adminAPIKeys[%s].existingSecret is required when using a secret reference" $clientName) }}
+{{- $_ := $spec.key | required (printf "deployment.cavern.adminAPIKeys[%s].key is required when using a secret reference (key field in the Kubernetes Secret)" $clientName) }}
+{{- else if not (kindIs "string" $spec) }}
+{{- fail (printf "deployment.cavern.adminAPIKeys[%s] must be a string (deprecated) or a map with existingSecret and key" $clientName) }}
+{{- end }}
+{{- end }}
+{{- end -}}
