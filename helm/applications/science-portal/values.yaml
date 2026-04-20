@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/canfar/science-portal
   pullPolicy: IfNotPresent
-  tag: bc4e93974d16b4ab64dc62334a723929c349d647
+  tag: acf75d14a778089d22d112da107a0f67505ad7a7
 
 imagePullSecrets: []
 nameOverride: ""
