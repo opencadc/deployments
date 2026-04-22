@@ -48,6 +48,16 @@ spec:
           value: "${SKAHA_USER_HOME_DIR}"
         - name: OMP_NUM_THREADS
           value: "${software.thread.count}"
+        - name: SKAHA_TOP_LEVEL_DIR
+          value: "${SKAHA_TOP_LEVEL_DIR}"
+        - name: SKAHA_PROJECTS_DIR
+          value: "${SKAHA_PROJECTS_DIR}"
+        - name: SKAHA_SESSION_URL_PATH
+          value: "${skaha.sessionurlpath}"
+        - name: CARTA_PORT
+          value: "6901"
+        - name: CARTA_IDLE_TIMEOUT
+          value: "100000"
         securityContext:
           privileged: false
           allowPrivilegeEscalation: false
@@ -55,9 +65,6 @@ spec:
             drop:
               - ALL
         image: ${software.imageid}
-        command: ["/bin/sh", "-c"]
-        args:
-        - /skaha-system/skaha-carta.sh ${SKAHA_TOP_LEVEL_DIR} ${SKAHA_PROJECTS_DIR} "${skaha.sessionurlpath}"
         imagePullPolicy: {{ .Values.deployment.skaha.sessions.imagePullPolicy | required "deployment.skaha.sessions.imagePullPolicy must be set." }}
         resources:
           requests:
@@ -76,8 +83,6 @@ spec:
           protocol: TCP
           name: frontend-port
         volumeMounts:
-        - mountPath: "/skaha-system"
-          name: start-carta
         - mountPath: "/etc/passwd"
           name: etc-passwd
           subPath: passwd
@@ -94,10 +99,6 @@ spec:
         emptyDir: { }
       - name: etc-passwd
         emptyDir: { }
-      - name: start-carta
-        configMap:
-          name: {{ .Release.Name }}-launch-scripts
-          defaultMode: 0777
       - name: init-users-groups
         configMap:
           name: {{ .Release.Name }}-init-users-groups-config
