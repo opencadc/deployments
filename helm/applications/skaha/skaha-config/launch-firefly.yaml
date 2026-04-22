@@ -98,15 +98,20 @@ spec:
         - containerPort: 8080
           protocol: TCP
           name: firefly-port
-        # Probe duration: initialDelaySeconds + periodSeconds*failureThreshold
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          periodSeconds: 10
         startupProbe:
           tcpSocket:
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
           failureThreshold: 5
-        # Removed livenessProbe and readinessProbe to avoid timeout warnings
-        # jenkinsd 2025.09.10
 
         volumeMounts:
         - mountPath: "/etc/passwd"
