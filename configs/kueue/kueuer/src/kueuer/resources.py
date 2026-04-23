@@ -8,17 +8,19 @@
 # ]
 # ///
 """
-Totals cluster resources across Kubernetes nodes filtered by name regex.
+Totals cluster resources across Kubernetes nodes.
 
-- Deduplicates nodes by UID (so overlapping regex lists don't double count).
+- Deduplicates nodes by UID when listing.
 - By default totals from node .status.capacity; use --field allocatable to sum
   .status.allocatable instead.
-- Results are grouped by a configurable node label (see CLI ``--node-label-key``;
-  ``total()`` requires ``node_label_key`` with no default in code). Nodes without
+- Results are grouped by a configurable node label (see CLI ``--node-label``;
+  ``total()`` requires ``node_label`` with no default in code). Nodes without
   the label are grouped under ``""``. Each group has ``count`` (nodes in group),
-  ``cpu``, ``memory``, ``ephemeral-storage`` (binary **GiB**, 1024³; values up to
-  3 decimal places), per-bucket **weights** (same 3 decimal places; pool CPU
-  cores per GiB / per GPU kind—see ``ResourceWeights``), and GPU lists.
+  ``cpu``, ``memory``, ``ephemeral-storage`` (binary units per ``--units``;
+  values up to 3 decimal places), per-bucket **weights** (IEEE-754 binary64,
+  shortest round-trip decimal strings; normalized to ``--baseline`` (``-b``),
+  computed in the same byte scale as ``--units``—see ``ResourceWeights``), and
+  GPU lists.
 - ``nvidia.com/gpu`` is a list of ``{ "kind", "value", "unit": "count" }`` per
   distinct ``nvidia.com/gpu.product`` label, summed across nodes. When
   capacity/allocatable reports 0 or omits ``nvidia.com/gpu`` but the NVIDIA
@@ -30,22 +32,21 @@ Totals cluster resources across Kubernetes nodes filtered by name regex.
 
 Examples:
   uv run resources.py
-  uv run resources.py 'gpu-.*' 'node-1[0-9]'
-  uv run resources.py --field allocatable --pretty 'worker-.*'
+  uv run resources.py --field allocatable
+  uv run resources.py --units Mi --baseline cpu
 """
 
 from __future__ import annotations
 
-import re
 import sys
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal, getcontext, localcontext
-from typing import Annotated, Any, Dict, Iterable, List, Optional, Sequence, cast
+from typing import Annotated, Any, Dict, Iterable, List, Optional, cast
 
 import typer
 from kubernetes.client import CoreV1Api, V1Node
 from kubernetes.utils.quantity import parse_quantity
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from rich.console import Console
 from typing_extensions import Literal
 
@@ -59,8 +60,17 @@ getcontext().prec = DECIMAL_PRECISION
 # Reported fractional precision for CPU, GiB display quantities, and weight ratios.
 REPORT_MAX_DECIMAL_PLACES = 3
 
-# Intermediate precision for weight ratio division before rounding to ``REPORT_MAX_DECIMAL_PLACES``.
+# Intermediate precision for weight ratio division before rounding to
+# ``REPORT_MAX_DECIMAL_PLACES``.
 _WEIGHT_RATIO_DIV_PREC = max(80, DECIMAL_PRECISION)
+
+# Baseline weight ``1`` as a binary64 round-trip string (matches computed weights).
+_WEIGHT_BASELINE_ONE_STR = repr(1.0)
+
+# ``total()`` / ``--baseline`` accepted resource names.
+_ALLOWED_BASELINES: frozenset[str] = frozenset(
+    ("cpu", "memory", "ephemeral-storage", "nvidia.com/gpu")
+)
 
 app = typer.Typer(help="Cluster utilities")
 
@@ -76,7 +86,9 @@ class ResourceItem(BaseModel):
     )
     unit: str = Field(
         ...,
-        description="Binary GiB for memory/ephemeral totals, 'cores', or 'count'.",
+        description=(
+            "Binary unit (B, Ki, Mi, …) for memory/ephemeral, 'cores', or 'count'."
+        ),
     )
 
 
@@ -92,27 +104,27 @@ class GpuResourceItem(BaseModel):
 
 
 class ResourceWeights(BaseModel):
-    """Pool-level ratios vs CPU cores (dimensionless); see module docstring for interpretation."""
+    """Pool composition weights vs ``--baseline``; see module docstring."""
 
     model_config = ConfigDict(populate_by_name=True)
 
-    cpu: str = Field(
-        default="1",
-        description="Baseline; other weights are pool CPU per unit of that resource.",
+    cpu: Optional[str] = Field(
+        None,
+        description="IEEE-754 binary64 string; baseline CPU weight is ``1.0``.",
     )
     memory: Optional[str] = Field(
         None,
-        description="Pool CPU cores divided by total memory in binary GiB.",
+        description="IEEE-754 binary64 string vs baseline in ``--units``.",
     )
     ephemeral_storage: Optional[str] = Field(
         None,
         serialization_alias="ephemeral-storage",
-        description="Pool CPU cores divided by total ephemeral storage in binary GiB.",
+        description="IEEE-754 binary64 string vs baseline in ``--units``.",
     )
     nvidia_gpu: Optional[Dict[str, str]] = Field(
         None,
         serialization_alias="nvidia.com/gpu",
-        description="Per GPU product: pool CPU cores divided by count of that kind.",
+        description="Per GPU product: IEEE-754 binary64 weight vs baseline.",
     )
 
 
@@ -124,7 +136,7 @@ class NodeTypeResources(BaseModel):
     count: int = Field(
         ...,
         ge=0,
-        description="Number of nodes in this group (unique nodes after pattern filter).",
+        description="Number of nodes in this group (unique nodes).",
     )
     cpu: Optional[ResourceItem] = None
     memory: Optional[ResourceItem] = None
@@ -143,17 +155,17 @@ class NodeTypeResources(BaseModel):
     weights: Optional[ResourceWeights] = Field(
         None,
         description=(
-            "CPU-normalized pool composition weights (decimal strings, same precision "
-            "as other reported quantities). "
-            "Omitted if the pool has no CPU total to divide by."
+            "Pool composition weights (IEEE-754 binary64, shortest round-trip "
+            "strings). Omitted when the baseline resource total is missing or "
+            "non-positive."
         ),
     )
 
 
 class ClusterResourcesResult(BaseModel):
-    """Cluster resources grouped by ``node_label_key`` label values."""
+    """Cluster resources grouped by ``node_label`` label values."""
 
-    node_label_key: str = Field(
+    node_label: str = Field(
         ...,
         description="Kubernetes node label key used to form each group.",
     )
@@ -161,19 +173,8 @@ class ClusterResourcesResult(BaseModel):
 
 
 class Settings(BaseModel):
-    patterns: Optional[List[str]] = Field(
-        default=None, description="Regex patterns for node names."
-    )
     field: Literal["capacity", "allocatable"] = "capacity"
     pretty: bool = False
-
-    @field_validator("patterns")
-    @classmethod
-    def validate_patterns(cls, v: Optional[List[str]]) -> Optional[List[str]]:
-        if v is None:
-            return None
-        cleaned = [p for p in (s.strip() for s in v) if p]
-        return cleaned or None
 
 
 # =========================
@@ -203,28 +204,13 @@ def _load_kube() -> CoreV1Api:
     return k8s.core_v1
 
 
-def _compile_patterns(patterns: Optional[Sequence[str]]) -> Optional[List[re.Pattern]]:
-    if not patterns:
-        return None
-    return [re.compile(p) for p in patterns]
-
-
-def _node_matches(name: str, compiled: Optional[List[re.Pattern]]) -> bool:
-    if compiled is None:
-        return True
-    return any(p.search(name) for p in compiled)
-
-
-def _collect_nodes(v1: CoreV1Api, patterns: Optional[Sequence[str]]) -> List[V1Node]:
-    compiled = _compile_patterns(patterns)
+def _collect_nodes(v1: CoreV1Api) -> List[V1Node]:
     all_nodes = v1.list_node().items
-    # Deduplicate by UID so overlapping regex patterns don't double count
     dedup: Dict[str, V1Node] = {}
     for n in all_nodes:
         name = n.metadata.name or ""
-        if _node_matches(name, compiled):
-            uid = n.metadata.uid or name  # Fallback to name if UID missing
-            dedup[uid] = n
+        uid = n.metadata.uid or name  # Fallback to name if UID missing
+        dedup[uid] = n
     return list(dedup.values())
 
 
@@ -277,7 +263,9 @@ def _node_nvidia_gpu_contrib(
     return None
 
 
-def _gpu_kind_totals_to_list(by_kind: Optional[Dict[str, int]]) -> Optional[List[GpuResourceItem]]:
+def _gpu_kind_totals_to_list(
+    by_kind: Optional[Dict[str, int]],
+) -> Optional[List[GpuResourceItem]]:
     """Convert per-kind counts to a stable list for JSON output."""
     if not by_kind:
         return None
@@ -290,7 +278,7 @@ def _gpu_kind_totals_to_list(by_kind: Optional[Dict[str, int]]) -> Optional[List
 
 
 def _format_decimal_report(value: Decimal) -> str:
-    """Stringify a non-negative Decimal with at most ``REPORT_MAX_DECIMAL_PLACES`` places."""
+    """Stringify a non-negative Decimal with at most ``REPORT_MAX_DECIMAL_PLACES``."""
     if value < 0:
         raise ValueError("value must be non-negative")
     q = Decimal("1").scaleb(-REPORT_MAX_DECIMAL_PLACES)
@@ -301,83 +289,219 @@ def _format_decimal_report(value: Decimal) -> str:
     return s
 
 
-# Binary gibibyte (Kubernetes-style): 1 GiB = 1024³ bytes.
-_GIB_BYTES = Decimal(1024**3)
+# Binary IEC factors: unit string -> bytes per one unit (B, Ki, Mi, Gi, Ti, Pi).
+_BINARY_UNIT_BYTES: Dict[str, int] = {
+    "B": 1,
+    "Ki": 1024,
+    "Mi": 1024**2,
+    "Gi": 1024**3,
+    "Ti": 1024**4,
+    "Pi": 1024**5,
+}
 
 
-def _bytes_to_binary_gib_decimal(total_bytes: int) -> Decimal:
-    """Convert byte totals to binary GiB (full ``Decimal``, unrounded)."""
+def normalize_binary_unit(units: str) -> str:
+    """Return canonical binary unit key or raise ``ValueError``."""
+    u = units.strip()
+    if u not in _BINARY_UNIT_BYTES:
+        allowed = ", ".join(sorted(_BINARY_UNIT_BYTES))
+        raise ValueError(f'units must be one of: {allowed} (got "{units}")')
+    return u
+
+
+def _bytes_to_qty_decimal(total_bytes: int, unit: str) -> Decimal:
+    """Convert byte totals to the selected binary unit (full ``Decimal``, unrounded)."""
     if total_bytes < 0:
         raise ValueError("byte total must be non-negative")
-    return Decimal(total_bytes) / _GIB_BYTES
+    factor = Decimal(_BINARY_UNIT_BYTES[unit])
+    return Decimal(total_bytes) / factor
 
 
-def _gib_resource_item(total_bytes: int) -> ResourceItem:
-    """Memory / ephemeral totals: always reported in GiB with limited display precision."""
+def _bytes_to_resource_item(total_bytes: int, unit: str) -> ResourceItem:
+    """Memory / ephemeral totals in ``unit`` with limited display precision."""
     if total_bytes == 0:
-        return ResourceItem(value="0", unit="GiB")
-    v = _bytes_to_binary_gib_decimal(total_bytes)
-    return ResourceItem(value=_format_decimal_report(v), unit="GiB")
+        return ResourceItem(value="0", unit=unit)
+    v = _bytes_to_qty_decimal(total_bytes, unit)
+    return ResourceItem(value=_format_decimal_report(v), unit=unit)
 
 
-def _gib_display_to_bytes(value: Decimal) -> Decimal:
-    """Interpret a displayed GiB quantity as bytes."""
-    return value * _GIB_BYTES
+def _display_qty_to_bytes(value: Decimal, unit: str) -> Decimal:
+    """Interpret a displayed quantity in ``unit`` as bytes."""
+    return value * Decimal(_BINARY_UNIT_BYTES[unit])
 
 
 def _decimal_ratio_string(numerator: Decimal, denominator: Decimal) -> str:
-    """``numerator / denominator`` rounded to ``REPORT_MAX_DECIMAL_PLACES`` (half-up)."""
+    """Weight ratio as IEEE-754 binary64 (``float``), shortest round-trip ``repr``."""
     if denominator <= 0:
         raise ValueError("denominator must be positive")
     with localcontext() as ctx:
         ctx.prec = _WEIGHT_RATIO_DIV_PREC
         ratio = numerator / denominator
-    return _format_decimal_report(ratio)
+    return repr(float(ratio))
 
 
-def _compute_resource_weights(acc: TotalsAcc) -> Optional[ResourceWeights]:
-    """
-    Weights normalize pool totals to a per-CPU baseline: ``cpu`` is 1; other
-    fields are ``TOTAL_CPU / TOTAL_QUANTITY`` in compatible units (GiB for
-    memory and ephemeral; per-GPU-kind counts for NVIDIA).
-
-    **Interpretation (heuristic):** For a node pool with totals ``(C, M, E, …)``,
-    weights map ``(c, m, e, …)`` requests to a linear ``c·1 + m·w_mem + …`` style
-    score *if* you treat the pool's aggregate ratio as a fixed substitution rate
-    between CPU and other resources. That is a **comparative** normalization, not a
-    guarantee of schedulability, pricing, or optimal packing—heterogeneous nodes,
-    fragmentation, and priorities are not captured.
-    """
-    cpu = acc.cpu_cores
-    if cpu is None or cpu <= 0:
+def _nvidia_weights_from_numerator(
+    by_kind: Optional[Dict[str, int]],
+    numer: Decimal,
+) -> Optional[Dict[str, str]]:
+    if not by_kind:
         return None
+    entries: Dict[str, str] = {}
+    for kind, cnt in sorted(by_kind.items(), key=lambda kv: (kv[0] == "", kv[0])):
+        if cnt <= 0:
+            continue
+        entries[kind] = _decimal_ratio_string(numer, Decimal(cnt))
+    return entries or None
 
-    mem_w: Optional[str] = None
-    if acc.memory_bytes is not None and acc.memory_bytes > 0:
-        mem_w = _decimal_ratio_string(cpu, _bytes_to_binary_gib_decimal(acc.memory_bytes))
 
-    eph_w: Optional[str] = None
-    if acc.ephemeral_bytes is not None and acc.ephemeral_bytes > 0:
-        eph_w = _decimal_ratio_string(cpu, _bytes_to_binary_gib_decimal(acc.ephemeral_bytes))
+def _nvidia_pool_total(by_kind: Optional[Dict[str, int]]) -> Optional[Decimal]:
+    """Sum of NVIDIA GPU counts across kinds (pool-wide GPU total)."""
+    if not by_kind:
+        return None
+    t = sum(c for c in by_kind.values() if c > 0)
+    return Decimal(t) if t > 0 else None
 
-    nv_map: Optional[Dict[str, str]] = None
-    if acc.nvidia_by_kind:
-        entries: Dict[str, str] = {}
-        for kind, cnt in sorted(
-            acc.nvidia_by_kind.items(),
-            key=lambda kv: (kv[0] == "", kv[0]),
-        ):
-            if cnt <= 0:
-                continue
-            entries[kind] = _decimal_ratio_string(cpu, Decimal(cnt))
-        nv_map = entries or None
 
-    return ResourceWeights(
-        cpu="1",
-        memory=mem_w,
-        ephemeral_storage=eph_w,
-        nvidia_gpu=nv_map,
+def _weight_quantities(
+    acc: TotalsAcc,
+    units: str,
+) -> tuple[Optional[Decimal], Optional[Decimal], Optional[Decimal]]:
+    mem_b = acc.memory_bytes
+    eph_b = acc.ephemeral_bytes
+    qty_mem = (
+        _bytes_to_qty_decimal(mem_b, units) if mem_b is not None and mem_b > 0 else None
     )
+    qty_eph = (
+        _bytes_to_qty_decimal(eph_b, units) if eph_b is not None and eph_b > 0 else None
+    )
+    return (acc.cpu_cores, qty_mem, qty_eph)
+
+
+def _weights_baseline_cpu(
+    acc: TotalsAcc,
+    qty_cpu: Decimal,
+    qty_mem: Optional[Decimal],
+    qty_eph: Optional[Decimal],
+) -> Optional[ResourceWeights]:
+    w_mem = _decimal_ratio_string(qty_cpu, qty_mem) if qty_mem is not None else None
+    w_eph = _decimal_ratio_string(qty_cpu, qty_eph) if qty_eph is not None else None
+    w_nv = _nvidia_weights_from_numerator(acc.nvidia_by_kind, qty_cpu)
+    return ResourceWeights(
+        cpu=_WEIGHT_BASELINE_ONE_STR,
+        memory=w_mem,
+        ephemeral_storage=w_eph,
+        nvidia_gpu=w_nv,
+    )
+
+
+def _weights_baseline_memory(
+    acc: TotalsAcc,
+    qty_cpu: Optional[Decimal],
+    qty_mem: Decimal,
+    qty_eph: Optional[Decimal],
+) -> Optional[ResourceWeights]:
+    w_cpu = (
+        _decimal_ratio_string(qty_mem, qty_cpu)
+        if qty_cpu is not None and qty_cpu > 0
+        else None
+    )
+    w_eph = _decimal_ratio_string(qty_mem, qty_eph) if qty_eph is not None else None
+    w_nv = _nvidia_weights_from_numerator(acc.nvidia_by_kind, qty_mem)
+    return ResourceWeights(
+        cpu=w_cpu,
+        memory=_WEIGHT_BASELINE_ONE_STR,
+        ephemeral_storage=w_eph,
+        nvidia_gpu=w_nv,
+    )
+
+
+def _weights_baseline_ephemeral(
+    acc: TotalsAcc,
+    qty_cpu: Optional[Decimal],
+    qty_mem: Optional[Decimal],
+    qty_eph: Decimal,
+) -> Optional[ResourceWeights]:
+    w_cpu = (
+        _decimal_ratio_string(qty_eph, qty_cpu)
+        if qty_cpu is not None and qty_cpu > 0
+        else None
+    )
+    w_mem = _decimal_ratio_string(qty_eph, qty_mem) if qty_mem is not None else None
+    w_nv = _nvidia_weights_from_numerator(acc.nvidia_by_kind, qty_eph)
+    return ResourceWeights(
+        cpu=w_cpu,
+        memory=w_mem,
+        ephemeral_storage=_WEIGHT_BASELINE_ONE_STR,
+        nvidia_gpu=w_nv,
+    )
+
+
+def _weights_baseline_nvidia(
+    acc: TotalsAcc,
+    qty_nv_total: Decimal,
+    qty_cpu: Optional[Decimal],
+    qty_mem: Optional[Decimal],
+    qty_eph: Optional[Decimal],
+) -> ResourceWeights:
+    """Baseline is total NVIDIA GPU count; per-kind GPU weights use ``qty_nv_total``."""
+    w_cpu = (
+        _decimal_ratio_string(qty_nv_total, qty_cpu)
+        if qty_cpu is not None and qty_cpu > 0
+        else None
+    )
+    w_mem = (
+        _decimal_ratio_string(qty_nv_total, qty_mem) if qty_mem is not None else None
+    )
+    w_eph = (
+        _decimal_ratio_string(qty_nv_total, qty_eph) if qty_eph is not None else None
+    )
+    w_nv = _nvidia_weights_from_numerator(acc.nvidia_by_kind, qty_nv_total)
+    return ResourceWeights(
+        cpu=w_cpu,
+        memory=w_mem,
+        ephemeral_storage=w_eph,
+        nvidia_gpu=w_nv,
+    )
+
+
+def _compute_resource_weights(
+    acc: TotalsAcc,
+    *,
+    baseline: str,
+    units: str,
+) -> Optional[ResourceWeights]:
+    """
+    Weights normalize pool totals to ``baseline``: that resource is ``1``; other
+    fields are ratios in the same byte scale as ``units`` (for memory and
+    ephemeral) or in GPU counts (for NVIDIA). For ``nvidia.com/gpu``, the
+    baseline quantity is the **sum** of all NVIDIA GPU counts in the group.
+
+    **Interpretation (heuristic):** comparative normalization, not schedulability.
+    """
+    qty_cpu, qty_mem, qty_eph = _weight_quantities(acc, units)
+
+    if baseline == "cpu":
+        if qty_cpu is None or qty_cpu <= 0:
+            return None
+        return _weights_baseline_cpu(acc, qty_cpu, qty_mem, qty_eph)
+
+    if baseline == "memory":
+        if qty_mem is None or qty_mem <= 0:
+            return None
+        return _weights_baseline_memory(acc, qty_cpu, qty_mem, qty_eph)
+
+    if baseline == "ephemeral-storage":
+        if qty_eph is None or qty_eph <= 0:
+            return None
+        return _weights_baseline_ephemeral(acc, qty_cpu, qty_mem, qty_eph)
+
+    if baseline == "nvidia.com/gpu":
+        qty_nv = _nvidia_pool_total(acc.nvidia_by_kind)
+        if qty_nv is None or qty_nv <= 0:
+            return None
+        return _weights_baseline_nvidia(acc, qty_nv, qty_cpu, qty_mem, qty_eph)
+
+    raise ValueError(f'unknown baseline: "{baseline}"')
 
 
 def _get_field_map(node: V1Node, field: str) -> Dict[str, str]:
@@ -486,7 +610,13 @@ def _sum_resources(nodes: List[V1Node], field: str) -> TotalsAcc:
     )
 
 
-def _totals_acc_to_node_type_resources(acc: TotalsAcc, node_count: int) -> NodeTypeResources:
+def _totals_acc_to_node_type_resources(
+    acc: TotalsAcc,
+    node_count: int,
+    *,
+    units: str,
+    baseline: str,
+) -> NodeTypeResources:
     """Build one NodeTypeResources from aggregated totals."""
     return NodeTypeResources(
         count=node_count,
@@ -499,18 +629,22 @@ def _totals_acc_to_node_type_resources(acc: TotalsAcc, node_count: int) -> NodeT
             else None
         ),
         memory=(
-            _gib_resource_item(acc.memory_bytes)
+            _bytes_to_resource_item(acc.memory_bytes, units)
             if acc.memory_bytes is not None
             else None
         ),
         ephemeral_storage=(
-            _gib_resource_item(acc.ephemeral_bytes)
+            _bytes_to_resource_item(acc.ephemeral_bytes, units)
             if acc.ephemeral_bytes is not None
             else None
         ),
         nvidia_gpu=_gpu_kind_totals_to_list(acc.nvidia_by_kind),
         amd_gpu=_gpu_kind_totals_to_list(acc.amd_by_kind),
-        weights=_compute_resource_weights(acc),
+        weights=_compute_resource_weights(
+            acc,
+            baseline=baseline,
+            units=units,
+        ),
     )
 
 
@@ -520,41 +654,50 @@ def _totals_acc_to_node_type_resources(acc: TotalsAcc, node_count: int) -> NodeT
 
 
 def total(
-    patterns: Optional[List[str]] = None,
     field: str = "capacity",
     *,
-    node_label_key: str,
+    node_label: str,
+    units: str = "Gi",
+    baseline: str = "cpu",
 ) -> Dict[str, Any]:
     """
-    Calculate total cluster resources across nodes matching regex patterns.
+    Calculate total cluster resources across all nodes.
 
     Args:
-        patterns: Regex strings for node names. If None or empty, includes all nodes.
         field: Which field to sum: "capacity" (default) or "allocatable".
-        node_label_key: Kubernetes node label key used to group results (callers
+        node_label: Kubernetes node label key used to group results (callers
             such as the CLI supply the default; this function does not default it).
+        units: Binary byte unit for memory and ephemeral totals (``B``, ``Ki``,
+            ``Mi``, ``Gi``, ``Ti``, ``Pi``).
+        baseline: Resource with weight ``1``; others are expressed per this
+            baseline in ``units`` for memory/ephemeral. One of ``cpu``,
+            ``memory``, ``ephemeral-storage``, or ``nvidia.com/gpu`` (total
+            NVIDIA GPU count).
 
     Returns:
-        A dict with ``node_label_key``, ``by_label_value`` (each key is a label
+        A dict with ``node_label``, ``by_label_value`` (each key is a label
         value, or ``\"\"`` if unset), and per-group ``count`` plus resource maps.
     """
-    label_key = node_label_key.strip()
+    label_key = node_label.strip()
     if not label_key:
-        raise ValueError("node_label_key must be a non-empty string")
+        raise ValueError("node_label must be a non-empty string")
+
+    unit_key = normalize_binary_unit(units)
+    br = baseline.strip()
+    if br not in _ALLOWED_BASELINES:
+        allowed = ", ".join(sorted(_ALLOWED_BASELINES))
+        raise ValueError(f'baseline must be one of: {allowed} (got "{baseline}")')
 
     # Validate inputs with Pydantic
     if field not in ("capacity", "allocatable"):
         raise ValueError('field must be "capacity" or "allocatable"')
     try:
-        cfg = Settings(
-            patterns=patterns,
-            field=cast(Literal["capacity", "allocatable"], field),
-        )
+        cfg = Settings(field=cast(Literal["capacity", "allocatable"], field))
     except ValidationError as e:
         raise ValueError(str(e)) from e
 
     v1 = _load_kube()
-    nodes = _collect_nodes(v1, cfg.patterns)
+    nodes = _collect_nodes(v1)
     by_nt: Dict[str, List[V1Node]] = {}
     for n in nodes:
         labels = (n.metadata.labels or {}) if n.metadata else {}
@@ -566,10 +709,15 @@ def total(
     for nt_key in sorted(by_nt.keys(), key=lambda s: (s == "", s)):
         bucket = by_nt[nt_key]
         acc = _sum_resources(bucket, cfg.field)
-        groups[nt_key] = _totals_acc_to_node_type_resources(acc, len(bucket))
+        groups[nt_key] = _totals_acc_to_node_type_resources(
+            acc,
+            len(bucket),
+            units=unit_key,
+            baseline=br,
+        )
 
     return ClusterResourcesResult(
-        node_label_key=label_key,
+        node_label=label_key,
         by_label_value=groups,
     ).model_dump(
         by_alias=True,
@@ -583,10 +731,10 @@ def _scale_resource_item_inplace(item: Dict[str, Any], scale: Decimal) -> None:
     v = Decimal(str(item["value"]))
     if unit == "cores":
         item["value"] = _format_decimal_report(v * scale)
-    elif unit == "GiB":
-        scaled_bytes = _gib_display_to_bytes(v) * scale
+    elif unit in _BINARY_UNIT_BYTES:
+        scaled_bytes = _display_qty_to_bytes(v, unit) * scale
         int_bytes = max(0, int(scaled_bytes.to_integral_value(rounding=ROUND_HALF_UP)))
-        out = _gib_resource_item(int_bytes)
+        out = _bytes_to_resource_item(int_bytes, unit)
         item["value"] = out.value
         item["unit"] = out.unit
     elif unit == "count":
@@ -596,7 +744,10 @@ def _scale_resource_item_inplace(item: Dict[str, Any], scale: Decimal) -> None:
 
 
 def _scale_cluster_resources_payload(result: Dict[str, Any], scale: Decimal) -> None:
-    """Multiply numeric ``value`` fields in-place (CLI ``--scale``). Leaves ``weights`` unchanged."""
+    """Multiply numeric ``value`` fields in-place (CLI ``--scale``).
+
+    Leaves ``weights`` unchanged.
+    """
     inner = result.get("by_label_value")
     if not isinstance(inner, dict):
         return
@@ -635,15 +786,6 @@ console = Console()
 
 @app.command("resources")
 def resources(
-    patterns: Annotated[
-        Optional[List[str]],
-        typer.Option(
-            "-p",
-            "--pattern",
-            metavar="PATTERN",
-            help="Regex pattern for node names. Can be specified multiple times.",
-        ),
-    ] = None,
     field: Annotated[
         str,
         typer.Option(
@@ -660,27 +802,51 @@ def resources(
             help="Scale resources by this percentage.",
         ),
     ] = 1.0,
-    node_label_key: Annotated[
+    units: Annotated[
         str,
         typer.Option(
-            "--node-label-key",
+            "-u",
+            "--units",
+            help=(
+                "Binary byte unit for memory and ephemeral totals: "
+                '"B", "Ki", "Mi", "Gi", "Ti", "Pi".'
+            ),
+        ),
+    ] = "Gi",
+    baseline: Annotated[
+        str,
+        typer.Option(
+            "-b",
+            "--baseline",
+            help=(
+                "Resource with weight 1 for pool weights: "
+                '"cpu", "memory", "ephemeral-storage", or "nvidia.com/gpu".'
+            ),
+        ),
+    ] = "cpu",
+    node_label: Annotated[
+        str,
+        typer.Option(
+            "-n",
+            "--node-label",
             help=(
                 "Node label key used to group totals by label value "
-                '(default only applies to this CLI, not to total()).'
+                "(default only applies to this CLI, not to total())."
             ),
         ),
     ] = "skaha.opencadc.org/node-type",
 ):
     """
-    Sum resources across nodes matching any of the provided regex patterns.
+    Sum resources across all nodes, grouped by a node label.
     """
     assert field in ["capacity", "allocatable"]
     assert scale > 0.0 and scale <= 1.0, "Percentage must be in (0, 1]"
     try:
         result = total(
-            patterns or None,
             field=field,
-            node_label_key=node_label_key,
+            node_label=node_label,
+            units=units,
+            baseline=baseline,
         )
         console.print(result, width=120)
         if scale != 1.0:
@@ -706,7 +872,9 @@ def resourcequota(
     """List namespace ResourceQuota objects using the Kubernetes Python client."""
     try:
         response = list_resource_quotas(namespace)
-        console.print({"response": response, "resource_quotas": response.get("items", [])})
+        console.print(
+            {"response": response, "resource_quotas": response.get("items", [])}
+        )
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         raise SystemExit(1)
