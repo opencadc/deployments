@@ -11,19 +11,19 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ .Release.Name }}-skaha-tomcat
-  minReplicas: {{ .Values.autoscaling.minReplicas | default 1 }}
+  minReplicas: {{ .Values.autoscaling.minReplicas | default 2 }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas | default 6 }}
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 0
       selectPolicy: Max
       policies:
       - type: Pods
-        value: 2
-        periodSeconds: 60
+        value: 4
+        periodSeconds: 30
       - type: Percent
         value: 100
-        periodSeconds: 60
+        periodSeconds: 30
     scaleDown:
       stabilizationWindowSeconds: 300
       selectPolicy: Min
@@ -40,11 +40,5 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 75
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+        averageUtilization: 65
 {{- end }}

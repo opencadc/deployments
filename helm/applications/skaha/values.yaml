@@ -9,10 +9,10 @@ replicaCount: 1
 
 autoscaling:
   # -- Enable HorizontalPodAutoscaler for skaha-tomcat.
-  # Targets and scaling behavior are intentionally chart-managed (CPU 75%, memory 80%).
+  # Target and scaling behavior are intentionally chart-managed (CPU 65%).
   enabled: true
   # -- Minimum number of skaha-tomcat replicas.
-  minReplicas: 1
+  minReplicas: 2
   # -- Maximum number of skaha-tomcat replicas.
   maxReplicas: 6
 
