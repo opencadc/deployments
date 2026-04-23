@@ -17,6 +17,9 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| autoscaling.enabled | bool | `true` | Enable HorizontalPodAutoscaler for skaha-tomcat. Targets and scaling behavior are intentionally chart-managed (CPU 75%, memory 80%). |
+| autoscaling.maxReplicas | int | `6` | Maximum number of skaha-tomcat replicas. |
+| autoscaling.minReplicas | int | `1` | Minimum number of skaha-tomcat replicas. |
 | deployment.hostname | string | `"myhost.example.com"` |  |
 | deployment.skaha.apiVersion | string | `"v1"` |  |
 | deployment.skaha.defaultQuotaGB | string | `"10"` |  |
@@ -71,7 +74,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | redis.master.containerSecurityContext.runAsUser | int | `1001` |  |
 | redis.master.containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
 | redis.master.persistence.enabled | bool | `false` |  |
-| replicaCount | int | `1` |  |
+| replicaCount | int | `1` | Number of skaha-tomcat replicas when autoscaling is disabled. |
 | secrets | string | `nil` |  |
 | securityContext | object | `{}` |  |
 | service.port | int | `8080` |  |

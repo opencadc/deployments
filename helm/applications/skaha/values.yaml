@@ -4,8 +4,17 @@ kubernetesClusterDomain: cluster.local
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Tell Kubernetes to spin up multiple instances.  Defaults to 1.
+# -- Number of skaha-tomcat replicas when autoscaling is disabled.
 replicaCount: 1
+
+autoscaling:
+  # -- Enable HorizontalPodAutoscaler for skaha-tomcat.
+  # Targets and scaling behavior are intentionally chart-managed (CPU 75%, memory 80%).
+  enabled: true
+  # -- Minimum number of skaha-tomcat replicas.
+  minReplicas: 1
+  # -- Maximum number of skaha-tomcat replicas.
+  maxReplicas: 6
 
 # It's best to keep this set as such, unless you're willing to change these in several places.
 skahaWorkload:
