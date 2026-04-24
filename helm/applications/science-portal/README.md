@@ -12,11 +12,9 @@ This chart treats [canfar/science-portal `.env.example`](https://github.com/canf
 
 Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from Helm mainly affects server-side behavior unless your image is built to honor overrides.
 
-**Upgrade (chart 2.1+):** rename **`app.publicApi`** to **`app.public.api`** (same child keys). Overlays that still set `app.publicApi` continue to work: the chart merges it with `app.public.api`, and **`app.public.api` wins** on conflicts. Use **`app.public.services`** for the six **`NEXT_PUBLIC_SERVICE_*`** navigation URLs added in [science-portal eca70d9](https://github.com/canfar/science-portal/commit/eca70d91f45fe6578207c7bd70e67b91d2654700).
-
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|2.0.0<!-- x-release-please-version --> | eca70d91f45fe6578207c7bd70e67b91d2654700 | application |
+|2.1.0<!-- x-release-please-version --> | eca70d91f45fe6578207c7bd70e67b91d2654700 | application |
 
 ## Values
 
