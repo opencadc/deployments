@@ -1,3 +1,5 @@
+Configuration: set browser `NEXT_PUBLIC_*` URLs under `app.public.api` (client API bases) and `app.public.services` (Services menu links). Deprecated `app.publicApi` is still merged for compatibility; `app.public.api` wins on conflicts. Default image tag includes [eca70d9](https://github.com/canfar/science-portal/commit/eca70d91f45fe6578207c7bd70e67b91d2654700) or newer for `NEXT_PUBLIC_SERVICE_*` support.
+
 1. Get the application URL by running these commands:
 {{- if .Values.httpRoute.enabled }}
 {{- if .Values.httpRoute.hostnames }}

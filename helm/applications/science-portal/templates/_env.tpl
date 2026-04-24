@@ -48,7 +48,10 @@ skipNames: map of env var names already set in .Values.env (those win; chart ski
   value: {{ .timeoutMs | toString | quote }}
 {{- end }}
 {{- end }}
-{{- with $root.Values.app.publicApi }}
+{{- $legacyPublicApi := $root.Values.app.publicApi | default dict }}
+{{- $pub := $root.Values.app.public | default dict }}
+{{- $pubApi := merge ($pub.api | default dict) $legacyPublicApi }}
+{{- with $pubApi }}
 {{- if and .login (not (hasKey $skip "NEXT_PUBLIC_LOGIN_API")) }}
 - name: NEXT_PUBLIC_LOGIN_API
   value: {{ .login | quote }}
@@ -68,6 +71,32 @@ skipNames: map of env var names already set in .Values.env (those win; chart ski
 {{- if and (hasKey . "timeoutMs") (ne (toString .timeoutMs) "") (not (hasKey $skip "NEXT_PUBLIC_API_TIMEOUT")) }}
 - name: NEXT_PUBLIC_API_TIMEOUT
   value: {{ .timeoutMs | toString | quote }}
+{{- end }}
+{{- end }}
+{{- with ($pub.services | default dict) }}
+{{- if and .storageManagement (not (hasKey $skip "NEXT_PUBLIC_SERVICE_STORAGE_MANAGEMENT_URL")) }}
+- name: NEXT_PUBLIC_SERVICE_STORAGE_MANAGEMENT_URL
+  value: {{ .storageManagement | quote }}
+{{- end }}
+{{- if and .groupManagement (not (hasKey $skip "NEXT_PUBLIC_SERVICE_GROUP_MANAGEMENT_URL")) }}
+- name: NEXT_PUBLIC_SERVICE_GROUP_MANAGEMENT_URL
+  value: {{ .groupManagement | quote }}
+{{- end }}
+{{- if and .dataPublication (not (hasKey $skip "NEXT_PUBLIC_SERVICE_DATA_PUBLICATION_URL")) }}
+- name: NEXT_PUBLIC_SERVICE_DATA_PUBLICATION_URL
+  value: {{ .dataPublication | quote }}
+{{- end }}
+{{- if and .sciencePortal (not (hasKey $skip "NEXT_PUBLIC_SERVICE_SCIENCE_PORTAL_URL")) }}
+- name: NEXT_PUBLIC_SERVICE_SCIENCE_PORTAL_URL
+  value: {{ .sciencePortal | quote }}
+{{- end }}
+{{- if and .cadcSearch (not (hasKey $skip "NEXT_PUBLIC_SERVICE_CADC_SEARCH_URL")) }}
+- name: NEXT_PUBLIC_SERVICE_CADC_SEARCH_URL
+  value: {{ .cadcSearch | quote }}
+{{- end }}
+{{- if and .openstackCloud (not (hasKey $skip "NEXT_PUBLIC_SERVICE_OPENSTACK_CLOUD_URL")) }}
+- name: NEXT_PUBLIC_SERVICE_OPENSTACK_CLOUD_URL
+  value: {{ .openstackCloud | quote }}
 {{- end }}
 {{- end }}
 {{- if and (kindIs "bool" $root.Values.app.experimental) (not (hasKey $skip "NEXT_PUBLIC_EXPERIMENTAL")) }}

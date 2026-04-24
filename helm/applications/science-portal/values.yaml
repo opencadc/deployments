@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/canfar/science-portal
   pullPolicy: IfNotPresent
-  tag: b72f57236125486c4f05a452fde7e8398183013b
+  tag: eca70d91f45fe6578207c7bd70e67b91d2654700
 
 imagePullSecrets: []
 nameOverride: ""
@@ -41,6 +41,7 @@ securityContext: {}
 #   readOnlyRootFilesystem: false
 
 # -- Product / application settings mapped to container env. Prefer over raw `env` for options from [upstream .env.example](https://github.com/canfar/science-portal/blob/main/.env.example). Many `NEXT_PUBLIC_*` values are fixed at **image build**; runtime env here mainly affects the server unless your image supports overrides.
+# **app.api** — server-side (`SERVICE_*`, `LOGIN_API`, …). **app.public** — browser `NEXT_PUBLIC_*`: **public.api** maps to client API bases; **public.services** maps to Services menu / footer links ([eca70d9](https://github.com/canfar/science-portal/commit/eca70d91f45fe6578207c7bd70e67b91d2654700)). If you still use deprecated **app.publicApi** in overlays, it is merged with **public.api** and **public.api** wins on conflicts.
 app:
   # -- URL path prefix; must match `NEXT_PUBLIC_BASE_PATH` in the image. When non-empty, sets env `NEXT_PUBLIC_BASE_PATH`. HTTP probes hit this path (or /science-portal when empty).
   basePath: ""
@@ -52,13 +53,23 @@ app:
     srcSkaha: ""
     srcCavern: ""
     timeoutMs: ""
-  # -- Client-side API URLs (`NEXT_PUBLIC_*`). Empty keys are omitted (image build defaults apply).
-  publicApi:
-    login: ""
-    skaha: ""
-    srcSkaha: ""
-    srcCavern: ""
-    timeoutMs: ""
+  # -- Browser-facing `NEXT_PUBLIC_*` settings (runtime overrides when the image supports them).
+  public:
+    # -- Client-side API bases (`NEXT_PUBLIC_*_API`, `NEXT_PUBLIC_API_TIMEOUT`). Empty keys are omitted.
+    api:
+      login: ""
+      skaha: ""
+      srcSkaha: ""
+      srcCavern: ""
+      timeoutMs: ""
+    # -- Services menu / footer links (`NEXT_PUBLIC_SERVICE_*`). Empty keys are omitted. Requires an image built from eca70d9 or later.
+    services:
+      storageManagement: ""
+      groupManagement: ""
+      dataPublication: ""
+      sciencePortal: ""
+      cadcSearch: ""
+      openstackCloud: ""
   # useCanfar: true  # boolean: sets NEXT_USE_CANFAR and NEXT_PUBLIC_USE_CANFAR (omit key for image defaults)
   # experimental: false  # boolean -> NEXT_PUBLIC_EXPERIMENTAL
   # enableQueryDevtools: false  # boolean -> NEXT_PUBLIC_ENABLE_QUERY_DEVTOOLS
