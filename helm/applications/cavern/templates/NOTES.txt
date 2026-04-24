@@ -29,12 +29,19 @@ Secrets. See values.yaml comments for adminAPIKeys.
 {{- end }}
 
 {{- $uwsAuth := .Values.deployment.cavern.uws.db.auth | default dict }}
-{{- if and (not $uwsAuth.existingSecret) $uwsAuth.username $uwsAuth.password }}
+{{- $uwsDb := .Values.deployment.cavern.uws.db }}
+{{- $uwsInlineU := include "cavern.uwsDbInlineUsername" . | trim }}
+{{- $uwsInlineP := include "cavern.uwsDbInlinePassword" . | trim }}
+{{- if and (empty $uwsAuth.existingSecret) (not (empty $uwsInlineU)) (not (empty $uwsInlineP)) }}
 
-DEPRECATION WARNING: deployment.cavern.uws.db.auth uses inline username and password.
+DEPRECATION WARNING: UWS database credentials are supplied inline (auth.username/password and/or legacy db.username/password).
 The chart creates Secret {{ .Release.Name }}-uws-db-creds from those values (also stored
 in the Helm release). Migrate to auth.existingSecret referencing a Secret you manage
 out-of-band (Sealed Secrets, External Secrets, etc.).
+{{- if and $uwsDb.username $uwsDb.password (or (empty $uwsAuth.username) (empty $uwsAuth.password)) }}
+
+NOTICE: You are using legacy deployment.cavern.uws.db.username/password. Prefer deployment.cavern.uws.db.auth.username/password or existingSecret.
+{{- end }}
 {{- end }}
 
 To learn more about the release, try:

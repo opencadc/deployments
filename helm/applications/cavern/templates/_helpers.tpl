@@ -61,15 +61,34 @@ Kubernetes Secret name for UWS DB credentials: user-supplied existingSecret, or 
 {{- end -}}
 
 {{/*
-Require either auth.existingSecret (recommended) or deprecated auth.username + auth.password (chart creates a Secret).
+Effective inline UWS DB username: auth.username, else legacy deployment.cavern.uws.db.username (2026.1-era values).
 */}}
-{{- define "cavern.validateUwsDatabaseSecret" -}}
+{{- define "cavern.uwsDbInlineUsername" -}}
 {{- $db := .Values.deployment.cavern.uws.db -}}
 {{- $auth := $db.auth | default dict -}}
-{{- if $auth.existingSecret -}}
-{{- else if and $auth.username $auth.password -}}
+{{- default "" (coalesce $auth.username $db.username) -}}
+{{- end -}}
+
+{{/*
+Effective inline UWS DB password: auth.password, else legacy deployment.cavern.uws.db.password.
+*/}}
+{{- define "cavern.uwsDbInlinePassword" -}}
+{{- $db := .Values.deployment.cavern.uws.db -}}
+{{- $auth := $db.auth | default dict -}}
+{{- default "" (coalesce $auth.password $db.password) -}}
+{{- end -}}
+
+{{/*
+Require either auth.existingSecret (recommended) or deprecated inline credentials (auth.username + auth.password, or legacy db.username + db.password; chart creates a Secret).
+*/}}
+{{- define "cavern.validateUwsDatabaseSecret" -}}
+{{- $auth := .Values.deployment.cavern.uws.db.auth | default dict -}}
+{{- $u := include "cavern.uwsDbInlineUsername" . | trim -}}
+{{- $p := include "cavern.uwsDbInlinePassword" . | trim -}}
+{{- if not (empty $auth.existingSecret) -}}
+{{- else if and (not (empty $u)) (not (empty $p)) -}}
 {{- else -}}
-{{- fail "deployment.cavern.uws.db.auth: set existingSecret to a Kubernetes Secret in this namespace (recommended), or set username and password (deprecated; see NOTES.txt). Keys default to username/password (override with auth.secretKeys)." -}}
+{{- fail "deployment.cavern.uws.db.auth: set existingSecret to a Kubernetes Secret in this namespace (recommended), or set non-empty username and password under auth (deprecated), or legacy db.username and db.password (deprecated; see NOTES.txt). Keys default to username/password (override with auth.secretKeys)." -}}
 {{- end -}}
 {{- end -}}
 

@@ -43,6 +43,9 @@ spec:
         {{- with .Values.volumeInit.podSecurityContext }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- with .Values.podSecurityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       initContainers:
         - name: merge-uws-db-credentials
           image: {{ .Values.volumeInit.image | quote }}
@@ -99,7 +102,8 @@ spec:
             memory: {{ .Values.deployment.cavern.resources.limits.memory }}
             cpu: {{ .Values.deployment.cavern.resources.limits.cpu }}
         securityContext:
-          allowPrivilegeEscalation: false
+          {{- $tomcatSC := merge (dict "allowPrivilegeEscalation" false) (.Values.securityContext | default dict) }}
+          {{- toYaml $tomcatSC | nindent 10 }}
         {{- with .Values.deployment.cavern.extraEnv }}
         env:
         {{- toYaml . | nindent 8 }}

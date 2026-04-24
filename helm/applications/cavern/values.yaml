@@ -3,6 +3,15 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
+# Main Cavern Tomcat pod: merged into spec.template.spec.securityContext after fsGroup (from
+# deployment.cavern.filesystem.rootOwner.gid) and volumeInit.podSecurityContext.
+# @see https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext: {}
+
+# Tomcat container securityContext. Merged with allowPrivilegeEscalation: false (chart default;
+# your values win on overlapping keys).
+securityContext: {}
+
 # Skaha web service deployment
 deployment:
   hostname: example.org
@@ -111,7 +120,8 @@ deployment:
         schema: "uws"
         maxActive: 2
         # Database credentials: same Secret is used by the Cavern pod (init container) and bundled PostgreSQL when install: true.
-        # Set existingSecret (recommended), or username + password (deprecated — chart creates {{ releaseName }}-uws-db-creds; see NOTES.txt).
+        # Set existingSecret (recommended), or username + password under auth (deprecated — chart creates {{ releaseName }}-uws-db-creds; see NOTES.txt).
+        # Legacy 2026.1 values may set username/password here at the db level instead of under auth; those are still honoured.
         auth:
           existingSecret: ""
           # username: ""  # deprecated; use existingSecret
