@@ -16,7 +16,7 @@ Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from H
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|2.1.0<!-- x-release-please-version --> | eca70d91f45fe6578207c7bd70e67b91d2654700 | application |
+|2.0.0<!-- x-release-please-version --> | eca70d91f45fe6578207c7bd70e67b91d2654700 | application |
 
 ## Values
 
