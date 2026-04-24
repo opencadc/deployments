@@ -15,14 +15,18 @@ spec:
       labels:
         run: storage-ui-tomcat
     spec:
+      {{- $podSC := .Values.podSecurityContext | default dict }}
+      {{- $contSC := .Values.securityContext | default dict }}
+      {{- $legacyPodFallback := and (empty $podSC) (not (empty $contSC)) }}
+      {{- $effectivePodSC := ternary $contSC $podSC $legacyPodFallback }}
       {{- with .Values.deployment.storageUI.nodeAffinity }}
       affinity:
         nodeAffinity:
           {{- toYaml . | nindent 10 }}
       {{- end }}
-      {{- with .Values.podSecurityContext }}
+      {{- if not (empty $effectivePodSC) }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml $effectivePodSC | nindent 8 }}
       {{- end }}
       imagePullSecrets:
         - name: regcred
@@ -49,9 +53,11 @@ spec:
         {{- with .Values.deployment.storageUI.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- if not $legacyPodFallback }}
         {{- with .Values.securityContext }}
         securityContext:
           {{- toYaml . | nindent 10 }}
+        {{- end }}
         {{- end }}
         {{- if .Values.deployment.storageUI.extraEnv }}
         env:
