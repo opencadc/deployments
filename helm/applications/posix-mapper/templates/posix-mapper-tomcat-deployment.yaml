@@ -21,7 +21,7 @@ spec:
         nodeAffinity:
           {{- toYaml . | nindent 10 }}
       {{- end }}
-      {{- with .Values.securityContext }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -54,8 +54,10 @@ spec:
         {{- with .Values.deployment.posixMapper.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- with .Values.securityContext }}
         securityContext:
-          allowPrivilegeEscalation: false
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
 {{- with .Values.deployment.extraHosts }}
       hostAliases:
 {{- range $extraHost := . }}

@@ -3,14 +3,26 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
-# @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
+# @param podSecurityContext - Optional security context for the Pod (spec.template.spec.securityContext).
+# See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+#
+# Example:
+# podSecurityContext:
+#   seccompProfile:
+#     type: RuntimeDefault
+podSecurityContext: {}
+
+# @param securityContext - Optional security context for the POSIX Mapper container only (containers[].securityContext).
 # See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 #
 # Example:
 # securityContext:
-#   seccompProfile:
-#     type: RuntimeDefault
-# securityContext: {}
+#   allowPrivilegeEscalation: false
+#   capabilities:
+#     drop:
+#       - ALL
+securityContext:
+  allowPrivilegeEscalation: false
 
 # @param applicationName - The name of the application.  This will rename the underlying WAR file, thus changing the endpoint.  Defaults to posix-mapper.
 # applicationName: posix-mapper

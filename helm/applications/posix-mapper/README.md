@@ -12,7 +12,7 @@ A Helm chart to install the UID/GID POSIX Mapper
 |-----|------|---------|-------------|
 | deployment.hostname | string | `"example.org"` |  |
 | deployment.posixMapper.gmsID | string | `nil` |  |
-| deployment.posixMapper.image | string | `"registry.gitlab.com/ska-telescope/src/src-ugm/ska-src-ugm-posix-mapper:0.4.0"` |  |
+| deployment.posixMapper.image | string | `"images.opencadc.org/platform/posix-mapper:0.4.0"` |  |
 | deployment.posixMapper.imagePullPolicy | string | `"Always"` |  |
 | deployment.posixMapper.minGID | int | `900000` |  |
 | deployment.posixMapper.minUID | int | `10000` |  |
@@ -24,7 +24,9 @@ A Helm chart to install the UID/GID POSIX Mapper
 | deployment.posixMapper.resources.requests.cpu | string | `"500m"` |  |
 | deployment.posixMapper.resources.requests.memory | string | `"1Gi"` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
+| podSecurityContext | object | `{}` | Optional Pod `spec.securityContext`. |
 | postgresql | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
+| securityContext | object | `{"allowPrivilegeEscalation":false}` | Tomcat container `securityContext`. |
 | tolerations | list | `[]` |  |
