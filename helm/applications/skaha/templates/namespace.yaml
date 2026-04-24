@@ -1,10 +1,9 @@
 # This file is used to create a namespace for the skaha sessions if it does not already exist.
-{{- with .Values.deployment.skaha.sessions }}
-{{- if and .namespace (not (eq $.Release.Namespace .namespace)) }}
+{{- $wns := include "skaha.workloadNamespace" . }}
+{{- if and $wns (not (eq $.Release.Namespace $wns)) }}
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .namespace }}
-{{- end }}
+  name: {{ $wns }}
 {{- end }}

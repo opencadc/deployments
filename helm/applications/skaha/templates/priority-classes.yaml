@@ -2,7 +2,7 @@
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: {{ .Values.deployment.skaha.priorityClass.name | required "deployment.skaha.priorityClass.name is required when create is true" }}
+  name: {{ include "skaha.apiPriorityClassName" . | required "deployment.skaha.priorityClass.name (or legacy priorityClassName) is required when create is true" }}
   labels:
     {{- include "skaha.labels" $ | nindent 4 }}
 value: {{ .Values.deployment.skaha.priorityClass.value }}
@@ -10,18 +10,19 @@ preemptionPolicy: {{ .Values.deployment.skaha.priorityClass.preemptionPolicy }}
 globalDefault: {{ .Values.deployment.skaha.priorityClass.globalDefault }}
 description: {{ .Values.deployment.skaha.priorityClass.description | quote }}
 {{- end }}
-{{- if .Values.deployment.skaha.headlessPriorityClass.create }}
+{{- $hpc := .Values.deployment.skaha.headlessPriorityClass }}
+{{- if and (kindIs "map" $hpc) $hpc.create }}
 {{- if .Values.deployment.skaha.priorityClass.create }}
 ---
 {{- end }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: {{ .Values.deployment.skaha.headlessPriorityClass.name | required "deployment.skaha.headlessPriorityClass.name is required when create is true" }}
+  name: {{ $hpc.name | required "deployment.skaha.headlessPriorityClass.name is required when create is true" }}
   labels:
     {{- include "skaha.labels" $ | nindent 4 }}
-value: {{ .Values.deployment.skaha.headlessPriorityClass.value }}
-preemptionPolicy: {{ .Values.deployment.skaha.headlessPriorityClass.preemptionPolicy }}
-globalDefault: {{ .Values.deployment.skaha.headlessPriorityClass.globalDefault }}
-description: {{ .Values.deployment.skaha.headlessPriorityClass.description | quote }}
+value: {{ $hpc.value }}
+preemptionPolicy: {{ $hpc.preemptionPolicy }}
+globalDefault: {{ $hpc.globalDefault }}
+description: {{ $hpc.description | quote }}
 {{- end }}

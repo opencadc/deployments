@@ -7,6 +7,10 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
+# @deprecated Prefer deployment.skaha.sessions.namespace. When that key is omitted, skahaWorkload.namespace is still honored (see template skaha.workloadNamespace).
+# skahaWorkload:
+#   namespace: skaha-workload
+
 # @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
 # securityContext: {}
 #
@@ -22,8 +26,8 @@ securityContext: {}
 # Example:
 # podSecurityContext:
 #   fsGroup: 1000
-#   runAsUser: 1000
-#   allowPrivilegeEscalation: false
+#   seccompProfile:
+#     type: RuntimeDefault
 podSecurityContext: {}
 
 # Skaha web service deployment
@@ -96,8 +100,9 @@ deployment:
     # Settings for User Sessions.  Sensible defaults supplied, but can be overridden.
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     sessions:
-      # Namespace to create User Sessions in.  This should be a Namespace that is designated for user workloads, and should have appropriate resource quotas and limits set.  Defaults to "skaha-workload", but can be overridden.
-      namespace: skaha-workload
+      # Namespace for User Sessions. When unset, defaults to "skaha-workload" (see template skaha.workloadNamespace).
+      # Legacy installs may set top-level skahaWorkload.namespace instead; it is coalesced when this key is omitted.
+      # namespace: skaha-workload
 
       expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
       maxCount: "5"  # Max number of sessions per user.
@@ -406,6 +411,11 @@ deployment:
     # extraVolumeMounts:
     # - mountPath: "/config/cacerts"
     #   name: cacert-volume
+
+    # @deprecated Use priorityClass.name (below) instead of this flat string when migrating old values.
+    # priorityClassName: uber-user-preempt-high
+    # @deprecated Prefer top-level serviceAccount.name; coalesced when serviceAccount.name is empty.
+    # serviceAccountName: skaha
 
     # PriorityClass for the Skaha API pod. When create is true, a cluster PriorityClass is installed.
     # If create is false, name must reference an existing PriorityClass. Omit name to skip setting priorityClassName on the pod.

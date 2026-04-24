@@ -96,12 +96,42 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use
 */}}
 {{- define "skaha.serviceAccountName" -}}
+{{- $name := .Values.serviceAccount.name -}}
+{{- $legacy := .Values.deployment.skaha.serviceAccountName -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "skaha.fullname" .) .Values.serviceAccount.name }}
+{{- coalesce $name $legacy (include "skaha.fullname" .) }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- coalesce $name $legacy "default" }}
 {{- end }}
 {{- end }}
+
+{{/*
+Namespace for user session workloads: sessions.namespace, else legacy skahaWorkload.namespace, else skaha-workload.
+*/}}
+{{- define "skaha.workloadNamespace" -}}
+{{- $sw := .Values.skahaWorkload | default dict -}}
+{{- coalesce .Values.deployment.skaha.sessions.namespace $sw.namespace "skaha-workload" -}}
+{{- end -}}
+
+{{/*
+Skaha API pod PriorityClass name: priorityClass.name, else legacy deployment.skaha.priorityClassName.
+*/}}
+{{- define "skaha.apiPriorityClassName" -}}
+{{- $pc := .Values.deployment.skaha.priorityClass | default dict -}}
+{{- coalesce $pc.name .Values.deployment.skaha.priorityClassName -}}
+{{- end -}}
+
+{{/*
+Headless jobs PriorityClass name for SKAHA_HEADLESS_PRIORITY_CLASS: object .name, else legacy string value.
+*/}}
+{{- define "skaha.headlessPriorityClassName" -}}
+{{- $h := .Values.deployment.skaha.headlessPriorityClass -}}
+{{- if kindIs "string" $h -}}
+{{- $h -}}
+{{- else if kindIs "map" $h -}}
+{{- $h.name -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
 USER SESSION TEMPLATE DEFINITIONS

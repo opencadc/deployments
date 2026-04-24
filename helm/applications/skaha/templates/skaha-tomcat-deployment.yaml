@@ -87,7 +87,7 @@ spec:
         - name: skaha.homedir
           value: "{{ .Values.deployment.skaha.skahaTld }}/home"
         - name: skaha.namespace
-          value: "{{ .Values.deployment.skaha.sessions.namespace }}"
+          value: "{{ include "skaha.workloadNamespace" . }}"
         - name: skaha.maxusersessions
           value: "{{ .Values.deployment.skaha.sessions.maxCount }}"
         - name: skaha.sessionexpiry
@@ -104,7 +104,8 @@ spec:
         - name: skaha.headlessprioritygroup
           value: "{{ . }}"
         {{- end }}
-        {{- with .Values.deployment.skaha.headlessPriorityClass.name }}
+        {{- $headlessPC := include "skaha.headlessPriorityClassName" . }}
+        {{- with $headlessPC }}
         - name: SKAHA_HEADLESS_PRIORITY_CLASS
           value: "{{ . }}"
         {{- end }}
@@ -173,7 +174,7 @@ spec:
         {{- end }}
         {{- with .Values.securityContext }}
         securityContext:
-        {{- toYaml . | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
         {{- end }}
         volumeMounts:
         - mountPath: "/config"
@@ -195,7 +196,8 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.deployment.skaha.priorityClass.name }}
+      {{- $apiPC := include "skaha.apiPriorityClassName" . }}
+      {{- with $apiPC }}
       priorityClassName: {{ . }}
       {{- end }}
       serviceAccountName: {{ include "skaha.serviceAccountName" . }}

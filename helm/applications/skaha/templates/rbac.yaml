@@ -5,7 +5,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: workload-controller-role
-  namespace: {{ $.Values.deployment.skaha.sessions.namespace }}
+  namespace: {{ include "skaha.workloadNamespace" $ }}
 rules:
 - apiGroups: [""]
   resources: ["events", "limitranges"]
@@ -31,7 +31,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: workload-controller-binding
-  namespace: {{ $.Values.deployment.skaha.sessions.namespace }}
+  namespace: {{ include "skaha.workloadNamespace" $ }}
 subjects:
 - kind: ServiceAccount
   name: {{ include "skaha.serviceAccountName" $ }}

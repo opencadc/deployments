@@ -5,7 +5,7 @@ Post-install notes for Skaha with optional Kueue integration.
 Skaha release: {{ .Release.Name }}
 Namespace: {{ .Release.Namespace }}
 
-Skaha workload namespace: {{ .Values.deployment.skaha.sessions.namespace | default "skaha-workload" }}
+Skaha workload namespace: {{ include "skaha.workloadNamespace" . }}
 
 {{- $userStorage := .Values.deployment.skaha.sessions.userStorage | default dict }}
 {{- $legacyPVCName := hasKey $userStorage "persistentVolumeClaimName" }}
@@ -55,20 +55,21 @@ Kueue:
 Quick checks:
   - kubectl get deployment {{ .Release.Name }}-skaha-tomcat -n {{ .Release.Namespace }}
   - kubectl get clusterqueues 2>/dev/null || true
-  - kubectl get localqueues -n {{ .Values.deployment.skaha.sessions.namespace }} 2>/dev/null || true
+  - kubectl get localqueues -n {{ include "skaha.workloadNamespace" . }} 2>/dev/null || true
 
 If user Jobs remain Pending:
-- Ensure LocalQueue exists in {{ .Values.deployment.skaha.sessions.namespace }} and references your configured ClusterQueue.
+- Ensure LocalQueue exists in {{ include "skaha.workloadNamespace" . }} and references your configured ClusterQueue.
 - Verify ClusterQueue quotas are sufficient.
 - Confirm priority classes referenced by sessions exist or are created.
 
 !! ISSUES !!:
-{{- $skahaWorkloadDeprecated := and .Values.skahaWorkload .Values.deployment.skaha.sessions.namespace }}
-{{- if and (not $skahaWorkloadDeprecated) (not $legacyPVCName) }}
+{{- $sw := .Values.skahaWorkload | default dict }}
+{{- $legacySkahaWorkloadNs := and $sw.namespace (not .Values.deployment.skaha.sessions.namespace) }}
+{{- if and (not $legacySkahaWorkloadNs) (not $legacyPVCName) }}
 None.
 {{- end }}
-{{- if $skahaWorkloadDeprecated }}
-Please use the deployment.skaha.sessions.namespace to set the workload (User Session) Namespace.  The .skahaWorkload value is deprecated.
+{{- if $legacySkahaWorkloadNs }}
+You are using deprecated top-level skahaWorkload.namespace; the chart still applies it as the workload namespace. Prefer deployment.skaha.sessions.namespace.
 {{- end }}
 {{- if $legacyPVCName }}
 Your values still set deployment.skaha.sessions.userStorage.persistentVolumeClaimName — migrate to userStorage.spec (see notice above). The legacy field remains honoured when spec is unset or empty.

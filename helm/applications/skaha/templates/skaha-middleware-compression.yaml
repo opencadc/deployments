@@ -9,6 +9,6 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: {{ .Release.Name }}-workload-enable-compression
-  namespace: {{ .Values.deployment.skaha.sessions.namespace }}
+  namespace: {{ include "skaha.workloadNamespace" . }}
 spec:
   compress: {}

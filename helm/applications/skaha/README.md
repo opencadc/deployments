@@ -52,12 +52,12 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.ingress.tls | object | `{}` |  |
 | deployment.skaha.sessions.initContainerImage | string | `"redis:8.2.2-bookworm"` |  |
 | deployment.skaha.sessions.kueue | object | `{"rbac":{"create":false}}` |  |
-| deployment.skaha.sessions.kueue.rbac.create | bool | `false` | When true, create Role/RoleBinding for localqueues in the release namespace and skahaWorkload.namespace |
+| deployment.skaha.sessions.kueue.rbac.create | bool | `false` | When true, create Role/RoleBinding for localqueues in the release namespace and the user session workload namespace |
 | deployment.skaha.sessions.limitRange.enabled | bool | `false` |  |
 | deployment.skaha.sessions.maxCount | string | `"5"` |  |
 | deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` |  |
 | deployment.skaha.sessions.minEphemeralStorage | string | `"20Gi"` |  |
-| deployment.skaha.sessions.namespace | string | `"canfar-workload"` |  |
+| deployment.skaha.sessions.namespace | string | `nil` | User session namespace; defaults to `skaha-workload` when unset. Legacy: top-level `skahaWorkload.namespace` (coalesced when this key is omitted). |
 | deployment.skaha.sessions.nodeLabelSelector | string | `nil` |  |
 | deployment.skaha.sessions.tolerations | list | `[]` |  |
 | deployment.skaha.sessions.userStorage.admin.auth | string | `nil` |  |
