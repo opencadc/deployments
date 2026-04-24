@@ -12,7 +12,7 @@ A Helm chart to install the UID/GID POSIX Mapper
 |-----|------|---------|-------------|
 | deployment.hostname | string | `"example.org"` |  |
 | deployment.posixMapper.gmsID | string | `nil` |  |
-| deployment.posixMapper.image | string | `"images.opencadc.org/platform/posix-mapper:0.4.0"` |  |
+| deployment.posixMapper.image | string | `"registry.gitlab.com/ska-telescope/src/src-ugm/ska-src-ugm-posix-mapper:0.4.0"` |  |
 | deployment.posixMapper.imagePullPolicy | string | `"Always"` |  |
 | deployment.posixMapper.minGID | int | `900000` |  |
 | deployment.posixMapper.minUID | int | `10000` |  |
