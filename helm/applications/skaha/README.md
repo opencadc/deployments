@@ -62,7 +62,6 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.userStorage.spec | object | `{}` |  |
 | deployment.skaha.sessions.userStorage.topLevelDirectory | string | `"/cavern"` | Absolute mount path containing user home and projects directories. |
 | experimentalFeatures.enabled | bool | `false` | Enable processing of experimental feature gates. |
-| experimentalFeatures.sessionLimitRange | object | `{}` |  |
 | ingress.enabled | bool | `true` | Enable ingress routing for the Skaha API. |
 | ingress.path | string | `"/skaha"` | Ingress path prefix routed to the Skaha API Service. |
 | kubernetesClusterDomain | string | `"cluster.local"` | Kubernetes DNS domain used when building internal service hostnames. |

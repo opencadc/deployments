@@ -565,6 +565,24 @@ deployment:
           queueName: canfar-science-platform-local-queue
           priorityClass: low
 
+      limitRange:
+        enabled: true
+        rbac:
+          create: false
+        spec:
+          max:  # maximum allowed requested
+            memory: "192Gi"
+            cpu: "16"
+            nvidia.com/gpu: "1"
+          default:  # actually refers to default limits
+            memory: "24Gi"
+            cpu: "4"
+            nvidia.com/gpu: "0"
+          defaultRequest:  # default requests
+            memory: "4Gi"
+            cpu: "1"
+            nvidia.com/gpu: "0"
+
     # Optionally mount a custom CA certificate as an extra mount in Skaha (*not* user sessions)
     # extraVolumeMounts:
     # - mountPath: "/config/cacerts"
@@ -603,27 +621,6 @@ deployment:
   #     hostname: myhost.example.org
   #
   # extraHosts: []
-
-# Enable experimental feature flags
-experimentalFeatures:
-  enabled: true
-  sessionLimitRange:
-    enabled: true
-    rbac:
-      create: false
-    limitSpec:
-      max:  # maximum allowed requested
-        memory: "192Gi"
-        cpu: "16"
-        nvidia.com/gpu: "1"
-      default:  # actually refers to default limits
-        memory: "24Gi"
-        cpu: "4"
-        nvidia.com/gpu: "0"
-      defaultRequest:  # default requests
-        memory: "4Gi"
-        cpu: "1"
-        nvidia.com/gpu: "0"
 
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.

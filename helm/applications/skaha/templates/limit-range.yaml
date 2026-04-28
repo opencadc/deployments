@@ -1,12 +1,5 @@
-{{- $limitRange := dict}}
-{{- $spec := dict }}
-{{- if .Values.experimentalFeatures.sessionLimitRange }}
-{{- $limitRange = .Values.experimentalFeatures.sessionLimitRange }}
-{{- $spec = $limitRange.limitSpec }}
-{{ else }}
-{{- $limitRange = .Values.deployment.skaha.sessions.limitRange }}
-{{- $spec = $limitRange.spec }}
-{{- end }}
+{{- $limitRange := .Values.deployment.skaha.sessions.limitRange }}
+{{- $spec := $limitRange.spec }}
 ---
 apiVersion: v1
 kind: LimitRange

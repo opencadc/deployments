@@ -125,7 +125,7 @@ spec:
         {{- end }}
         {{- end }}
         {{- end }}
-        {{- if or .Values.deployment.skaha.sessions.limitRange.enabled (and .Values.experimentalFeatures.enabled .Values.experimentalFeatures.sessionLimitRange.enabled) }}
+        {{- if .Values.deployment.skaha.sessions.limitRange.enabled }}
         - name: SKAHA_SESSION_LIMIT_RANGE_ENABLED
           value: "true"
         {{- end }}
