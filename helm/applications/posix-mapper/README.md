@@ -24,9 +24,9 @@ A Helm chart to install the UID/GID POSIX Mapper
 | deployment.posixMapper.resources.requests.cpu | string | `"500m"` |  |
 | deployment.posixMapper.resources.requests.memory | string | `"1Gi"` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
-| podSecurityContext | object | `{}` | Optional Pod `spec.securityContext`. |
+| podSecurityContext | object | `{}` |  |
 | postgresql | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
-| securityContext | object | `{"allowPrivilegeEscalation":false}` | Tomcat container `securityContext`. |
+| securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | tolerations | list | `[]` |  |

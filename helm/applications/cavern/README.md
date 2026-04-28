@@ -4,7 +4,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.10.3<!-- x-release-please-version --> | 0.9.2 | application |
+|0.10.0<!-- x-release-please-version --> | 0.9.3 | application |
 
 ## Requirements
 
@@ -25,7 +25,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | deployment.cavern.filesystem.dataDir | string | `""` |  |
 | deployment.cavern.filesystem.rootOwner.adminUsername | string | `""` |  |
 | deployment.cavern.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.cavern.image | string | `"images.opencadc.org/platform/cavern:0.9.2"` |  |
+| deployment.cavern.image | string | `"images.opencadc.org/platform/cavern:0.9.3"` |  |
 | deployment.cavern.imagePullPolicy | string | `"IfNotPresent"` |  |
 | deployment.cavern.resourceID | string | `"ivo://example.org/cavern"` |  |
 | deployment.cavern.resources.limits.cpu | string | `"500m"` |  |
@@ -44,9 +44,11 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | deployment.hostname | string | `"example.org"` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
 | livenessProbe | object | `{}` |  |
+| podSecurityContext | object | `{}` |  |
 | readinessProbe | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
+| securityContext | object | `{}` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.automount | bool | `true` |  |
 | serviceAccount.create | bool | `false` |  |

@@ -20,7 +20,7 @@ This section is automatically generated. Do not edit manually.
 | Chart | Description |
 | --- | --- |
 | [access](helm/applications/access) | A Helm chart for the Access web service, responsible for managing user cookie access CADC and CANFAR services and applications. |
-| [science-portal](helm/applications/canfar-next/science-portal) | A Helm chart for Science Portal Next.js application |
+| [scienceportal](helm/applications/archived/science-portal) | A Helm chart to install the Science Portal UI |
 | [canfar-web-portal](helm/applications/canfar-web-portal) | A Helm chart for Kubernetes |
 | [canfar-web-root](helm/applications/canfar-web-root) | A Helm chart for Kubernetes |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
@@ -32,7 +32,7 @@ This section is automatically generated. Do not edit manually.
 | [search](helm/applications/sandbox/search) | A Helm chart for the Search User Interface browser application |
 | [stack](helm/applications/sandbox/stack) | A Helm chart for the SC2 Sandbox Stack |
 | [torkeep](helm/applications/sandbox/torkeep) | A CAOM-2 Metadata Repository Helm Chart |
-| [scienceportal](helm/applications/science-portal) | A Helm chart to install the Science Portal UI |
+| [science-portal](helm/applications/science-portal) | A Helm chart for the CANFAR Next.js Science Portal application |
 | [skaha](helm/applications/skaha) | A Helm chart to install the Skaha web service of the CANFAR Science Platform |
 | [sshd](helm/applications/sshd) | An SSHD service with SSSD to get users from LDAP |
 | [storageui](helm/applications/storage-ui) | A Helm chart to install the User Storage UI |

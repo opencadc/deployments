@@ -4,7 +4,7 @@ A Helm chart to install the User Storage UI
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.10.1<!-- x-release-please-version --> | 1.4.3 | application |
+|0.10.0<!-- x-release-please-version --> | 1.4.3 | application |
 
 ## Requirements
 
@@ -28,10 +28,12 @@ A Helm chart to install the User Storage UI
 | deployment.storageUI.resources.requests.memory | string | `"500Mi"` |  |
 | deployment.storageUI.themeName | string | `nil` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
+| podSecurityContext | object | `{}` |  |
 | redis.architecture | string | `"standalone"` |  |
 | redis.auth.enabled | bool | `false` |  |
 | redis.image.repository | string | `"redis"` |  |
 | redis.image.tag | string | `"8.2.2-bookworm"` |  |
 | redis.master.persistence.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
+| securityContext | object | `{}` |  |
 | tolerations | list | `[]` |  |

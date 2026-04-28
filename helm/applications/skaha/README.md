@@ -4,7 +4,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|2.1.0<!-- x-release-please-version --> | 1.2.1 | application |
+|1.6.0<!-- x-release-please-version --> | 1.2.1 | application |
 
 ## Requirements
 
@@ -17,81 +17,73 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| deployment.hostname | string | `"myhost.example.com"` |  |
-| deployment.skaha.apiVersion | string | `"v1"` |  |
-| deployment.skaha.defaultQuotaGB | string | `"10"` |  |
+| autoscaling.enabled | bool | `true` | Enable HorizontalPodAutoscaler for skaha-tomcat. Target and scaling behavior are intentionally chart-managed (CPU 65%). |
+| autoscaling.maxReplicas | int | `6` | Maximum number of skaha-tomcat replicas. |
+| autoscaling.minReplicas | int | `2` | Minimum number of skaha-tomcat replicas. |
+| deployment.hostname | string | `"myhost.example.com"` | Public hostname for the Skaha API. |
+| deployment.skaha.apiVersion | string | `"v1"` | Skaha API version path segment (for example, `v1` -> `/skaha/v1/...`). |
+| deployment.skaha.defaultQuotaGB | string | `"10"` | Default user storage quota in GiB for first-time users. |
 | deployment.skaha.headlessPriorityClass.create | bool | `false` |  |
 | deployment.skaha.headlessPriorityClass.description | string | `"For high-priority headless jobs. Preempting."` |  |
 | deployment.skaha.headlessPriorityClass.globalDefault | bool | `false` |  |
 | deployment.skaha.headlessPriorityClass.name | string | `""` |  |
 | deployment.skaha.headlessPriorityClass.preemptionPolicy | string | `"PreemptLowerPriority"` |  |
 | deployment.skaha.headlessPriorityClass.value | int | `2000` |  |
-| deployment.skaha.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.skaha.image | string | `"images.opencadc.org/platform/skaha:1.2.1"` |  |
-| deployment.skaha.imageCache.refreshSchedule | string | `"*/30 * * * *"` |  |
-| deployment.skaha.imagePullPolicy | string | `"Always"` |  |
-| deployment.skaha.init.image | string | `"busybox:1.37.0"` |  |
-| deployment.skaha.init.imagePullPolicy | string | `"IfNotPresent"` |  |
-| deployment.skaha.posixMapperCacheTTLSeconds | string | `"86400"` |  |
-| deployment.skaha.priorityClass.create | bool | `true` |  |
-| deployment.skaha.priorityClass.description | string | `"For high-priority user pods. Preempting."` |  |
-| deployment.skaha.priorityClass.globalDefault | bool | `false` |  |
-| deployment.skaha.priorityClass.name | string | `"uber-user-preempt-high"` |  |
-| deployment.skaha.priorityClass.preemptionPolicy | string | `"PreemptLowerPriority"` |  |
-| deployment.skaha.priorityClass.value | int | `2000` |  |
-| deployment.skaha.registryHosts | string | `"images.canfar.net"` |  |
-| deployment.skaha.resources.limits.cpu | string | `"2000m"` |  |
-| deployment.skaha.resources.limits.memory | string | `"3Gi"` |  |
-| deployment.skaha.resources.requests.cpu | string | `"1000m"` |  |
-| deployment.skaha.resources.requests.memory | string | `"2Gi"` |  |
-| deployment.skaha.sessions.expirySeconds | string | `"345600"` |  |
-| deployment.skaha.sessions.flexResourceRequests.headless.cpuCores | string | `"1"` |  |
-| deployment.skaha.sessions.flexResourceRequests.headless.memoryInGB | string | `"4"` |  |
-| deployment.skaha.sessions.imagePullPolicy | string | `"Always"` |  |
-| deployment.skaha.sessions.ingress.customResponseHeaders | object | `{}` |  |
-| deployment.skaha.sessions.ingress.tls | object | `{}` |  |
-| deployment.skaha.sessions.initContainerImage | string | `"redis:8.2.2-bookworm"` |  |
-| deployment.skaha.sessions.kueue | object | `{"rbac":{"create":false}}` |  |
-| deployment.skaha.sessions.kueue.rbac.create | bool | `false` | When true, create Role/RoleBinding for localqueues in the release namespace and the user session workload namespace |
-| deployment.skaha.sessions.limitRange.enabled | bool | `false` |  |
-| deployment.skaha.sessions.maxCount | string | `"5"` |  |
-| deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` |  |
-| deployment.skaha.sessions.minEphemeralStorage | string | `"20Gi"` |  |
-| deployment.skaha.sessions.namespace | string | `nil` | User session namespace; defaults to `skaha-workload` when unset. Legacy: top-level `skahaWorkload.namespace` (coalesced when this key is omitted). |
-| deployment.skaha.sessions.nodeLabelSelector | string | `nil` |  |
-| deployment.skaha.sessions.tolerations | list | `[]` |  |
-| deployment.skaha.sessions.userStorage.admin.auth | string | `nil` |  |
-| deployment.skaha.sessions.userStorage.admin.auth.apiKeySecret | object | `nil` | Kubernetes Secret reference for the Cavern admin API key (`name`, optional `key` default `api-key`) |
-| deployment.skaha.sessions.userStorage.homeDirectory | string | `"home"` |  |
-| deployment.skaha.sessions.userStorage.spec | object | `{"persistentVolumeClaim":{"claimName":"skaha-workload-cavern-pvc"}}` | Kubernetes Pod volume source for session user storage (e.g. persistentVolumeClaim, cephfs). |
-| deployment.skaha.sessions.userStorage.projectsDirectory | string | `"projects"` |  |
-| deployment.skaha.sessions.userStorage.topLevelDirectory | string | `"/cavern"` |  |
-| experimentalFeatures.enabled | bool | `false` |  |
+| deployment.skaha.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` | Java IdentityManager implementation used for authentication. |
+| deployment.skaha.image | string | `"images.opencadc.org/platform/skaha:1.2.1"` | Container image for the Skaha API service. |
+| deployment.skaha.imageCache.refreshSchedule | string | `"*/30 * * * *"` | Cron schedule used to refresh cached images. |
+| deployment.skaha.imagePullPolicy | string | `"Always"` | Image pull policy for the Skaha API container. |
+| deployment.skaha.init.image | string | `"busybox:1.37.0"` | Init container image used to bootstrap user storage paths. |
+| deployment.skaha.init.imagePullPolicy | string | `"IfNotPresent"` | Image pull policy for the bootstrap init container. |
+| deployment.skaha.posixMapperCacheTTLSeconds | string | `"86400"` | TTL in seconds for cached POSIX mapper entries. |
+| deployment.skaha.priorityClass | object | `{"create":true,"description":"For high-priority user pods. Preempting.","globalDefault":false,"name":"uber-user-preempt-high","preemptionPolicy":"PreemptLowerPriority","value":2000}` | PriorityClass assigned to the Skaha API Pod. |
+| deployment.skaha.registryHosts | string | `"images.canfar.net"` | Space-delimited list of image registry hosts allowed for sessions. |
+| deployment.skaha.resources.limits.cpu | string | `"2000m"` | CPU limit for the Skaha API container. |
+| deployment.skaha.resources.limits.memory | string | `"3Gi"` | Memory limit for the Skaha API container. |
+| deployment.skaha.resources.requests.cpu | string | `"1000m"` | CPU request for the Skaha API container. |
+| deployment.skaha.resources.requests.memory | string | `"2Gi"` | Memory request for the Skaha API container. |
+| deployment.skaha.sessions.expirySeconds | string | `"345600"` | Session lifetime in seconds before expiry and shutdown. |
+| deployment.skaha.sessions.flexResourceRequests.headless.cpuCores | string | `"1"` | Default CPU request (cores) for flex headless sessions. |
+| deployment.skaha.sessions.flexResourceRequests.headless.memoryInGB | string | `"4"` | Default memory request (GiB) for flex headless sessions. |
+| deployment.skaha.sessions.imagePullPolicy | string | `"Always"` | Image pull policy applied to all user session containers. |
+| deployment.skaha.sessions.ingress.customResponseHeaders | object | `{}` | Custom response headers added to user-session ingress responses. |
+| deployment.skaha.sessions.ingress.tls | object | `{}` | TLS configuration for the user-session Traefik IngressRoute. |
+| deployment.skaha.sessions.initContainerImage | string | `"redis:8.2.2-bookworm"` | Image used by the session init container that manages POSIX data. |
+| deployment.skaha.sessions.kueue | object | `{"rbac":{"create":false}}` | Per-session-type Kueue configuration. |
+| deployment.skaha.sessions.limitRange.enabled | bool | `false` | Enable creation of a LimitRange for session container resources. |
+| deployment.skaha.sessions.maxCount | string | `"5"` | Maximum number of active sessions allowed per user. |
+| deployment.skaha.sessions.maxEphemeralStorage | string | `"200Gi"` | Maximum ephemeral storage limit for sessions (non-desktop). |
+| deployment.skaha.sessions.minEphemeralStorage | string | `"20Gi"` | Initial ephemeral storage request for new sessions (non-desktop). |
+| deployment.skaha.sessions.nodeLabelSelector | string | `nil` | Node label selector used when discovering schedulable worker nodes. |
+| deployment.skaha.sessions.tolerations | list | `[]` | Tolerations applied to user session Pods. |
+| deployment.skaha.sessions.userStorage.admin.auth | string | `nil` | Authentication settings used for user-storage admin operations. |
+| deployment.skaha.sessions.userStorage.homeDirectory | string | `"home"` | Relative path under topLevelDirectory for user home directories. |
+| deployment.skaha.sessions.userStorage.projectsDirectory | string | `"projects"` | Relative path under topLevelDirectory for shared projects storage. |
+| deployment.skaha.sessions.userStorage.spec | object | `{}` |  |
+| deployment.skaha.sessions.userStorage.topLevelDirectory | string | `"/cavern"` | Absolute mount path containing user home and projects directories. |
+| experimentalFeatures.enabled | bool | `false` | Enable processing of experimental feature gates. |
 | experimentalFeatures.sessionLimitRange | object | `{}` |  |
-| ingress.enabled | bool | `true` |  |
-| ingress.path | string | `"/skaha"` |  |
-| kubernetesClusterDomain | string | `"cluster.local"` |  |
+| ingress.enabled | bool | `true` | Enable ingress routing for the Skaha API. |
+| ingress.path | string | `"/skaha"` | Ingress path prefix routed to the Skaha API Service. |
+| kubernetesClusterDomain | string | `"cluster.local"` | Kubernetes DNS domain used when building internal service hostnames. |
 | podSecurityContext | object | `{}` |  |
 | rbac.clusterRole.create | bool | `false` |  |
 | rbac.create | bool | `true` |  |
-| redis.architecture | string | `"standalone"` |  |
-| redis.auth.enabled | bool | `false` |  |
-| redis.image.repository | string | `"redis"` |  |
-| redis.image.tag | string | `"8.2.2-bookworm"` |  |
-| redis.master.containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
-| redis.master.containerSecurityContext.capabilities.drop[0] | string | `"ALL"` |  |
-| redis.master.containerSecurityContext.readOnlyRootFilesystem | bool | `true` |  |
-| redis.master.containerSecurityContext.runAsGroup | int | `1001` |  |
-| redis.master.containerSecurityContext.runAsNonRoot | bool | `true` |  |
-| redis.master.containerSecurityContext.runAsUser | int | `1001` |  |
-| redis.master.containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| redis.master.persistence.enabled | bool | `false` |  |
-| replicaCount | int | `1` |  |
+| redis.architecture | string | `"standalone"` | Redis deployment architecture. |
+| redis.auth.enabled | bool | `false` | Enable Redis authentication. |
+| redis.image.repository | string | `"redis"` | Redis image repository used by the bundled chart dependency. |
+| redis.image.tag | string | `"8.2.2-bookworm"` | Redis image tag used by the bundled chart dependency. |
+| redis.master.containerSecurityContext.allowPrivilegeEscalation | bool | `false` | Disallow privilege escalation in the Redis master container. |
+| redis.master.containerSecurityContext.capabilities.drop | list | `["ALL"]` | Linux capabilities dropped from the Redis master container. |
+| redis.master.containerSecurityContext.readOnlyRootFilesystem | bool | `true` | Mount Redis master root filesystem as read-only. |
+| redis.master.containerSecurityContext.runAsGroup | int | `1001` | Group ID for the Redis master container. |
+| redis.master.containerSecurityContext.runAsNonRoot | bool | `true` | Require Redis master to run as a non-root user. |
+| redis.master.containerSecurityContext.runAsUser | int | `1001` | User ID for the Redis master container. |
+| redis.master.containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` | Seccomp profile type for Redis master. |
+| redis.master.persistence.enabled | bool | `false` | Enable persistence for the Redis master StatefulSet. |
+| replicaCount | int | `1` | Number of skaha-tomcat replicas when autoscaling is disabled. |
 | secrets | string | `nil` |  |
-| securityContext | object | `{}` |  |
-| service.port | int | `8080` |  |
-| serviceAccount.annotations | object | `{}` |  |
-| serviceAccount.automount | bool | `true` |  |
-| serviceAccount.create | bool | `true` |  |
-| serviceAccount.name | string | `""` |  |
-| tolerations | list | `[]` |  |
+| securityContext | object | `{}` | Optional Pod-level security context for the Skaha API Deployment. |
+| service.port | int | `8080` | Service port exposed for the Skaha API Service. |
+| serviceAccount | object | `{"annotations":{},"automount":true,"create":true,"name":""}` | ServiceAccount used by the Skaha API Pod. |
+| tolerations | list | `[]` | Tolerations applied to the Skaha API Pod. |

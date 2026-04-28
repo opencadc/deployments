@@ -1,15 +1,25 @@
+# -- Kubernetes DNS domain used when building internal service hostnames.
 kubernetesClusterDomain: cluster.local
 
 # Default values for skaha.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Tell Kubernetes to spin up multiple instances.  Defaults to 1.
+# -- Number of skaha-tomcat replicas when autoscaling is disabled.
 replicaCount: 1
 
 # @deprecated Prefer deployment.skaha.sessions.namespace. When that key is omitted, skahaWorkload.namespace is still honored (see template skaha.workloadNamespace).
 # skahaWorkload:
 #   namespace: skaha-workload
+
+autoscaling:
+  # -- Enable HorizontalPodAutoscaler for skaha-tomcat.
+  # Target and scaling behavior are intentionally chart-managed (CPU 65%).
+  enabled: true
+  # -- Minimum number of skaha-tomcat replicas.
+  minReplicas: 2
+  # -- Maximum number of skaha-tomcat replicas.
+  maxReplicas: 6
 
 # @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
 # securityContext: {}
@@ -18,6 +28,7 @@ replicaCount: 1
 # securityContext:
 #   seccompProfile:
 #     type: RuntimeDefault
+# -- Optional Pod-level security context for the Skaha API Deployment.
 securityContext: {}
 
 # @param podSecurityContext - Optional pod security context for the deployment.
@@ -32,29 +43,38 @@ podSecurityContext: {}
 
 # Skaha web service deployment
 deployment:
+  # -- Public hostname for the Skaha API.
   hostname: myhost.example.com  # Change this!
   skaha:
+    # -- Container image for the Skaha API service.
     image: images.opencadc.org/platform/skaha:1.2.1
+    # -- Image pull policy for the Skaha API container.
     imagePullPolicy: Always
 
     # Cron string for the image caching cron job schedule. Defaults to every half hour.
     imageCache:
+      # -- Cron schedule used to refresh cached images.
       refreshSchedule: "*/30 * * * *"
 
     # Used when allocating first-time users into the system.
+    # -- Default user storage quota in GiB for first-time users.
     defaultQuotaGB: "10"
 
     # Space delimited list of allowed Image Registry hosts.  These hosts should match the hosts in the User Session images.
+    # -- Space-delimited list of image registry hosts allowed for sessions.
     registryHosts: "images.canfar.net"
 
     init:
       # The image to use for the init container.  Unless you have a reason to change this, leave it alone.
       # This image is used to create the /home and /projects directories, in case Cavern is not already running.
+      # -- Init container image used to bootstrap user storage paths.
       image: busybox:1.37.0
+      # -- Image pull policy for the bootstrap init container.
       imagePullPolicy: IfNotPresent
 
     # Optionally set the TTL (Time To Live) for POSIX Mapper cache entries, in seconds.  Defaults to 86400 seconds (1 day) if not set.
     # This is used to cache POSIX user and group information to reduce load on the POSIX Mapper service.
+    # -- TTL in seconds for cached POSIX mapper entries.
     posixMapperCacheTTLSeconds: "86400"
 
     # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
@@ -100,14 +120,18 @@ deployment:
     # Settings for User Sessions.  Sensible defaults supplied, but can be overridden.
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     sessions:
-      # Namespace for User Sessions. When unset, defaults to "skaha-workload" (see template skaha.workloadNamespace).
-      # Legacy installs may set top-level skahaWorkload.namespace instead; it is coalesced when this key is omitted.
-      # namespace: skaha-workload
-
-      expirySeconds: "345600"   # Duration, in seconds, until they expire and are shut down.
-      maxCount: "5"  # Max number of sessions per user.
-      minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
-      maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
+      # Duration, in seconds, until sessions expire and are shut down.
+      # -- Session lifetime in seconds before expiry and shutdown.
+      expirySeconds: "345600"
+      # Max number of sessions per user.
+      # -- Maximum number of active sessions allowed per user.
+      maxCount: "5"
+      # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
+      # -- Initial ephemeral storage request for new sessions (non-desktop).
+      minEphemeralStorage: "20Gi"
+      # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
+      # -- Maximum ephemeral storage limit for sessions (non-desktop).
+      maxEphemeralStorage: "200Gi"
 
       # YAML to pass to a LimitRange object called "{{ .Release.Name }}-session-limit-range" in the workload Namespace to define the resource limits.
       # These limits will be applied to Container objects (User Sessions).
@@ -136,6 +160,7 @@ deployment:
       #       cpu: "1"
       #       "nvidia.com/gpu": "0"
       limitRange:
+        # -- Enable creation of a LimitRange for session container resources.
         enabled: false
 
       # Resource requests and limits for different session types for resource allocation when a "Flex" resource profile is used.
@@ -162,7 +187,9 @@ deployment:
       flexResourceRequests:
         # The headless session type resource requests get slightly more resources.
         headless:
+          # -- Default memory request (GiB) for flex headless sessions.
           memoryInGB: "4"
+          # -- Default CPU request (cores) for flex headless sessions.
           cpuCores: "1"
 
       # Storage setings to be passed into the User Session Kubernetes Job spec.
@@ -172,18 +199,21 @@ deployment:
         # Example:
         #   topLevelDirectory: "/cavern"
         #
+        # -- Absolute mount path containing user home and projects directories.
         topLevelDirectory: "/cavern"
 
         # Required.  RELATIVE path to the User Storage Home folder.  This is the folder where the User's home directories will be created.  Defaults to "home".
         # Example:
         #   homeDirectory: "home"
         #
+        # -- Relative path under topLevelDirectory for user home directories.
         homeDirectory: "home"
 
         # Required.  RELATIVE path to the User Storage Projects folder.  This is the folder where the Users can share data.  This is used for CARTA sessions.  Defaults to "projects".
         # Example:
         #   projectsDirectory: "projects"
         #
+        # -- Relative path under topLevelDirectory for shared projects storage.
         projectsDirectory: "projects"
 
         # Kubernetes Pod volume source for User Storage (the content under .spec.volumes[].<name>
@@ -218,6 +248,7 @@ deployment:
 
         # Required.  These are the credentials and details to connect to the Cavern service to provide Administrative access to User Storage, namely creating new allocations.
         admin:
+          # -- Authentication settings used for user-storage admin operations.
           auth:
             # Authenticate with an agreed API Key between Skaha and Cavern.  This is used to create new user home directories (allocations).
             # Generate Key:
@@ -248,6 +279,7 @@ deployment:
       # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
       # Example:
       #   imagePullPolicy: IfNotPresent
+      # -- Image pull policy applied to all user session containers.
       imagePullPolicy: Always
 
       # Optionally configure the initContainer image for Redis.  Useful for those not able to reach docker.io
@@ -255,6 +287,7 @@ deployment:
       # Example:
       #   initContainerImage: "private-image-repo/project/my-own-redis:1.0"
       # initContainerImage:
+      # -- Image used by the session init container that manages POSIX data.
       initContainerImage: "redis:8.2.2-bookworm"
 
       # Optionally set the node label selector to identify Kubernetes Worker Nodes.  This is used to accurately query for available
@@ -268,12 +301,15 @@ deployment:
       #
       # Example (multiple labels ORed):
       #   nodeLabelSelector: "node-role.kubernetes.io/node-type in (worker,worker-gpu)"
+      # -- Node label selector used when discovering schedulable worker nodes.
       nodeLabelSelector:
 
       # Optionally configure the Kueue system to handle large workloads.  Configurable per session type (e.g. desktop, notebook, etc.).
       # Leaving this empty will default to submitting Jobs to the base Kubernetes system.
       # Provide a default configuration for all session types, or omit and only configure specific session types.
       # Provided PriorityClass names are "high", "medium", and "low".
+      # Configure Kueue queues and priority classes for session scheduling.
+      # Leaving this empty uses the base Kubernetes scheduler.
       # @see https://kueue.sigs.k8s.io/docs/
       # @see https://github.com/opencadc/deployments/tree/main/configs/kueue
       # Example 1:
@@ -308,6 +344,7 @@ deployment:
       #    kueue:
       #      rbac:
       #        create: true
+      # -- Per-session-type Kueue configuration.
       kueue:
         rbac:
           create: false
@@ -323,6 +360,7 @@ deployment:
       #   value: "value1"
       #   effect: "NoSchedule"
       #
+      # -- Tolerations applied to user session Pods.
       tolerations: []
 
       # Optionally setup a separate host for User Sessions for Skaha to redirect to.  The HTTPS scheme is assumed.  Defaults to the Skaha hostname.
@@ -336,12 +374,14 @@ deployment:
         # Example:
         #   tls:
         #     secretName: myhost-tls-secret
+        # -- TLS configuration for the user-session Traefik IngressRoute.
         tls: {}
 
         # Add custom response headers to User Sessions.  This is useful for Science Gateway embedding support.
         # Example:
         #   customResponseHeaders:
         #     content-security-policy: "frame-ancestors 'self' https://gateway.example.org"
+        # -- Custom response headers added to user-session ingress responses.
         customResponseHeaders: {}
 
       # Declare extra volume mounts in User Sessions.  The "type: parameter in volume section is constant.
@@ -394,12 +434,17 @@ deployment:
 
     # Resources provided to the Skaha service.
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
+    # Resources provided to the Skaha API container.
     resources:
       requests:
+        # -- Memory request for the Skaha API container.
         memory: "2Gi"
+        # -- CPU request for the Skaha API container.
         cpu: "1000m"
       limits:
+        # -- Memory limit for the Skaha API container.
         memory: "3Gi"
+        # -- CPU limit for the Skaha API container.
         cpu: "2000m"
 
     # Uncomment to debug.  Requires options above as well as service port exposure below.
@@ -420,6 +465,7 @@ deployment:
     # PriorityClass for the Skaha API pod. When create is true, a cluster PriorityClass is installed.
     # If create is false, name must reference an existing PriorityClass. Omit name to skip setting priorityClassName on the pod.
     # Do not set create: true on both priorityClass and headlessPriorityClass with the same name.
+    # -- PriorityClass assigned to the Skaha API Pod.
     priorityClass:
       create: true
       name: uber-user-preempt-high
@@ -437,6 +483,7 @@ deployment:
       description: "For high-priority headless jobs. Preempting."
 
     # The IdentityManager class handling authentication.  This should generally be left alone
+    # -- Java IdentityManager implementation used for authentication.
     identityManagerClass: org.opencadc.auth.StandardIdentityManager
 
     # Create the CA certificate volume to be mounted in extraVolumeMounts
@@ -450,6 +497,7 @@ deployment:
     # This the version that will show up in the path for the request (e.g. '/skaha/v0/session').
     # Example:
     #   apiVersion: 'v0'
+    # -- Skaha API version path segment (for example, `v1` -> `/skaha/v1/...`).
     apiVersion: 'v1'
 
   # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
@@ -460,6 +508,7 @@ deployment:
   # extraHosts: []
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+# -- ServiceAccount used by the Skaha API Pod.
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -492,24 +541,29 @@ rbac:
 #   value: "value1"
 #   effect: "NoSchedule"
 #
+# -- Tolerations applied to the Skaha API Pod.
 tolerations: []
 
-# Port to expose from the service.  This will ultimately serve port 8080 (default Tomcat port), but will
-# be exposed as per the port below.  Useful for running multiple deployments side-by-side.
-# Defaults to 8080.
-# Example:
-#   service:
-#     port: 8081. # To map port 8081 to port 8080.
 service:
+  # Port to expose from the service.  This will ultimately serve port 8080 (default Tomcat port), but will
+  # be exposed as per the port below.  Useful for running multiple deployments side-by-side.
+  # Defaults to 8080.
+  # Example:
+  #   service:
+  #     port: 8081. # To map port 8081 to port 8080.
+  # -- Service port exposed for the Skaha API Service.
   port: 8080
 
-# Selectively disable ingress if desired.  This is enabled by default.
 ingress:
+  # Selectively disable ingress if desired.  This is enabled by default.
+  # -- Enable ingress routing for the Skaha API.
   enabled: true
+  # -- Ingress path prefix routed to the Skaha API Service.
   path: /skaha
 
-# Experimental features that can be enabled.  These represent features that are not released and confined behind feature flags.
 experimentalFeatures:
+  # Experimental features that can be enabled.  These represent features that are not released and confined behind feature flags.
+  # -- Enable processing of experimental feature gates.
   enabled: false
 
   # @deprecated Use deployment.skaha.sessions.limitRange instead.  Here for backward compatibility.
@@ -523,21 +577,33 @@ secrets:
 # For caching images from the Image Repository and for the writing the POSIX Users and Groups to be shared with Job files
 redis:
   image:
+    # -- Redis image repository used by the bundled chart dependency.
     repository: redis
+    # -- Redis image tag used by the bundled chart dependency.
     tag: 8.2.2-bookworm
+  # -- Redis deployment architecture.
   architecture: 'standalone'
   auth:
+    # -- Enable Redis authentication.
     enabled: false
   master:
     persistence:
+      # -- Enable persistence for the Redis master StatefulSet.
       enabled: false
     containerSecurityContext:
+      # -- User ID for the Redis master container.
       runAsUser: 1001
+      # -- Group ID for the Redis master container.
       runAsGroup: 1001
+      # -- Require Redis master to run as a non-root user.
       runAsNonRoot: true
+      # -- Disallow privilege escalation in the Redis master container.
       allowPrivilegeEscalation: false
+      # -- Mount Redis master root filesystem as read-only.
       readOnlyRootFilesystem: true
       seccompProfile:
+        # -- Seccomp profile type for Redis master.
         type: RuntimeDefault
       capabilities:
+        # -- Linux capabilities dropped from the Redis master container.
         drop: ["ALL"]

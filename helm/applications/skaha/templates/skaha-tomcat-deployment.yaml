@@ -6,7 +6,9 @@ metadata:
   name: {{ .Release.Name }}-skaha-tomcat
   namespace: {{ .Release.Namespace }}
 spec:
+  {{- if not (default false .Values.autoscaling.enabled) }}
   replicas: {{ default 1 .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       run: {{ .Release.Name }}-skaha-tomcat
