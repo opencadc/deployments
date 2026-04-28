@@ -152,6 +152,37 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
+# Network Policy
+networkPolicy:
+  enabled: false
+  # policyTypes:
+  #   - Ingress
+  #   - Egress
+  # ingress:
+  #   - from:
+  #       - namespaceSelector:
+  #           matchLabels:
+  #             name: ingress-nginx
+  #     ports:
+  #       - protocol: TCP
+  #         port: 3000
+  # egress:
+  #   - to:
+  #       - namespaceSelector: {}
+  #     ports:
+  #       - protocol: TCP
+  #         port: 443 # HTTPS for external APIs
+  #       - protocol: TCP
+  #         port: 53 # DNS
+  #       - protocol: UDP
+  #         port: 53 # DNS
+
+# Pod Disruption Budget
+# -- Pod Disruption Budget settings.  Typically not used for Production deployments.
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
 # -- Extra container `env` entries (Kubernetes native). Merged **after** chart-generated env from `app`. If a variable name appears here, the chart **skips** emitting that name from `app` (no duplicate keys). Use for secrets and overrides.
 env: []
 # env:
