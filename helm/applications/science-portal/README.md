@@ -58,8 +58,10 @@ Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from H
 | livenessProbe.periodSeconds | int | `10` |  |
 | livenessProbe.timeoutSeconds | int | `3` |  |
 | nameOverride | string | `""` |  |
+| networkPolicy.enabled | bool | `false` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
+| podDisruptionBudget | object | `{"enabled":false,"minAvailable":1}` | Pod Disruption Budget settings.  Typically not used for Production deployments. |
 | podLabels | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
 | readinessProbe.failureThreshold | int | `3` |  |
