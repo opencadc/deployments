@@ -450,10 +450,6 @@ deployment:
     # Space delimited list of allowed Image Registry hosts.  These hosts should match the hosts in the User Session images.
     registryHosts: "images.canfar.net"
 
-    # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
-    usersGroup: "ivo://example.org/gms?skaha-platform-users"
-
     # The IVOA GMS Group URI to verify images without contacting Harbor.
     # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
     adminsGroup: "ivo://example.org/gms?skaha-admin-users"
@@ -509,6 +505,21 @@ deployment:
       maxCount: "3"  # Max number of sessions per user.
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
+
+      # Platform access — prefer deployment.skaha.sessions.authorization; deployment.skaha.usersGroup is deprecated when group.enabled / permissionsAPI.enabled are unset.
+      # Deployments receive SKAHA_SESSIONS_AUTHORIZATION_GROUP_ENABLED and SKAHA_SESSIONS_AUTHORIZATION_PERMISSIONS_API_ENABLED plus mode-specific env vars.
+      # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
+      authorization:
+        group:
+          enabled: true
+          uri: "ivo://example.org/gms?skaha-platform-users"
+      # Alternative (Permissions API instead of GMS group):
+      # authorization:
+      #   permissionsAPI:
+      #     enabled: true
+      #     baseURL: "https://permissions.example.org/api"
+      #     type: "route"
+      #     name: "skaha"
 
       # Optionally setup a separate host for User Sessions for Skaha to redirect to.  The HTTPS scheme is assumed.  Defaults to the Skaha hostname (.Values.deployment.hostname).
       # Example:

@@ -33,6 +33,7 @@ spec:
       {{- end }}
       containers:
       - env:
+      {{- include "skaha.validatePlatformAccess" . }}
       {{ $userStorage := required "Missing .Values.deployment.skaha.sessions.userStorage configuration" .Values.deployment.skaha.sessions.userStorage }}
       {{- with $userStorage }}
       {{ $userStorageAdmin := required "Missing .Values.deployment.skaha.sessions.userStorage.admin configuration" .admin }}
@@ -98,10 +99,50 @@ spec:
           value: "{{ .Values.deployment.skaha.defaultQuotaGB }}"
         - name: skaha.harborhosts
           value: "{{ .Values.deployment.skaha.registryHosts }}"
-        - name: skaha.usersgroup
-          value: "{{ .Values.deployment.skaha.usersGroup }}"
-        - name: skaha.headlessgroup
-          value: "{{ .Values.deployment.skaha.headlessGroup }}"
+        {{- $authorization := mergeOverwrite (.Values.deployment.skaha.authorization | default dict) (.Values.deployment.skaha.sessions.authorization | default dict) }}
+        {{- $grp := $authorization.group | default dict }}
+        {{- $permAPI := $authorization.permissionsAPI | default dict }}
+        {{- $groupEnabled := $grp.enabled | default false }}
+        {{- $permEnabled := $permAPI.enabled | default false }}
+        {{- $legacyUsersGroupTrim := trim (.Values.deployment.skaha.usersGroup | default "" | toString) }}
+        - name: SKAHA_SESSIONS_AUTHORIZATION_GROUP_ENABLED
+          value: "{{ $groupEnabled }}"
+        - name: SKAHA_SESSIONS_AUTHORIZATION_PERMISSIONS_API_ENABLED
+          value: "{{ $permEnabled }}"
+        {{- if $groupEnabled }}
+        - name: SKAHA_USERS_GROUP
+          value: {{ trim ($grp.uri | default "" | toString) | quote }}
+        {{- end }}
+        {{- if $permEnabled }}
+        {{- $permURL := trim (default "" $permAPI.baseURL) }}
+        {{- if $permURL }}
+        - name: SKAHA_PERMISSIONS_API_BASE_URL
+          value: {{ $permURL | quote }}
+        {{- end }}
+        - name: SKAHA_PERMISSIONS_API_TYPE
+          value: {{ ($permAPI.type | default "route") | quote }}
+        - name: SKAHA_PERMISSIONS_API_NAME
+          value: {{ ($permAPI.name | default "skaha") | quote }}
+        {{- if eq (($permAPI.type | default "route") | lower) "route" }}
+        {{- $rte := trim (default "" $permAPI.route) }}
+        {{- if $rte }}
+        - name: SKAHA_PERMISSIONS_API_ROUTE
+          value: {{ $rte | quote }}
+        {{- end }}
+        {{- end }}
+        {{- with trim (default "" $permAPI.version) }}
+        - name: SKAHA_PERMISSIONS_API_VERSION
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with trim (default "" $permAPI.method) }}
+        - name: SKAHA_PERMISSIONS_API_METHOD
+          value: {{ . | quote }}
+        {{- end }}
+        {{- end }}
+        {{- if and (not $groupEnabled) (not $permEnabled) $legacyUsersGroupTrim }}
+        - name: SKAHA_USERS_GROUP
+          value: {{ $legacyUsersGroupTrim | quote }}
+        {{- end }}
         {{- with .Values.deployment.skaha.headlessPriorityGroup }}
         - name: skaha.headlessprioritygroup
           value: "{{ . }}"
@@ -145,8 +186,6 @@ spec:
         {{- end }}
         {{- end }}
         {{- end }}
-        - name: skaha.adminsgroup
-          value: "{{ .Values.deployment.skaha.adminsGroup }}"
         - name: skaha.posixmapper.resourceid
           value: "{{ .Values.deployment.skaha.posixMapperResourceID }}"
         - name: REDIS_HOST
