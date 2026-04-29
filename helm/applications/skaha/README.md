@@ -22,6 +22,16 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | autoscaling.minReplicas | int | `2` | Minimum number of skaha-tomcat replicas. |
 | deployment.hostname | string | `"myhost.example.com"` | Public hostname for the Skaha API. |
 | deployment.skaha.apiVersion | string | `"v1"` | Skaha API version path segment (for example, `v1` -> `/skaha/v1/...`). |
+| deployment.skaha.sessions.authorization.group.enabled | bool | `false` | When true with non-empty `authorization.group.uri`, sets `SKAHA_USERS_GROUP` and `SKAHA_SESSIONS_AUTHORIZATION_GROUP_ENABLED=true`. Detail env vars only when enabled. Skaha validates exclusive modes at runtime. |
+| deployment.skaha.sessions.authorization.group.uri | string | `""` | IVOA GMS Group URI when `group.enabled` is true. |
+| deployment.skaha.sessions.authorization.permissionsAPI.enabled | bool | `false` | When true with baseURL, sets Permissions API env vars and `SKAHA_SESSIONS_AUTHORIZATION_PERMISSIONS_API_ENABLED=true`. |
+| deployment.skaha.sessions.authorization.permissionsAPI.baseURL | string | `""` | Permissions API base URL when `permissionsAPI.enabled` is true. Sets `SKAHA_PERMISSIONS_API_BASE_URL`. |
+| deployment.skaha.sessions.authorization.permissionsAPI.name | string | `"skaha"` | Sets `SKAHA_PERMISSIONS_API_NAME` when permissions API authorization is enabled. |
+| deployment.skaha.sessions.authorization.permissionsAPI.route | string | `""` | When `permissionsAPI.type` is `route` and route is non-empty, sets `SKAHA_PERMISSIONS_API_ROUTE`. |
+| deployment.skaha.sessions.authorization.permissionsAPI.type | string | `"route"` | `route` or `plugin`; sets `SKAHA_PERMISSIONS_API_TYPE` when permissions API authorization is enabled. |
+| deployment.skaha.sessions.authorization.permissionsAPI.version | string | `""` | Optional; sets `SKAHA_PERMISSIONS_API_VERSION` when non-empty. |
+| deployment.skaha.sessions.authorization.permissionsAPI.method | string | `""` | Optional; sets `SKAHA_PERMISSIONS_API_METHOD` when non-empty. |
+| deployment.skaha.usersGroup | string | `nil` | @deprecated Use `sessions.authorization.group` / `sessions.authorization.permissionsAPI`. Honoured only when neither mode is enabled. |
 | deployment.skaha.defaultQuotaGB | string | `"10"` | Default user storage quota in GiB for first-time users. |
 | deployment.skaha.headlessPriorityClass.create | bool | `false` |  |
 | deployment.skaha.headlessPriorityClass.description | string | `"For high-priority headless jobs. Preempting."` |  |

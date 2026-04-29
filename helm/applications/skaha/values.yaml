@@ -77,17 +77,10 @@ deployment:
     # -- TTL in seconds for cached POSIX mapper entries.
     posixMapperCacheTTLSeconds: "86400"
 
+    # -- @deprecated Prefer deployment.skaha.sessions.authorization or deprecated usersGroup alone. Still honoured when sessions.authorization.group.enabled is false.
     # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
     # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
     # usersGroup: "ivo://example.org/gms?prototyping-groups/mini-src/platform-users"
-
-    # The IVOA GMS Group URI to verify images without contacting Harbor.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
-    # adminsGroup: "ivo://example.org/gms?prototyping-groups/mini-src/platform-users"
-
-    # Group URI for users to preempt headless jobs.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
-    # headlessGroup: "ivo://example.org/gms?prototyping-groups/mini-src/platform-users"
 
     # Group URI for users to ensure priority for their headless jobs.
     # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
@@ -132,6 +125,25 @@ deployment:
       # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
       # -- Maximum ephemeral storage limit for sessions (non-desktop).
       maxEphemeralStorage: "200Gi"
+
+      # Platform access for Skaha sessions: set authorization.group, authorization.permissionsAPI, or deprecated deployment.skaha.usersGroup.
+      # The Deployment receives SKAHA_SESSIONS_AUTHORIZATION_*_ENABLED and mode-specific vars; only fields for modes with enabled: true are set.
+      authorization:
+        group:
+          # -- When true, SKAHA_USERS_GROUP is set from uri. Required uri when enabled (Helm validates). The Skaha service enforces mutually exclusive authorization modes at runtime.
+          enabled: false
+          uri: ""
+        permissionsAPI:
+          # @see https://permissions.srcnet.skao.int/api/openapi.json for the API specification.
+          # -- When true, SKAHA_PERMISSIONS_API_*_ENABLED is set from baseURL, type, route, name, version, and method. Required baseURL when enabled (Helm validates). The Skaha service enforces mutually exclusive authorization modes at runtime.
+          enabled: false
+          # -- Required when enabled is true (Helm validates).
+          baseURL: ""
+          type: "route"
+          route: ""
+          name: "skaha"
+          version: ""
+          method: ""
 
       # YAML to pass to a LimitRange object called "{{ .Release.Name }}-session-limit-range" in the workload Namespace to define the resource limits.
       # These limits will be applied to Container objects (User Sessions).
