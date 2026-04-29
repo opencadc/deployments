@@ -103,6 +103,44 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{- define "skaha.metricsBackend.deploymentName" -}}
+{{- printf "%s-skaha-metrics-api" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
+{{- define "skaha.metricsBackend.serviceName" -}}
+{{- printf "%s-skaha-metrics-api-svc" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
+{{- define "skaha.metricsBackend.chartRedisURL" -}}
+{{- printf "redis://%s-redis-master.%s.svc.%s:6379/0" .Release.Name .Release.Namespace .Values.kubernetesClusterDomain -}}
+{{- end }}
+
+{{- define "skaha.metricsBackend.internalURL" -}}
+{{- printf "http://%s.%s.svc.%s:8000" (include "skaha.metricsBackend.serviceName" .) .Release.Namespace .Values.kubernetesClusterDomain -}}
+{{- end }}
+
+{{- define "skaha.metricsBackend.selectorLabels" -}}
+app.kubernetes.io/name: skaha-metrics-api
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: metrics-api
+{{- end }}
+
+{{- define "skaha.metricsBackend.labels" -}}
+helm.sh/chart: {{ include "skaha.chart" . }}
+{{ include "skaha.metricsBackend.selectorLabels" . }}
+{{- $mb := index .Values "metrics-backend" | default dict -}}
+{{- with $mb.image }}
+{{- with .tag }}
+app.kubernetes.io/version: {{ . | quote }}
+{{- end }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{- define "skaha.metricsBackend.clusterRoleName" -}}
+{{- printf "skaha-metrics-%s-%s-kueue-read" .Release.Namespace .Release.Name | replace "." "-" | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
 
 {{/*
 USER SESSION TEMPLATE DEFINITIONS

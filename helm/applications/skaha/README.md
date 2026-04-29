@@ -61,6 +61,20 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | ingress.enabled | bool | `true` | Enable ingress routing for the Skaha API. |
 | ingress.path | string | `"/skaha"` | Ingress path prefix routed to the Skaha API Service. |
 | kubernetesClusterDomain | string | `"cluster.local"` | Kubernetes DNS domain used when building internal service hostnames. |
+| metrics-backend.enabled | bool | `false` | Deploy the Metrics API Deployment, Service, and Kueue ClusterRole for the shared Skaha ServiceAccount (uses this chart's Bitnami Redis for METRICS_REDIS_URL when configured). |
+| metrics-backend.env | object | `{}` | Map of environment variables for the Metrics container (typically METRICS_*). GitOps should supply the full map per environment. |
+| metrics-backend.image.pullPolicy | string | `"IfNotPresent"` | imagePullPolicy for the Metrics API container. |
+| metrics-backend.image.repository | string | `"images.opencadc.org/platform/metrics"` | Metrics container image repository. |
+| metrics-backend.image.tag | string | `"v0.1.4"` | Metrics container image tag. |
+| metrics-backend.ingress.enabled | bool | `false` | When true and top-level ingress.enabled is true, add a path on the same host routing to the Metrics Service. |
+| metrics-backend.ingress.path | string | `"/metrics"` | Ingress path prefix for the Metrics API (Traefik). |
+| metrics-backend.redis.enabled | bool | `true` | When true, set METRICS_REDIS_URL to this release's Bitnami Redis master Service (<release>-redis-master), same instance Skaha uses. Set false and supply METRICS_REDIS_URL in env if Metrics should use another Redis. |
+| metrics-backend.replicaCount | int | `1` | Fixed replica count for the Metrics API (no HPA in this chart version). |
+| metrics-backend.resources | object | `{"limits":{"cpu":"1","memory":"1Gi"},"requests":{"cpu":"100m","memory":"256Mi"}}` | Resource requests and limits for the Metrics API container. |
+| metrics-backend.revisionHistoryLimit | int | `3` | revisionHistoryLimit for the Metrics API Deployment. |
+| metrics-backend.test.enabled | bool | `true` | Run helm test hook that retries /healthz until success (requires metrics-backend.enabled). |
+| metrics-backend.test.image | string | `"busybox:1.37.0"` | Image for the helm test hook Pod. |
+| metrics-backend.test.maxWaitSeconds | int | `180` | Maximum seconds to wait for Metrics /healthz (should exceed startupProbe worst case plus scheduling margin). |
 | podSecurityContext | object | `{}` | Optional container-level security context for the Skaha API container. |
 | redis.architecture | string | `"standalone"` | Redis deployment architecture. |
 | redis.auth.enabled | bool | `false` | Enable Redis authentication. |
