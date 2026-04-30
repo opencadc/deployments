@@ -106,11 +106,16 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Namespace for user session workloads: sessions.namespace, else legacy skahaWorkload.namespace, else skaha-workload.
+Namespace for user session workloads. String sessions.namespace wins outright. Map form uses skahaWorkload.namespace first (legacy), then namespace.name, then skaha-workload — so chart defaults for name do not hide a legacy skahaWorkload.namespace.
 */}}
 {{- define "skaha.workloadNamespace" -}}
 {{- $sw := .Values.skahaWorkload | default dict -}}
-{{- coalesce .Values.deployment.skaha.sessions.namespace $sw.namespace "skaha-workload" -}}
+{{- $ns := .Values.deployment.skaha.sessions.namespace -}}
+{{- if kindIs "map" $ns -}}
+{{- coalesce $sw.namespace $ns.name "skaha-workload" -}}
+{{- else -}}
+{{- coalesce $ns $sw.namespace "skaha-workload" -}}
+{{- end -}}
 {{- end -}}
 
 {{/*

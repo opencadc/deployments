@@ -64,7 +64,8 @@ If user Jobs remain Pending:
 
 !! ISSUES !!:
 {{- $sw := .Values.skahaWorkload | default dict }}
-{{- $legacySkahaWorkloadNs := and $sw.namespace (not .Values.deployment.skaha.sessions.namespace) }}
+{{- $sessNs := .Values.deployment.skaha.sessions.namespace -}}
+{{- $legacySkahaWorkloadNs := and $sw.namespace (not (kindIs "string" $sessNs)) }}
 {{- if and (not $legacySkahaWorkloadNs) (not $legacyPVCName) }}
 None.
 {{- end }}

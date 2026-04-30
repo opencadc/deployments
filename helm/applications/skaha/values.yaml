@@ -120,6 +120,11 @@ deployment:
     # Settings for User Sessions.  Sensible defaults supplied, but can be overridden.
     # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
     sessions:
+      # Workload namespace for session workloads. Legacy skahaWorkload.namespace wins over namespace.name when both are set (remove skahaWorkload when migrating fully). If create is true and the resolved name differs from the Helm release namespace, the chart creates that Namespace.
+      namespace:
+        create: false
+        name: skaha-workload
+
       # Duration, in seconds, until sessions expire and are shut down.
       # -- Session lifetime in seconds before expiry and shutdown.
       expirySeconds: "345600"
