@@ -1,3 +1,5 @@
+{{- include "cavern.validateUwsDatabaseSecret" . }}
+{{- include "cavern.validateAdminAPIKeys" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

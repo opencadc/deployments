@@ -249,12 +249,14 @@ deployment:
       prepareData: "32fjd93jfn93n3nFjsl293jfn93jf="
       skaha: "88shdj3en1rBuMVSllWVuuz190HJpF="
 
-    # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set the uws.db.url property, with authentication.
+    # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set uws.db.url, with uws.db.auth.existingSecret for credentials (not in Git).
     uws:
       db:
         install: true
         schema: uws
         maxActive: 2
+        auth:
+          existingSecret: cavern-uws-db
 
     # Optional rename of the application from the default "cavern"
     # applicationName: "cavern"
@@ -530,7 +532,9 @@ deployment:
       nodeLabelSelector:
 
       userStorage:
-        persistentVolumeClaimName: skaha-workload-cavern-pvc
+        spec:
+          persistentVolumeClaim:
+            claimName: skaha-workload-cavern-pvc
         nodeURIPrefix: "vos://canfar.net~src~cavern"
         serviceURI: "ivo://canfar.net/src/cavern"
         admin:
@@ -560,6 +564,24 @@ deployment:
           # Ensure this name matches whatever was created as the LocalQueue in the workload namespace.
           queueName: canfar-science-platform-local-queue
           priorityClass: low
+
+      limitRange:
+        enabled: true
+        rbac:
+          create: false
+        spec:
+          max:  # maximum allowed requested
+            memory: "192Gi"
+            cpu: "16"
+            nvidia.com/gpu: "1"
+          default:  # actually refers to default limits
+            memory: "24Gi"
+            cpu: "4"
+            nvidia.com/gpu: "0"
+          defaultRequest:  # default requests
+            memory: "4Gi"
+            cpu: "1"
+            nvidia.com/gpu: "0"
 
     # Optionally mount a custom CA certificate as an extra mount in Skaha (*not* user sessions)
     # extraVolumeMounts:
@@ -599,27 +621,6 @@ deployment:
   #     hostname: myhost.example.org
   #
   # extraHosts: []
-
-# Enable experimental feature flags
-experimentalFeatures:
-  enabled: true
-  sessionLimitRange:
-    enabled: true
-    rbac:
-      create: false
-    limitSpec:
-      max:  # maximum allowed requested
-        memory: "192Gi"
-        cpu: "16"
-        nvidia.com/gpu: "1"
-      default:  # actually refers to default limits
-        memory: "24Gi"
-        cpu: "4"
-        nvidia.com/gpu: "0"
-      defaultRequest:  # default requests
-        memory: "4Gi"
-        cpu: "1"
-        nvidia.com/gpu: "0"
 
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.

@@ -5,7 +5,23 @@ Post-install notes for Skaha with optional Kueue integration.
 Skaha release: {{ .Release.Name }}
 Namespace: {{ .Release.Namespace }}
 
-Skaha workload namespace: {{ .Values.skahaWorkload.namespace | default "skaha-workload" }}
+Skaha workload namespace: {{ include "skaha.workloadNamespace" . }}
+
+{{- $userStorage := .Values.deployment.skaha.sessions.userStorage | default dict }}
+{{- $legacyPVCName := hasKey $userStorage "persistentVolumeClaimName" }}
+{{- if $legacyPVCName }}
+
+################################################################################
+#                                                                              #
+#  USER SESSION STORAGE — configuration notice                                 #
+#                                                                              #
+#  deployment.skaha.sessions.userStorage.persistentVolumeClaimName is         #
+#  deprecated. Prefer userStorage.spec (e.g. spec.persistentVolumeClaim).      #
+#  The legacy field is still used when spec is unset or empty.               #
+#                                                                              #
+################################################################################
+
+{{- end }}
 
 User Sessions:
 - Ensure CARTA images being used are at version 5.0.3 or higher.
@@ -24,8 +40,8 @@ User Sessions Ingress Configurations:
 Kueue:
 {{- if .Values.deployment.skaha.sessions.kueue }}
   - It's expected that the Kueue CRDs and controllers to be present if you set session queues.
-{{- $queues := (default dict .Values.deployment.skaha.sessions.kueue) }}
-{{- if $queues }}
+{{- $queues := omit (default dict .Values.deployment.skaha.sessions.kueue) "rbac" }}
+{{- if gt (len $queues) 0 }}
 {{- range $type, $cfg := $queues }}
   - {{ $cfg.queueName | default (printf "%s-%s" $.Release.Name $type) }} (type: {{ $type }})
 {{- end }}
@@ -39,19 +55,26 @@ Kueue:
 Quick checks:
   - kubectl get deployment {{ .Release.Name }}-skaha-tomcat -n {{ .Release.Namespace }}
   - kubectl get clusterqueues 2>/dev/null || true
-  - kubectl get localqueues -n {{ .Values.skahaWorkload.namespace }} 2>/dev/null || true
+  - kubectl get localqueues -n {{ include "skaha.workloadNamespace" . }} 2>/dev/null || true
 
 If user Jobs remain Pending:
-- Ensure LocalQueue exists in {{ .Values.skahaWorkload.namespace }} and references your configured ClusterQueue.
+- Ensure LocalQueue exists in {{ include "skaha.workloadNamespace" . }} and references your configured ClusterQueue.
 - Verify ClusterQueue quotas are sufficient.
 - Confirm priority classes referenced by sessions exist or are created.
 
 !! ISSUES !!:
-{{- if and .Values.experimentalFeatures .Values.experimentalFeatures.sessionLimitRange }}
-The experimentalFeatures.sessionLimitRange value is deprecated and will be removed in 2026.2.  Please use the now released deployment.skaha.sessions.limitRange instead.
-{{- else }}
+{{- $sw := .Values.skahaWorkload | default dict }}
+{{- $sessNs := .Values.deployment.skaha.sessions.namespace -}}
+{{- $legacySkahaWorkloadNs := and $sw.namespace (not (kindIs "string" $sessNs)) }}
+{{- if and (not $legacySkahaWorkloadNs) (not $legacyPVCName) }}
 None.
-{{- end}}
+{{- end }}
+{{- if $legacySkahaWorkloadNs }}
+You are using deprecated top-level skahaWorkload.namespace; the chart still applies it as the workload namespace. Prefer deployment.skaha.sessions.namespace.
+{{- end }}
+{{- if $legacyPVCName }}
+Your values still set deployment.skaha.sessions.userStorage.persistentVolumeClaimName — migrate to userStorage.spec (see notice above). The legacy field remains honoured when spec is unset or empty.
+{{- end }}
 
 Experimental Features Configured:
 {{- if and .Values.experimentalFeatures .Values.experimentalFeatures.enabled }}

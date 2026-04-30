@@ -1,5 +1,17 @@
 {{ $containerPort := 8080 }}
 {{ $storageSpecYAML := required "A valid .Values.storage.service.spec is required!" .Values.storage.service.spec }}
+{{- $db := .Values.deployment.cavern.uws.db -}}
+{{- $auth := $db.auth | default dict -}}
+{{- $sk := $auth.secretKeys | default dict -}}
+{{- $userKey := $sk.username | default "username" -}}
+{{- $passKey := $sk.password | default "password" -}}
+{{- $uwsDbSecretName := include "cavern.uwsDbAuthSecretName" . -}}
+{{- $hasAdminSecretKeys := false }}
+{{- range $_, $spec := .Values.deployment.cavern.adminAPIKeys }}
+{{- if and (kindIs "map" $spec) $spec.existingSecret }}
+{{- $hasAdminSecretKeys = true }}
+{{- end }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,10 +36,60 @@ spec:
 {{ . | toYaml | indent 10 }}
 {{- end }}
       securityContext:
-        fsGroup: {{ .Values.deployment.cavern.filesystem.rootOwner.gid | required ".deployment.cavern.filesystem.rootOwner.gid is required" }}
-        runAsUser: 0
-        seccompProfile:
-          type: RuntimeDefault
+        {{- $ro := .Values.deployment.cavern.filesystem.rootOwner | default dict }}
+        {{- if and $ro (hasKey $ro "gid") (ne (index $ro "gid") nil) }}
+        fsGroup: {{ index $ro "gid" }}
+        {{- end }}
+        {{- with .Values.volumeInit.podSecurityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.podSecurityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      initContainers:
+        - name: merge-uws-db-credentials
+          image: {{ .Values.volumeInit.image | quote }}
+          imagePullPolicy: {{ .Values.volumeInit.imagePullPolicy }}
+          command: ['sh', '-c']
+          args:
+            - |
+              set -e
+              cp -R /config-src/. /config-dst/
+              USER=$(tr -d '\n' < "/secret/${USER_KEY}")
+              PASS=$(tr -d '\n' < "/secret/${PASS_KEY}")
+              printf '\norg.opencadc.cavern.uws.username=%s\n' "$USER" >> /config-dst/catalina.properties
+              printf 'org.opencadc.cavern.uws.password=%s\n' "$PASS" >> /config-dst/catalina.properties
+{{ if $hasAdminSecretKeys }}
+{{- range $clientName, $spec := .Values.deployment.cavern.adminAPIKeys }}
+{{- if and (kindIs "map" $spec) $spec.existingSecret }}
+              API_KEY_VAL=$(tr -d '\n' < "/admin-api-keys/{{ $clientName }}")
+              printf '\norg.opencadc.cavern.adminAPIKey = %s:%s\n' '{{ $clientName }}' "$API_KEY_VAL" >> /config-dst/cavern.properties
+{{- end }}
+{{- end }}
+{{ end }}
+          env:
+            - name: USER_KEY
+              value: {{ $userKey | quote }}
+            - name: PASS_KEY
+              value: {{ $passKey | quote }}
+          volumeMounts:
+            - name: config-source
+              mountPath: /config-src
+              readOnly: true
+            - name: uws-db-secret
+              mountPath: /secret
+              readOnly: true
+{{ if $hasAdminSecretKeys }}
+            - name: admin-api-keys
+              mountPath: /admin-api-keys
+              readOnly: true
+{{ end }}
+            - name: config-merged
+              mountPath: /config-dst
+          {{- with .Values.volumeInit.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       containers:
       - image: {{ .Values.deployment.cavern.image }}
         imagePullPolicy: {{ .Values.deployment.cavern.imagePullPolicy }}
@@ -40,7 +102,8 @@ spec:
             memory: {{ .Values.deployment.cavern.resources.limits.memory }}
             cpu: {{ .Values.deployment.cavern.resources.limits.cpu }}
         securityContext:
-          allowPrivilegeEscalation: false
+          {{- $tomcatSC := merge (dict "allowPrivilegeEscalation" false) (.Values.securityContext | default dict) }}
+          {{- toYaml $tomcatSC | nindent 10 }}
         {{- with .Values.deployment.cavern.extraEnv }}
         env:
         {{- toYaml . | nindent 8 }}
@@ -53,7 +116,7 @@ spec:
         {{- end }}
         volumeMounts:
         - mountPath: "/config"
-          name: config-volume
+          name: config-merged
         - mountPath: '{{ .Values.deployment.cavern.filesystem.dataDir | required ".deployment.cavern.filesystem.dataDir is required" }}'
           name: cavern-volume
         {{- with .Values.deployment.cavern.extraVolumeMounts }}
@@ -80,11 +143,32 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       priorityClassName: uber-user-preempt-high
-      serviceAccountName: skaha
+      {{- with .Values.serviceAccount.name }}
+      serviceAccountName: {{ . }}
+      {{- end }}
       volumes:
-      - name: config-volume
+      - name: config-source
         configMap:
           name: {{ .Release.Name }}-config
+      - name: uws-db-secret
+        secret:
+          secretName: {{ $uwsDbSecretName }}
+{{ if $hasAdminSecretKeys }}
+      - name: admin-api-keys
+        projected:
+          sources:
+{{- range $clientName, $spec := .Values.deployment.cavern.adminAPIKeys }}
+{{- if and (kindIs "map" $spec) $spec.existingSecret }}
+            - secret:
+                name: {{ $spec.existingSecret }}
+                items:
+                  - key: {{ $spec.key | quote }}
+                    path: {{ $clientName | quote }}
+{{- end }}
+{{- end }}
+{{ end }}
+      - name: config-merged
+        emptyDir: {}
       {{- if $storageSpecYAML }}
       - name: cavern-volume
         {{- toYaml $storageSpecYAML | nindent 8 }}

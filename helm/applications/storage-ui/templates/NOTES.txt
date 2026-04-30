@@ -1,0 +1,29 @@
+{{- /*
+Post-install notes for Storage UI.
+*/ -}}
+
+Storage UI release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+{{- $podSC := .Values.podSecurityContext | default dict }}
+{{- $contSC := .Values.securityContext | default dict }}
+{{- $legacyPodFallback := and (empty $podSC) (not (empty $contSC)) }}
+{{- if $legacyPodFallback }}
+
+################################################################################
+#                                                                              #
+#  SECURITY CONTEXT — deprecation notice                                       #
+#                                                                              #
+#  You set securityContext but left podSecurityContext empty. The chart        #
+#  treats securityContext as pod-level for compatibility with pre-split        #
+#  values (same as chart defaults before pod vs container split).             #
+#                                                                              #
+#  Prefer explicit podSecurityContext for the pod and securityContext for     #
+#  the Storage UI container only.                                              #
+#                                                                              #
+################################################################################
+
+{{- end }}
+
+Quick checks:
+  - kubectl get deployment storage-ui-tomcat -n {{ .Release.Namespace }}

@@ -86,10 +86,11 @@ $ curl https://myhost.example.com/cavern/availability
 | `deployment.cavern.uws.db.runUID` | UID for the PostgreSQL user in the UWS database | `999` |
 | `deployment.cavern.uws.db.database` | Name of the UWS database | `uws` |
 | `deployment.cavern.uws.db.url` | JDBC URL for the UWS database.  Use instead of `database`. | `jdbc:postgresql://cavern-uws-db:5432/uws` |
-| `deployment.cavern.uws.db.username` | Username for the UWS database | `uwsuser` |
-| `deployment.cavern.uws.db.password` | Password for the UWS database | `uwspwd` |
+| `deployment.cavern.uws.db.auth.existingSecret` | Kubernetes `Secret` name (same namespace) with UWS DB username/password; not committed to Git | `""` |
+| `deployment.cavern.uws.db.auth.secretKeys` | Keys in that Secret for username and password (defaults `username`, `password`) | see `values.yaml` |
 | `deployment.cavern.uws.db.schema` | Schema name for the UWS database | `uws` |
 | `deployment.cavern.uws.db.maxActive` | Maximum number of active connections to the UWS database | `2` |
+| `volumeInit` | Init container image used to merge UWS credentials into `catalina.properties` | BusyBox (see `values.yaml`) |
 | `deployment.applicationName` | Optional rename of the application from the default "cavern" | `cavern` |
 | `deployment.endpoint` | Endpoint to serve the Cavern service from | `/cavern` |
 | `deployment.extraEnv` | Extra environment variables to set in the Cavern container | `[]` |

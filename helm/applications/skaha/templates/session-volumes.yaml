@@ -1,8 +1,6 @@
 {{/**
-TODO: This is likely more complicated than it needs to be, and is technical debt for now.  Deployers
-TODO: could simply declare the appropriate YAML that Kubernetes expects that can simply be inserted here,
-TODO: rather than mapping it to a separate model and injecting specific values.
-TODO: jenkinsd 2024.09.20
+Fragment of Pod .spec.volumes for user sessions. `userStorage.spec` is a Kubernetes volume
+source (the map under a volume entry: persistentVolumeClaim, cephfs, nfs, csi, etc.), mounted as `cavern-volume`.
 */}}
 {{- define "skaha.session.commonVolumes" -}}
       {{- with .Values.deployment.skaha.sessions.extraVolumes }}
@@ -31,8 +29,7 @@ TODO: jenkinsd 2024.09.20
       {{- end }}
       {{- end }}
       - name: cavern-volume
-        persistentVolumeClaim:
-          claimName: {{ .Values.deployment.skaha.sessions.userStorage.persistentVolumeClaimName | default "skaha-workload-cavern-pvc" }}
+{{ include "skaha.session.userStorageVolumeSpec" . }}
       - name: scratch-dir
         emptyDir: {}
 {{- end }}

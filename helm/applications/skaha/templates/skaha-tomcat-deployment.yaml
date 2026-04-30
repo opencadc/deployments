@@ -18,12 +18,16 @@ spec:
       labels:
         run: {{ .Release.Name }}-skaha-tomcat
     spec:
+      {{- with .Values.deployment.skaha.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- with .Values.deployment.skaha.nodeAffinity }}
       affinity:
         nodeAffinity:
 {{ . | toYaml | indent 10 }}
 {{- end }}
-      {{- with .Values.securityContext }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -35,7 +39,11 @@ spec:
       {{- with $userStorageAdmin }}
       {{ $userStorageAdminAuth := required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth configuration" .auth }}
       {{- with $userStorageAdminAuth }}
-      {{- if .certificateSecret }}
+      {{- if and .certificateSecret (or .apiKey .apiKeySecret) }}
+      {{- fail "Specify only one of .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret, apiKeySecret, or apiKey." }}
+      {{- else if and .apiKeySecret .apiKey }}
+      {{- fail "Specify only one of .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKeySecret and apiKey." }}
+      {{- else if .certificateSecret }}
       {{- with .certificateSecret -}}
         - name: SKAHA_USER_STORAGE_ADMIN_CERTIFICATE
           valueFrom:
@@ -43,14 +51,20 @@ spec:
               name: {{ .name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret.name" }}
               key: {{ .key | default "cadcproxy.pem" }}
       {{- end }}
+      {{- else if .apiKeySecret }}
+        - name: SKAHA_USER_STORAGE_ADMIN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .apiKeySecret.name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKeySecret.name" }}
+              key: {{ .apiKeySecret.key | default "api-key" }}
       {{- else if .apiKey }}
         - name: SKAHA_USER_STORAGE_ADMIN_API_KEY
           value: "{{ .apiKey | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKey" }}"
       {{- else }}
-      {{- fail "Neither .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKey nor .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret specified." }}
-      {{- end }}  # End if - certificateSecret or apiKey
-      {{- end }}  # End with - userStorageAdmin.auth
-      {{- end }}  # End with - userStorageAdmin
+      {{- fail "Specify one of .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret, apiKeySecret (recommended), or apiKey." }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
         - name: SKAHA_USER_STORAGE_SERVICE_URI
           value: "{{ required "Missing .Values.deployment.skaha.sessions.userStorage.serviceURI" .serviceURI }}"
         - name: SKAHA_USER_STORAGE_USER_HOME_URI
@@ -61,7 +75,7 @@ spec:
           value: "{{ template "skaha.job.userStorage.homeBaseDirectory" $ }}"
         - name: SKAHA_USER_STORAGE_PROJECTS_BASE_DIRECTORY
           value: "{{ template "skaha.job.userStorage.projectsBaseDirectory" $ }}"
-      {{- end }}  # End with - userStorage
+      {{- end }}
       {{- if .Values.deployment.skaha.posixMapperCacheTTLSeconds }}
         - name: SKAHA_POSIX_MAPPER_CACHE_TTL_SECONDS
           value: "{{ .Values.deployment.skaha.posixMapperCacheTTLSeconds }}"
@@ -75,7 +89,7 @@ spec:
         - name: skaha.homedir
           value: "{{ .Values.deployment.skaha.skahaTld }}/home"
         - name: skaha.namespace
-          value: "{{ .Values.skahaWorkload.namespace }}"
+          value: "{{ include "skaha.workloadNamespace" . }}"
         - name: skaha.maxusersessions
           value: "{{ .Values.deployment.skaha.sessions.maxCount }}"
         - name: skaha.sessionexpiry
@@ -92,7 +106,8 @@ spec:
         - name: skaha.headlessprioritygroup
           value: "{{ . }}"
         {{- end }}
-        {{- with .Values.deployment.skaha.headlessPriorityClass }}
+        {{- $headlessPC := include "skaha.headlessPriorityClassName" . }}
+        {{- with $headlessPC }}
         - name: SKAHA_HEADLESS_PRIORITY_CLASS
           value: "{{ . }}"
         {{- end }}
@@ -102,13 +117,15 @@ spec:
         {{- end }}
         {{- with .Values.deployment.skaha.sessions.kueue }}
         {{- range $queueConfigKey, $queueConfig := . }}
+        {{- if ne $queueConfigKey "rbac" }}
         - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_NAME
           value: "{{ $queueConfig.queueName | required (printf "Missing .Values.deployment.skaha.sessions.kueue.%s.queueName" $queueConfigKey) }}"
         - name: SKAHA_QUEUE_{{ $queueConfigKey | upper }}_PRIORITY_CLASS
           value: "{{ $queueConfig.priorityClass | required (printf "Missing .Values.deployment.skaha.sessions.kueue.%s.priorityClass" $queueConfigKey) }}"
         {{- end }}
         {{- end }}
-        {{- if or .Values.deployment.skaha.sessions.limitRange.enabled (and .Values.experimentalFeatures.enabled .Values.experimentalFeatures.sessionLimitRange.enabled) }}
+        {{- end }}
+        {{- if .Values.deployment.skaha.sessions.limitRange.enabled }}
         - name: SKAHA_SESSION_LIMIT_RANGE_ENABLED
           value: "true"
         {{- end }}
@@ -128,9 +145,6 @@ spec:
         {{- end }}
         {{- end }}
         {{- end }}
-
-
-
         - name: skaha.adminsgroup
           value: "{{ .Values.deployment.skaha.adminsGroup }}"
         - name: skaha.posixmapper.resourceid
@@ -160,9 +174,9 @@ spec:
         {{- with .Values.deployment.skaha.extraPorts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        {{- with .Values.podSecurityContext }}
+        {{- with .Values.securityContext }}
         securityContext:
-        {{- toYaml . | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
         {{- end }}
         volumeMounts:
         - mountPath: "/config"
@@ -184,8 +198,11 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      priorityClassName: {{ .Values.deployment.skaha.priorityClassName }}
-      serviceAccountName: {{ .Values.deployment.skaha.serviceAccountName }}
+      {{- $apiPC := include "skaha.apiPriorityClassName" . }}
+      {{- with $apiPC }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      serviceAccountName: {{ include "skaha.serviceAccountName" . }}
       volumes:
       - name: config-volume
         configMap:

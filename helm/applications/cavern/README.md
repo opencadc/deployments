@@ -4,7 +4,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.9.0<!-- x-release-please-version --> | 0.9.2 | application |
+|0.10.0<!-- x-release-please-version --> | 0.9.3 | application |
 
 ## Requirements
 
@@ -23,30 +23,42 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | deployment.cavern.applicationName | string | `"cavern"` |  |
 | deployment.cavern.endpoint | string | `"/cavern"` |  |
 | deployment.cavern.filesystem.dataDir | string | `""` |  |
-| deployment.cavern.filesystem.rootOwner.gid | string | `nil` |  |
-| deployment.cavern.filesystem.rootOwner.uid | string | `nil` |  |
-| deployment.cavern.filesystem.rootOwner.username | string | `""` |  |
+| deployment.cavern.filesystem.rootOwner.adminUsername | string | `""` |  |
 | deployment.cavern.identityManagerClass | string | `"org.opencadc.auth.StandardIdentityManager"` |  |
-| deployment.cavern.image | string | `"images.opencadc.org/platform/cavern:0.9.2"` |  |
+| deployment.cavern.image | string | `"images.opencadc.org/platform/cavern:0.9.3"` |  |
 | deployment.cavern.imagePullPolicy | string | `"IfNotPresent"` |  |
 | deployment.cavern.resourceID | string | `"ivo://example.org/cavern"` |  |
 | deployment.cavern.resources.limits.cpu | string | `"500m"` |  |
 | deployment.cavern.resources.limits.memory | string | `"1Gi"` |  |
 | deployment.cavern.resources.requests.cpu | string | `"500m"` |  |
 | deployment.cavern.resources.requests.memory | string | `"1Gi"` |  |
+| deployment.cavern.uws.db.auth.existingSecret | string | `""` |  |
+| deployment.cavern.uws.db.auth.secretKeys.password | string | `"password"` |  |
+| deployment.cavern.uws.db.auth.secretKeys.username | string | `"username"` |  |
 | deployment.cavern.uws.db.database | string | `"uws"` |  |
-| deployment.cavern.uws.db.image | string | `"postgres:15.12"` |  |
+| deployment.cavern.uws.db.image | string | `"postgres:15.17"` |  |
 | deployment.cavern.uws.db.install | bool | `true` |  |
 | deployment.cavern.uws.db.maxActive | int | `2` |  |
-| deployment.cavern.uws.db.password | string | `"uwspwd"` |  |
 | deployment.cavern.uws.db.runUID | int | `999` |  |
 | deployment.cavern.uws.db.schema | string | `"uws"` |  |
-| deployment.cavern.uws.db.username | string | `"uwsuser"` |  |
 | deployment.hostname | string | `"example.org"` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
 | livenessProbe | object | `{}` |  |
+| podSecurityContext | object | `{}` |  |
 | readinessProbe | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
+| securityContext | object | `{}` |  |
+| serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.automount | bool | `true` |  |
+| serviceAccount.create | bool | `false` |  |
+| serviceAccount.name | string | `""` |  |
 | storage.service.spec | string | `nil` |  |
 | tolerations | list | `[]` |  |
+| volumeInit.image | string | `"busybox:1.36"` |  |
+| volumeInit.imagePullPolicy | string | `"IfNotPresent"` |  |
+| volumeInit.podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| volumeInit.securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| volumeInit.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| volumeInit.securityContext.runAsNonRoot | bool | `true` |  |
+| volumeInit.securityContext.runAsUser | int | `8675309` |  |

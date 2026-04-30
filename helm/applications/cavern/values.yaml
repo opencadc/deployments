@@ -3,11 +3,20 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
+# Main Cavern Tomcat pod: merged into spec.template.spec.securityContext after fsGroup (from
+# deployment.cavern.filesystem.rootOwner.gid) and volumeInit.podSecurityContext.
+# @see https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext: {}
+
+# Tomcat container securityContext. Merged with allowPrivilegeEscalation: false (chart default;
+# your values win on overlapping keys).
+securityContext: {}
+
 # Skaha web service deployment
 deployment:
   hostname: example.org
   cavern:
-    image: images.opencadc.org/platform/cavern:0.9.2
+    image: images.opencadc.org/platform/cavern:0.9.3
     imagePullPolicy: IfNotPresent
 
     # How cavern identifies itself.
@@ -69,42 +78,57 @@ deployment:
       # This will be used in a `dataDir`/`subPath` manner to remove shared data from the root folder.
       # subPath: "cavern"
 
-      # The adminUsername is required to be set whomever has admin access over the
-      # filesystem.dataDir above.
+      # rootOwner: only adminUsername is required (who has admin access over filesystem.dataDir).
+      # username, uid, and gid are optional. If uid or gid are omitted, see post-install NOTES.txt.
       rootOwner:
-        # adminUsername: "root"
-        username: ""
-        uid:
-        gid:
+        adminUsername: ""
+        # username: ""
+        # uid: 1000
+        # gid: 1000
 
       # (optional) base directory exposed for sshfs mounts
       # sshfs:
       #   serverBase: {server}[:{port}]:{path}
 
     # The API keys object that will be permitted to perform administrative tasks.  These will be passed as authorization headers to the Cavern API.
-    # The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
-    # Format is <clientApplicationName>: <apiKeyToken>
-    # Example:
+    # Each map key is the client application name; the value is either:
+    # - A string token (deprecated: see post-install NOTES.txt). The token is stored in the ConfigMap.
+    # - A map referencing an existing Secret in the same namespace:
+    #     existingSecret: name of the Secret
+    #     key: key within that Secret whose value is the API token
+    # Example (inline — deprecated):
     #   adminAPIKeys:
     #     skaha: "token-value"
-    #     prepareData: "another-token-value"
+    # Example (Secret reference — preferred):
+    #   adminAPIKeys:
+    #     skaha:
+    #       existingSecret: cavern-admin-api-keys
+    #       key: skaha-token
     adminAPIKeys: {}
 
     # The IdentityManager class handling authentication.  This should generally be left alone.
     identityManagerClass: org.opencadc.auth.StandardIdentityManager
 
-    # For the UWS PostgreSQL database.
+    # For the UWS PostgreSQL database. Prefer auth.existingSecret; do not commit credentials to Git.
     uws:
       db:
         install: true # Whether to deploy a local PostgreSQL database.  Set to false to use your own.
-        image: postgres:15.12  # PostgreSQL image to use.
+        image: postgres:15.17  # PostgreSQL image to use.
         runUID: 999  # Postgres User default in the postgres:15 image if install: true
         # url: "jdbc:postgresql://<host>:<port>/<database>" # if install: false, then set this to where it should point to
         database: "uws"  # if install: true, otherwise it's ignored
-        username: "uwsuser"
-        password: "uwspwd"
         schema: "uws"
         maxActive: 2
+        # Database credentials: same Secret is used by the Cavern pod (init container) and bundled PostgreSQL when install: true.
+        # Set existingSecret (recommended), or username + password under auth (deprecated — chart creates {{ releaseName }}-uws-db-creds; see NOTES.txt).
+        # Legacy 2026.1 values may set username/password here at the db level instead of under auth; those are still honoured.
+        auth:
+          existingSecret: ""
+          # username: ""  # deprecated; use existingSecret
+          # password: ""  # deprecated; use existingSecret
+          secretKeys:
+            username: username
+            password: password
 
     # Optional rename of the application from the default "cavern".
     applicationName: "cavern"
@@ -159,6 +183,35 @@ deployment:
 #   effect: "NoSchedule"
 #
 tolerations: []
+
+# Service account for the Cavern workload.  See https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created by this chart (requires name to be set).
+  create: false
+  # Automatically mount a ServiceAccount's API credentials
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # When set, the Cavern pod uses this ServiceAccount and (if create is true) the chart creates it with this name.
+  # Leave empty to omit serviceAccountName on the pod (namespace default account).
+  name: ""
+
+# Init container image to merge UWS credentials from the Secret into catalina.properties on the Cavern pod.
+volumeInit:
+  image: busybox:1.36
+  imagePullPolicy: IfNotPresent
+  # Merged into spec.template.spec.securityContext (alongside conditional fsGroup from deployment.cavern.filesystem.rootOwner).
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  # Container securityContext for the merge-uws-db-credentials init container only.
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 8675309
+    capabilities:
+      drop:
+        - ALL
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 # Example:

@@ -96,13 +96,69 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use
 */}}
 {{- define "skaha.serviceAccountName" -}}
+{{- $name := .Values.serviceAccount.name -}}
+{{- $legacy := .Values.deployment.skaha.serviceAccountName -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "skaha.fullname" .) .Values.serviceAccount.name }}
+{{- coalesce $name $legacy (include "skaha.fullname" .) }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- coalesce $name $legacy "default" }}
 {{- end }}
 {{- end }}
 
+{{/*
+Namespace for user session workloads. String sessions.namespace wins outright. Map form uses skahaWorkload.namespace first (legacy), then namespace.name, then skaha-workload — so chart defaults for name do not hide a legacy skahaWorkload.namespace.
+*/}}
+{{- define "skaha.workloadNamespace" -}}
+{{- $sw := .Values.skahaWorkload | default dict -}}
+{{- $ns := .Values.deployment.skaha.sessions.namespace -}}
+{{- if kindIs "map" $ns -}}
+{{- coalesce $sw.namespace $ns.name "skaha-workload" -}}
+{{- else -}}
+{{- coalesce $ns $sw.namespace "skaha-workload" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Effective API PriorityClass map: chart defaults from sessions.priorityClass, then overlay legacy deployment.skaha.priorityClass
+(keys in legacy win so existing releases that only set deployment.skaha.priorityClass keep working).
+*/}}
+{{- define "skaha.effectiveApiPriorityClassJSON" -}}
+{{- $sess := .Values.deployment.skaha.sessions.priorityClass | default dict }}
+{{- $legacy := .Values.deployment.skaha.priorityClass | default dict }}
+{{- mergeOverwrite (deepCopy $sess) $legacy | toJson -}}
+{{- end -}}
+
+{{/*
+Skaha API pod PriorityClass name: merged priorityClass.name, else legacy deployment.skaha.priorityClassName.
+*/}}
+{{- define "skaha.apiPriorityClassName" -}}
+{{- $pc := include "skaha.effectiveApiPriorityClassJSON" . | fromJson }}
+{{- coalesce $pc.name .Values.deployment.skaha.priorityClassName -}}
+{{- end -}}
+
+{{/*
+Effective headless PriorityClass map: normalized legacy deployment.skaha.headlessPriorityClass (string or map) merged with
+sessions.headlessPriorityClass (sessions wins). Preserves backwards compatibility when headlessPriorityClass was a plain string name.
+*/}}
+{{- define "skaha.effectiveHeadlessPriorityClassJSON" -}}
+{{- $sessionsH := .Values.deployment.skaha.sessions.headlessPriorityClass | default dict }}
+{{- $old := .Values.deployment.skaha.headlessPriorityClass }}
+{{- $legacyH := dict }}
+{{- if kindIs "string" $old }}
+{{- $legacyH = dict "name" $old }}
+{{- else if kindIs "map" $old }}
+{{- $legacyH = $old }}
+{{- end }}
+{{- mergeOverwrite (deepCopy $legacyH) $sessionsH | toJson -}}
+{{- end -}}
+
+{{/*
+Headless jobs PriorityClass name for SKAHA_HEADLESS_PRIORITY_CLASS from the effective merged configuration.
+*/}}
+{{- define "skaha.headlessPriorityClassName" -}}
+{{- $h := include "skaha.effectiveHeadlessPriorityClassJSON" . | fromJson }}
+{{- $h.name -}}
+{{- end -}}
 
 {{/*
 USER SESSION TEMPLATE DEFINITIONS
@@ -134,6 +190,21 @@ The Projects Directory base absolute path.
 {{- $projectsDirectoryName := trimAll "/" (required ".Values.deployment.skaha.sessions.userStorage.projectsDirectory projects folder name is required." .Values.deployment.skaha.sessions.userStorage.projectsDirectory) -}}
 {{- printf "/%s/%s" $topLevelDirectory $projectsDirectoryName -}}
 {{- end -}}
+
+{{/*
+Volume source YAML for the session "cavern-volume" (content below volume name in a Pod spec).
+Uses userStorage.spec when non-empty; else persistentVolumeClaimName or default claim skaha-workload-cavern-pvc.
+*/}}
+{{- define "skaha.session.userStorageVolumeSpec" -}}
+{{- $us := .Values.deployment.skaha.sessions.userStorage }}
+{{- $spec := $us.spec }}
+{{- if and $spec (gt (len $spec) 0) }}
+{{- toYaml $spec | indent 8 }}
+{{- else }}
+        persistentVolumeClaim:
+          claimName: {{ $us.persistentVolumeClaimName | default "skaha-workload-cavern-pvc" }}
+{{- end }}
+{{- end }}
 
 {{/*
 The init containers for the launch scripts.
