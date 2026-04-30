@@ -347,6 +347,31 @@ deployment:
         rbac:
           create: false
 
+      # PriorityClass for the Skaha API pod. When create is true, a cluster PriorityClass is installed.
+      # If create is false, name must reference an existing PriorityClass. Omit name to skip setting priorityClassName on the pod.
+      # Do not set create: true on both priorityClass and headlessPriorityClass with the same name.
+      # Chart defaults are here; legacy deployment.skaha.priorityClass overlays on top (drop legacy once you standardize on sessions.priorityClass only).
+      # @deprecated deployment.skaha.priorityClassName is still used when the merged map has no name.
+      # -- PriorityClass assigned to the Skaha API Pod.
+      priorityClass:
+        create: false
+        name: uber-user-preempt-high
+        value: 2000
+        preemptionPolicy: PreemptLowerPriority
+        globalDefault: false
+        description: "For high-priority user pods. Preempting."
+
+      # PriorityClass env for headless session jobs (SKAHA_HEADLESS_PRIORITY_CLASS).
+      # Legacy deployment.skaha.headlessPriorityClass may still be a string (PriorityClass name only) or the same map shape below;
+      # it is normalized and merged with this object (sessions wins on overlap).
+      # -- Effective headless PriorityClass configuration (merged with legacy headlessPriorityClass).
+      headlessPriorityClass:
+        create: false
+        value: 2000
+        preemptionPolicy: PreemptLowerPriority
+        globalDefault: false
+        description: "For high-priority headless jobs. Preempting."
+
       # This is a list of tolerations that will be added to the Pod spec of the User Sessions.
       # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
       # @see ./README.md#notes-on-tolerations-and-nodeaffinity
@@ -455,30 +480,10 @@ deployment:
     # - mountPath: "/config/cacerts"
     #   name: cacert-volume
 
-    # @deprecated Use priorityClass.name (below) instead of this flat string when migrating old values.
+    # @deprecated Prefer deployment.skaha.sessions.priorityClass; coalesced with legacy deployment.skaha.priorityClass keys.
     # priorityClassName: uber-user-preempt-high
     # @deprecated Prefer top-level serviceAccount.name; coalesced when serviceAccount.name is empty.
     # serviceAccountName: skaha
-
-    # PriorityClass for the Skaha API pod. When create is true, a cluster PriorityClass is installed.
-    # If create is false, name must reference an existing PriorityClass. Omit name to skip setting priorityClassName on the pod.
-    # Do not set create: true on both priorityClass and headlessPriorityClass with the same name.
-    # -- PriorityClass assigned to the Skaha API Pod.
-    priorityClass:
-      create: true
-      name: uber-user-preempt-high
-      value: 2000
-      preemptionPolicy: PreemptLowerPriority
-      globalDefault: false
-      description: "For high-priority user pods. Preempting."
-
-    headlessPriorityClass:
-      create: false
-      name: ""
-      value: 2000
-      preemptionPolicy: PreemptLowerPriority
-      globalDefault: false
-      description: "For high-priority headless jobs. Preempting."
 
     # The IdentityManager class handling authentication.  This should generally be left alone
     # -- Java IdentityManager implementation used for authentication.

@@ -114,23 +114,45 @@ Namespace for user session workloads: sessions.namespace, else legacy skahaWorkl
 {{- end -}}
 
 {{/*
-Skaha API pod PriorityClass name: priorityClass.name, else legacy deployment.skaha.priorityClassName.
+Effective API PriorityClass map: chart defaults from sessions.priorityClass, then overlay legacy deployment.skaha.priorityClass
+(keys in legacy win so existing releases that only set deployment.skaha.priorityClass keep working).
+*/}}
+{{- define "skaha.effectiveApiPriorityClassJSON" -}}
+{{- $sess := .Values.deployment.skaha.sessions.priorityClass | default dict }}
+{{- $legacy := .Values.deployment.skaha.priorityClass | default dict }}
+{{- mergeOverwrite (deepCopy $sess) $legacy | toJson -}}
+{{- end -}}
+
+{{/*
+Skaha API pod PriorityClass name: merged priorityClass.name, else legacy deployment.skaha.priorityClassName.
 */}}
 {{- define "skaha.apiPriorityClassName" -}}
-{{- $pc := .Values.deployment.skaha.priorityClass | default dict -}}
+{{- $pc := include "skaha.effectiveApiPriorityClassJSON" . | fromJson }}
 {{- coalesce $pc.name .Values.deployment.skaha.priorityClassName -}}
 {{- end -}}
 
 {{/*
-Headless jobs PriorityClass name for SKAHA_HEADLESS_PRIORITY_CLASS: object .name, else legacy string value.
+Effective headless PriorityClass map: normalized legacy deployment.skaha.headlessPriorityClass (string or map) merged with
+sessions.headlessPriorityClass (sessions wins). Preserves backwards compatibility when headlessPriorityClass was a plain string name.
+*/}}
+{{- define "skaha.effectiveHeadlessPriorityClassJSON" -}}
+{{- $sessionsH := .Values.deployment.skaha.sessions.headlessPriorityClass | default dict }}
+{{- $old := .Values.deployment.skaha.headlessPriorityClass }}
+{{- $legacyH := dict }}
+{{- if kindIs "string" $old }}
+{{- $legacyH = dict "name" $old }}
+{{- else if kindIs "map" $old }}
+{{- $legacyH = $old }}
+{{- end }}
+{{- mergeOverwrite (deepCopy $legacyH) $sessionsH | toJson -}}
+{{- end -}}
+
+{{/*
+Headless jobs PriorityClass name for SKAHA_HEADLESS_PRIORITY_CLASS from the effective merged configuration.
 */}}
 {{- define "skaha.headlessPriorityClassName" -}}
-{{- $h := .Values.deployment.skaha.headlessPriorityClass -}}
-{{- if kindIs "string" $h -}}
-{{- $h -}}
-{{- else if kindIs "map" $h -}}
+{{- $h := include "skaha.effectiveHeadlessPriorityClassJSON" . | fromJson }}
 {{- $h.name -}}
-{{- end -}}
 {{- end -}}
 
 {{/*
