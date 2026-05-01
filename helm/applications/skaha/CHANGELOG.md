@@ -1,5 +1,20 @@
 # Skaha User Session API Helm Chart
 
+## [1.6.0](https://github.com/opencadc/deployments/compare/skaha-1.5.2...skaha-1.6.0) (2026-05-01)
+
+
+### Features
+
+* add liveness, readiness, and startup probes to all user session configurations ([3831b9a](https://github.com/opencadc/deployments/commit/3831b9a173aa906660595e008d8d84d24ea16ac1))
+* add liveness, readiness, and startup probes to all user session… ([8804941](https://github.com/opencadc/deployments/commit/8804941beee11caae5970b581c0d03e53993f6c2))
+* **hpa:** skaha ([b277e87](https://github.com/opencadc/deployments/commit/b277e877e515c0c6e9f1ac7ebef2277bea461c4e))
+* **skaha:** add psrecord carta launch manifests ([b0e4186](https://github.com/opencadc/deployments/commit/b0e4186bb2655013662114f4519bf7025ec4d1d1))
+
+
+### Bug Fixes
+
+* **hpa:** tune HPA to cpu-only fast scale-up with min replicas 2 ([b07fcfa](https://github.com/opencadc/deployments/commit/b07fcfae85901ea39d6a03e61796ed6e1f420390))
+
 ## [1.5.2](https://github.com/opencadc/deployments/compare/skaha-1.5.1...skaha-1.5.2) (2026-03-03)
 
 
