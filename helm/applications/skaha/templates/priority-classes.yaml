@@ -1,24 +1,25 @@
-{{- if .Values.deployment.skaha.priorityClass.create }}
+{{- $pc := include "skaha.effectiveApiPriorityClassJSON" . | fromJson }}
+{{- if $pc.create }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: {{ include "skaha.apiPriorityClassName" . | required "deployment.skaha.priorityClass.name (or legacy priorityClassName) is required when create is true" }}
+  name: {{ include "skaha.apiPriorityClassName" . | required "deployment.skaha.sessions.priorityClass.name (or legacy deployment.skaha.priorityClass / priorityClassName) is required when create is true" }}
   labels:
     {{- include "skaha.labels" $ | nindent 4 }}
-value: {{ .Values.deployment.skaha.priorityClass.value }}
-preemptionPolicy: {{ .Values.deployment.skaha.priorityClass.preemptionPolicy }}
-globalDefault: {{ .Values.deployment.skaha.priorityClass.globalDefault }}
-description: {{ .Values.deployment.skaha.priorityClass.description | quote }}
+value: {{ $pc.value }}
+preemptionPolicy: {{ $pc.preemptionPolicy }}
+globalDefault: {{ $pc.globalDefault }}
+description: {{ $pc.description | quote }}
 {{- end }}
-{{- $hpc := .Values.deployment.skaha.headlessPriorityClass }}
-{{- if and (kindIs "map" $hpc) $hpc.create }}
-{{- if .Values.deployment.skaha.priorityClass.create }}
+{{- $hpc := include "skaha.effectiveHeadlessPriorityClassJSON" . | fromJson }}
+{{- if $hpc.create }}
+{{- if $pc.create }}
 ---
 {{- end }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: {{ $hpc.name | required "deployment.skaha.headlessPriorityClass.name is required when create is true" }}
+  name: {{ $hpc.name | required "deployment.skaha.sessions.headlessPriorityClass.name (or legacy headless PriorityClass map) is required when create is true" }}
   labels:
     {{- include "skaha.labels" $ | nindent 4 }}
 value: {{ $hpc.value }}
