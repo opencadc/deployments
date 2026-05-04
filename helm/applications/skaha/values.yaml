@@ -140,14 +140,21 @@ deployment:
           uri: ""
         permissionsAPI:
           # @see https://permissions.srcnet.skao.int/api/openapi.json for the API specification.
-          # -- When true, SKAHA_PERMISSIONS_API_*_ENABLED is set from baseURL, type, route, name, version, and method. Required baseURL when enabled (Helm validates). The Skaha service enforces mutually exclusive authorization modes at runtime.
+          # -- When true, SKAHA_PERMISSIONS_API_* vars are set from baseURL, authAPIBaseURL, type, route, name, version, and method. Required baseURL and authAPIBaseURL when enabled (Helm validates). The Skaha service enforces mutually exclusive authorization modes at runtime.
           enabled: false
           # -- Required when enabled is true (Helm validates).
           baseURL: ""
+          # -- Base URL for the SRCNet Auth API used by the permissions client.
+          authAPIBaseURL: ""
+          # -- Type of the permissions API.
           type: "route"
+          # -- Route of the permissions API.
           route: ""
+          # -- Name of the permissions API.
           name: "skaha"
+          # -- Version of the permissions API.
           version: ""
+          # -- Method of the permissions API.
           method: ""
 
       # YAML to pass to a LimitRange object called "{{ .Release.Name }}-session-limit-range" in the workload Namespace to define the resource limits.

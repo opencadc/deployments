@@ -115,9 +115,14 @@ spec:
         {{- end }}
         {{- if $permEnabled }}
         {{- $permURL := trim (default "" $permAPI.baseURL) }}
+        {{- $permAuthURL := trim (default "" $permAPI.authAPIBaseURL) }}
         {{- if $permURL }}
         - name: SKAHA_PERMISSIONS_API_BASE_URL
           value: {{ $permURL | quote }}
+        {{- end }}
+        {{- if $permAuthURL }}
+        - name: SKAHA_PERMISSIONS_API_AUTH_BASE_URL
+          value: {{ $permAuthURL | quote }}
         {{- end }}
         - name: SKAHA_PERMISSIONS_API_TYPE
           value: {{ ($permAPI.type | default "route") | quote }}
