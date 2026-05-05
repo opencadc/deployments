@@ -25,14 +25,17 @@ def _runner(responses: Dict[str, FakeResult]) -> Callable[[List[str]], FakeResul
 runner = CliRunner()
 
 
+def _access_success_responses() -> dict[str, FakeResult]:
+    return {
+        "kubectl config current-context": FakeResult(0, "minikube\n"),
+        "kubectl get namespace skaha-workload": FakeResult(0, "Active\n"),
+        "kubectl auth can-i create jobs -n skaha-workload": FakeResult(0, "yes\n"),
+        "kubectl -n skaha-workload cluster-info": FakeResult(0, "ok\n"),
+    }
+
+
 def test_run_preflight_success() -> None:
-    run = _runner(
-        {
-            "kubectl config current-context": FakeResult(0, "minikube\n"),
-            "kubectl cluster-info": FakeResult(0, "ok\n"),
-            "kubectl auth can-i create jobs -n skaha-workload": FakeResult(0, "yes\n"),
-        }
-    )
+    run = _runner(_access_success_responses())
     report = preflight.run_preflight(
         namespace="skaha-workload",
         command_exists_fn=lambda cmd: True,
@@ -43,13 +46,7 @@ def test_run_preflight_success() -> None:
 
 
 def test_run_preflight_success_without_helm() -> None:
-    run = _runner(
-        {
-            "kubectl config current-context": FakeResult(0, "minikube\n"),
-            "kubectl cluster-info": FakeResult(0, "ok\n"),
-            "kubectl auth can-i create jobs -n skaha-workload": FakeResult(0, "yes\n"),
-        }
-    )
+    run = _runner(_access_success_responses())
     report = preflight.run_preflight(
         namespace="skaha-workload",
         command_exists_fn=lambda cmd: cmd == "kubectl",
@@ -68,11 +65,32 @@ def test_run_preflight_fails_when_kubectl_missing() -> None:
     assert "kubectl" in " ".join(report["errors"]).lower()
 
 
-def test_run_preflight_fails_on_cluster_unreachable() -> None:
+def test_run_preflight_warns_when_cluster_info_fails_but_namespace_ok() -> None:
+    """cluster-info is non-fatal; namespace + can-i determine success."""
     run = _runner(
         {
             "kubectl config current-context": FakeResult(0, "minikube\n"),
-            "kubectl cluster-info": FakeResult(1, "", "connection refused"),
+            "kubectl get namespace skaha-workload": FakeResult(0, "Active\n"),
+            "kubectl auth can-i create jobs -n skaha-workload": FakeResult(0, "yes\n"),
+            "kubectl -n skaha-workload cluster-info": FakeResult(1, "", "connection refused"),
+        }
+    )
+    report = preflight.run_preflight(
+        namespace="skaha-workload",
+        command_exists_fn=lambda cmd: True,
+        run_cmd=run,
+    )
+    assert report["ok"] is True
+    assert report["checks"]["cluster-info"] is False
+    assert report["warnings"]
+    assert not report["errors"]
+
+
+def test_run_preflight_fails_when_namespace_missing() -> None:
+    run = _runner(
+        {
+            "kubectl config current-context": FakeResult(0, "minikube\n"),
+            "kubectl get namespace skaha-workload": FakeResult(1, "", "NotFound"),
         }
     )
     report = preflight.run_preflight(
@@ -81,7 +99,7 @@ def test_run_preflight_fails_on_cluster_unreachable() -> None:
         run_cmd=run,
     )
     assert report["ok"] is False
-    assert "cluster-info" in " ".join(report["errors"]).lower()
+    assert "namespace" in " ".join(report["errors"]).lower()
 
 
 def test_preflight_command_prints_verbose_inventory(monkeypatch, tmp_path) -> None:
@@ -97,6 +115,7 @@ def test_preflight_command_prints_verbose_inventory(monkeypatch, tmp_path) -> No
                 "access": {
                     "binary:kubectl": True,
                     "context": True,
+                    "namespace-exists": True,
                     "cluster-info": True,
                     "can-create-jobs": True,
                 },
