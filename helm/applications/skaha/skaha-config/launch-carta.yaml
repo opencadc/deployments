@@ -77,17 +77,17 @@ spec:
             ephemeral-storage: "{{ .Values.deployment.skaha.sessions.maxEphemeralStorage }}"
         livenessProbe:
           httpGet:
-            path: "${skaha.sessionurlpath}"
+            path: "${skaha.sessionurlpath}/"
             port: 6901
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: "${skaha.sessionurlpath}"
+            path: "${skaha.sessionurlpath}/"
             port: 6901
           periodSeconds: 15
         startupProbe:
           httpGet:
-            path: "${skaha.sessionurlpath}"
+            path: "${skaha.sessionurlpath}/"
             port: 6901
           initialDelaySeconds: 10
           timeoutSeconds: 300
