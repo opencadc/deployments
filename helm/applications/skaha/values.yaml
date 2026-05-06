@@ -498,8 +498,11 @@ ingress:
 # Optional science-platform Metrics API in the same release as Skaha (see README).
 # Access in templates via index .Values "metrics-backend" (hyphenated key).
 "metrics-backend":
-  # -- Deploy the Metrics API Deployment, Service, and Kueue ClusterRole for the shared Skaha ServiceAccount (uses this chart's Bitnami Redis for METRICS_REDIS_URL when configured).
+  # -- Deploy the Metrics API Deployment and Service for the shared Skaha ServiceAccount (uses this chart's Bitnami Redis for METRICS_REDIS_URL when configured). Kueue read ClusterRole/RBAC is gated by metrics-backend.rbac.create.
   enabled: false
+  rbac:
+    # -- Create ClusterRole and ClusterRoleBinding for Kueue API read access (cluster-scoped resources). Set false if RBAC is managed outside this chart; requires a deployer with permission to create cluster-scoped RBAC when true.
+    create: true
   # -- Fixed replica count for the Metrics API (no HPA in this chart version).
   replicaCount: 1
   image:

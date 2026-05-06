@@ -1,5 +1,7 @@
 {{- $mb := index .Values "metrics-backend" | default dict }}
-{{- if (default false $mb.enabled) }}
+{{- $rbac := $mb.rbac | default dict }}
+{{/* Kueue read ClusterRole/RBAC. If created outside this chart, set metrics-backend.rbac.create to false. */}}
+{{- if and (default false $mb.enabled) (default true $rbac.create) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

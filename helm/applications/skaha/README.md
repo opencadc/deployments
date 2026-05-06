@@ -61,7 +61,8 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | ingress.enabled | bool | `true` | Enable ingress routing for the Skaha API. |
 | ingress.path | string | `"/skaha"` | Ingress path prefix routed to the Skaha API Service. |
 | kubernetesClusterDomain | string | `"cluster.local"` | Kubernetes DNS domain used when building internal service hostnames. |
-| metrics-backend.enabled | bool | `false` | Deploy the Metrics API Deployment, Service, and Kueue ClusterRole for the shared Skaha ServiceAccount (uses this chart's Bitnami Redis for METRICS_REDIS_URL when configured). |
+| metrics-backend.enabled | bool | `false` | Deploy the Metrics API Deployment and Service for the shared Skaha ServiceAccount (uses this chart's Bitnami Redis for METRICS_REDIS_URL when configured). Kueue read ClusterRole/RBAC is gated by metrics-backend.rbac.create. |
+| metrics-backend.rbac.create | bool | `true` | Create ClusterRole and ClusterRoleBinding for Kueue API read access (cluster-scoped resources). Set false if RBAC is managed outside this chart; requires a deployer with permission to create cluster-scoped RBAC when true. |
 | metrics-backend.env | object | `{}` | Map of environment variables for the Metrics container (typically METRICS_*). GitOps should supply the full map per environment. |
 | metrics-backend.image.pullPolicy | string | `"IfNotPresent"` | imagePullPolicy for the Metrics API container. |
 | metrics-backend.image.repository | string | `"images.opencadc.org/platform/metrics"` | Metrics container image repository. |
