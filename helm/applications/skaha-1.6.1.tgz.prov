@@ -1,0 +1,39 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+apiVersion: v2
+appVersion: 1.3.0
+dependencies:
+- - name: redis
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: ^18.19.0
+- - name: utils
+  repository: file://../utils
+  version: ^0.1.0
+description: A Helm chart to install the Skaha web service of the CANFAR Science Platform
+icon: https://www.canfar.net/css/images/logo.png
+maintainers:
+- - email: djenkins.cadc@gmail.com
+  name: Dustin Jenkins
+- - email: shiny.brar@nrc-cnrc.gc.ca
+  name: Shiny Brar
+name: skaha
+type: application
+version: 1.6.1
+
+...
+files:
+  skaha-1.6.1.tgz: sha256:54f4ecab45a3ac2031cc3ac2e5706c9a5057854217b1ef2a9674edc88e4065fd
+-----BEGIN PGP SIGNATURE-----
+
+wsDcBAEBCgAQBQJp+RF0CRBq0sqFWPBBQgAAR8QMAH1AS++fXGi+zhy9v6chKE9/
+qvDQ/WSa1pZKdNF3V3E9raKRR0uDEDU3PBnht4tl8M7pcBIu8oduPAdO7pRq+RCD
+rIlOoRs72mOumyeao2cdncLDdXsP6urT3SoavLc0kzbPd2nv990H5Pl9kUvJRCmI
+oEdblHuVGSe//I5dvqHUqKsMTpiuNtM6rmGLVKY+T5z5Z/pOJ9mkiwAhccGXVfSO
+NUxw7DOkDl0U164brmKsATn8Bf7kA2Kx+iKwb/fgRK1U7E4ZaWrcHU7HgTY52dzJ
+OECLOEvHAKLIfNEuTO2nPYHdb2eyGh9jGM2d617L9DkAFWd/6qJYELwU/RPuj0ME
+TJEQ0EITmcGBISMcNj+hIwCotzPX4YMHQBm3s8uop6DfqU8gt1DpgJPZurm0+sob
+1U8dVxXXpHyH5cKZz2jQzSrAtDgjromjtu2WxPgDu0VCVzCvhNCNUIyj0wVS9k1U
+3Ux1qYdAw9M5fom/nD6OUtlodW6x9R7hPzFvDbrrUg==
+=mSWu
+-----END PGP SIGNATURE-----
