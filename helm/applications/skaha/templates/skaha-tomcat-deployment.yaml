@@ -139,7 +139,7 @@ spec:
           value: "{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesClusterDomain }}"
         - name: REDIS_PORT
           value: "6379"
-        {{- $mb := index .Values "metrics-backend" | default dict }}
+        {{- $mb := .Values.metricsBackend | default dict }}
         {{- if (default false $mb.enabled) }}
         - name: SKAHA_METRICS_BACKEND_URL
           value: {{ include "skaha.metricsBackend.internalURL" . | quote }}

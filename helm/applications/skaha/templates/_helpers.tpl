@@ -128,7 +128,7 @@ app.kubernetes.io/component: metrics-api
 {{- define "skaha.metricsBackend.labels" -}}
 helm.sh/chart: {{ include "skaha.chart" . }}
 {{ include "skaha.metricsBackend.selectorLabels" . }}
-{{- $mb := index .Values "metrics-backend" | default dict -}}
+{{- $mb := .Values.metricsBackend | default dict -}}
 {{- with $mb.image }}
 {{- with .tag }}
 app.kubernetes.io/version: {{ . | quote }}

@@ -1,7 +1,11 @@
-{{- $mb := index .Values "metrics-backend" | default dict }}
-{{- $rbac := $mb.rbac | default dict }}
-{{/* Kueue read ClusterRole/RBAC. If created outside this chart, set metrics-backend.rbac.create to false. */}}
-{{- if and (default false $mb.enabled) (default true $rbac.create) }}
+{{- $mb := .Values.metricsBackend | default dict }}
+{{- if (default false $mb.enabled) }}
+{{/*
+  Kueue read ClusterRole / ClusterRoleBinding. With metricsBackend.enabled Helm renders these
+  before the metrics Deployment and Service (Helm builtin kind install order applies RBAC before
+  typical workload kinds). Apply failures (for example forbidden cluster RBAC) fail the release
+  before those workload resources reconcile.
+*/}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

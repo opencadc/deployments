@@ -1,4 +1,4 @@
-{{- $mb := index .Values "metrics-backend" | default dict }}
+{{- $mb := .Values.metricsBackend | default dict }}
 {{- if (default false $mb.enabled) }}
 apiVersion: v1
 kind: Service

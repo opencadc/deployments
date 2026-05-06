@@ -1,10 +1,10 @@
-{{- $mb := index .Values "metrics-backend" | default dict }}
+{{- $mb := .Values.metricsBackend | default dict }}
 {{- $test := $mb.test | default dict }}
 {{- if and (default false $mb.enabled) (default true $test.enabled) }}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: {{ include "skaha.fullname" . }}-test-metrics-backend
+  name: {{ include "skaha.fullname" . }}-metrics-backend-test
   labels:
     {{- include "skaha.labels" . | nindent 4 }}
   annotations:
@@ -24,13 +24,13 @@ spec:
           i=0
           while [ "$i" -lt "$max" ]; do
             if wget -q -T 3 -O /dev/null "$url" 2>/dev/null; then
-              echo "metrics-backend health check ok"
+              echo "metricsBackend health check ok"
               exit 0
             fi
             i=$((i+1))
             sleep 1
           done
-          echo "metrics-backend health check failed after ${max}s" >&2
+          echo "metricsBackend health check failed after ${max}s" >&2
           exit 1
   restartPolicy: Never
 {{- end }}
