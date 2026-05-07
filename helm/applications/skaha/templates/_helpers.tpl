@@ -199,6 +199,29 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Structural validation only; Skaha rejects conflicting modes at runtime.
+*/}}
+{{- define "skaha.validatePlatformAccess" }}
+{{- $auth := mergeOverwrite (.Values.deployment.skaha.authorization | default dict) (.Values.deployment.skaha.sessions.authorization | default dict) }}
+{{- $g := $auth.group | default dict -}}
+{{- $p := $auth.permissionsAPI | default dict -}}
+{{- $permURL := trim (default "" $p.baseURL) -}}
+{{- $permAuthURL := trim (default "" $p.authAPIBaseURL) -}}
+{{- $permEn := $p.enabled | default false -}}
+{{- $uri := trim (default "" $g.uri) -}}
+{{- $groupEn := $g.enabled | default false -}}
+{{- if and $permEn (not $permURL) }}
+{{- fail "deployment.skaha.sessions.authorization.permissionsAPI.enabled is true but permissionsAPI.baseURL is empty." }}
+{{- end }}
+{{- if and $permEn (not $permAuthURL) }}
+{{- fail "deployment.skaha.sessions.authorization.permissionsAPI.enabled is true but permissionsAPI.authAPIBaseURL is empty." }}
+{{- end }}
+{{- if and $groupEn (not $uri) }}
+{{- fail "deployment.skaha.sessions.authorization.group.enabled is true but authorization.group.uri is empty." }}
+{{- end }}
+{{- end }}
+
+{{/*
 USER SESSION TEMPLATE DEFINITIONS
 */}}
 

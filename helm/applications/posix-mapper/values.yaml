@@ -33,6 +33,14 @@ deployment:
   posixMapper:
     image: registry.gitlab.com/ska-telescope/src/src-ugm/ska-src-ugm-posix-mapper:0.4.0
     imagePullPolicy: Always
+
+    # Optional. Pull secrets for private container registries (spec.template.spec.imagePullSecrets).
+    # @see https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
+    #
+    # Example:
+    # imagePullSecrets:
+    #   - name: regcred
+    imagePullSecrets: []
     resourceID: ivo://opencadc.org/posix-mapper
 
     # URI or URL of the OIDC (IAM) server.  Used to validate incoming tokens.
