@@ -102,16 +102,16 @@ spec:
         {{- $authorization := mergeOverwrite (.Values.deployment.skaha.authorization | default dict) (.Values.deployment.skaha.sessions.authorization | default dict) }}
         {{- $grp := $authorization.group | default dict }}
         {{- $permAPI := $authorization.permissionsAPI | default dict }}
-        {{- $groupEnabled := $grp.enabled | default false }}
-        {{- $permEnabled := $permAPI.enabled | default false }}
         {{- $legacyUsersGroupTrim := trim (.Values.deployment.skaha.usersGroup | default "" | toString) }}
+        {{- $groupEnabled := or ($grp.enabled | default false) (ne $legacyUsersGroupTrim "") }}
+        {{- $permEnabled := $permAPI.enabled | default false }}
         - name: SKAHA_SESSIONS_AUTHORIZATION_GROUP_ENABLED
           value: "{{ $groupEnabled }}"
         - name: SKAHA_SESSIONS_AUTHORIZATION_PERMISSIONS_API_ENABLED
           value: "{{ $permEnabled }}"
         {{- if $groupEnabled }}
         - name: SKAHA_USERS_GROUP
-          value: {{ trim ($grp.uri | default "" | toString) | quote }}
+          value: {{ trim ($grp.uri | default "" | toString) | default $legacyUsersGroupTrim | quote }}
         {{- end }}
         {{- if $permEnabled }}
         {{- $permURL := trim (default "" $permAPI.baseURL) }}
@@ -143,10 +143,6 @@ spec:
         - name: SKAHA_PERMISSIONS_API_METHOD
           value: {{ . | quote }}
         {{- end }}
-        {{- end }}
-        {{- if and (not $groupEnabled) (not $permEnabled) $legacyUsersGroupTrim }}
-        - name: SKAHA_USERS_GROUP
-          value: {{ $legacyUsersGroupTrim | quote }}
         {{- end }}
         {{- with .Values.deployment.skaha.headlessPriorityGroup }}
         - name: skaha.headlessprioritygroup
