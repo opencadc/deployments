@@ -1,10 +1,11 @@
 {{- with .Values.rbac }}
 {{- if .create }}
+{{- $roleName := printf "%s-workload-controller" $.Release.Name | trunc 63 | trimSuffix "-" }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: workload-controller-role
+  name: {{ $roleName }}
   namespace: {{ include "skaha.workloadNamespace" $ }}
 rules:
 - apiGroups: [""]
@@ -30,7 +31,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: workload-controller-binding
+  name: {{ $roleName }}
   namespace: {{ include "skaha.workloadNamespace" $ }}
 subjects:
 - kind: ServiceAccount
@@ -38,7 +39,7 @@ subjects:
   namespace: {{ $.Release.Namespace }}
 roleRef:
   kind: Role
-  name: workload-controller-role
+  name: {{ $roleName }}
   apiGroup: rbac.authorization.k8s.io
 {{- if .clusterRole.create }}
 ---
