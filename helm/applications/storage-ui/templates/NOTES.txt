@@ -25,5 +25,17 @@ Namespace: {{ .Release.Namespace }}
 
 {{- end }}
 
+{{- if .Values.deployment.storageUI.themeName }}
+################################################################################
+#                                                                              #
+#  THEME — deprecation notice                                                  #
+#                                                                              #
+#  deployment.storageUI.themeName is deprecated and will be removed.           #
+#  Prefer deployment.storageUI.theme (see values.yaml).                        #
+#                                                                              #
+################################################################################
+
+{{- end }}
+
 Quick checks:
   - kubectl get deployment storage-ui-tomcat -n {{ .Release.Namespace }}

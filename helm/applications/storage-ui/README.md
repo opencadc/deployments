@@ -26,6 +26,7 @@ A Helm chart to install the User Storage UI
 | deployment.storageUI.resources.limits.memory | string | `"1Gi"` |  |
 | deployment.storageUI.resources.requests.cpu | string | `"500m"` |  |
 | deployment.storageUI.resources.requests.memory | string | `"500Mi"` |  |
+| deployment.storageUI.theme | object | `{}` |  |
 | deployment.storageUI.themeName | string | `nil` |  |
 | kubernetesClusterDomain | string | `"cluster.local"` |  |
 | podSecurityContext | object | `{}` |  |
