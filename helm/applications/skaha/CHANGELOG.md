@@ -1,5 +1,31 @@
 # Skaha User Session API Helm Chart
 
+## [1.6.0](https://github.com/opencadc/deployments/compare/skaha-1.5.2...skaha-1.6.0) (2026-05-08)
+
+
+### Features
+
+* add liveness, readiness, and startup probes to all user session configurations ([3831b9a](https://github.com/opencadc/deployments/commit/3831b9a173aa906660595e008d8d84d24ea16ac1))
+* add liveness, readiness, and startup probes to all user session… ([8804941](https://github.com/opencadc/deployments/commit/8804941beee11caae5970b581c0d03e53993f6c2))
+* **helm:** updated skaha helm chart to include the service, rbac for metrics deployment ([af2117a](https://github.com/opencadc/deployments/commit/af2117a217d29eb9f029eda3a8b57db79624710a))
+* **hpa:** skaha ([b277e87](https://github.com/opencadc/deployments/commit/b277e877e515c0c6e9f1ac7ebef2277bea461c4e))
+* **skaha:** add psrecord carta launch manifests ([b0e4186](https://github.com/opencadc/deployments/commit/b0e4186bb2655013662114f4519bf7025ec4d1d1))
+
+
+### Bug Fixes
+
+* **hpa:** tune HPA to cpu-only fast scale-up with min replicas 2 ([b07fcfa](https://github.com/opencadc/deployments/commit/b07fcfae85901ea39d6a03e61796ed6e1f420390))
+* **skaha:** default metrics-backend.rbac.create to false ([5a3f687](https://github.com/opencadc/deployments/commit/5a3f6874c421a6e57592742700344b738026f8ef))
+* **skaha:** gate metrics Kueue RBAC with rbac.create, not enabled alone ([1345968](https://github.com/opencadc/deployments/commit/1345968e941723da6e0896f87d1d67eb0cceb3f9))
+* **skaha:** set RuntimeDefault seccomp on metrics API for PSA restricted ([8b775b3](https://github.com/opencadc/deployments/commit/8b775b3bed5c93861b59b78abe1d2a78f0ee9174))
+* **skaha:** use carta probe path with trailing slash ([9a89255](https://github.com/opencadc/deployments/commit/9a89255a121745b4b3c9500b916c2a759d1040a5))
+* **skaha:** use carta probe path with trailing slash ([60ae5ed](https://github.com/opencadc/deployments/commit/60ae5ed566e37b037e708b3a51696798240841d5))
+
+
+### Reverts
+
+* **skaha:** restore metrics rbac.create default true ([a8528c4](https://github.com/opencadc/deployments/commit/a8528c46a33785135fe99d843e26cf81e8f57444))
+
 ## [1.5.2](https://github.com/opencadc/deployments/compare/skaha-1.5.1...skaha-1.5.2) (2026-03-03)
 
 
