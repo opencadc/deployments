@@ -40,6 +40,8 @@ spec:
             capabilities:
               drop:
                 - ALL
+            seccompProfile:
+              type: RuntimeDefault
           env:
             {{- if and (default true $redis.enabled) (not (hasKey $customEnv "METRICS_REDIS_URL")) }}
             - name: METRICS_REDIS_URL
