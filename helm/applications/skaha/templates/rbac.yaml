@@ -20,6 +20,10 @@ rules:
   resources: ["pods", "services", "secrets"]
   verbs: ["create", "deletecollection", "delete", "get", "list"]
 
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+
 - apiGroups: ["traefik.io"]
   resources: ["ingressroutes", "middlewares"]
   verbs: ["create", "deletecollection", "delete", "get", "list"]
