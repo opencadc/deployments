@@ -43,6 +43,8 @@ helm --namespace skaha-system upgrade --install --values values.yaml skaha-relea
 You can define a `LimitRange` for User Session Pods by modifying the `deployment.skaha.sessions.limitRange` section in your `values.yaml` file. This configuration allows you to set resource limits and requests for different session types.  The `min` clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  This will go directly into a `LimitRange` object created in the Skaha workload Namespace, and, as such, supports the Kubernetes
 units.
 
+When limit-range integration is enabled, the Skaha service uses the **first** `LimitRange` object returned for the workload namespace (not a specific name); the object name is therefore mostly irrelevant at runtime, though this chart uses a stable name when it creates the resource.
+
 The `rbac` section allows you to create the necessary Role and RoleBinding for the LimitRange object.  If your organization does not permit the creation of RBAC objects, you can set `create` to `false` and manage the RBAC externally.
 
 ```yaml

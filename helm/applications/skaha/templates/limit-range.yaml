@@ -1,3 +1,7 @@
+{{/*
+ Skaha (when SKAHA_SESSION_LIMIT_RANGE_ENABLED is true) uses the **first** LimitRange returned for the workload namespace; the resource name is mostly irrelevant.
+ This chart still names a chart-managed LimitRange `<release>-session-limit-range` for predictable installs.
+*/}}
 {{- $limitRange := .Values.deployment.skaha.sessions.limitRange }}
 {{- if $limitRange.enabled }}
 {{- if $limitRange.create }}
@@ -27,7 +31,7 @@ spec:
 {{- end }} # End with .spec
 {{- end }}
 
-# RBAC for LimitRange.  If created outside this installation, set rbac.create to false.
+# RBAC for LimitRange (emitted only when `limitRange.enabled`; Role/Binding when `rbac.create`). If created outside this installation, set rbac.create to false.
 {{- with $limitRange.rbac }}
 {{- if .create }}
 ---
