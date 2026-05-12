@@ -10,7 +10,7 @@ A Helm chart to install the Science Portal UI
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../utils | utils | ^0.1.0 |
+| file://../../utils | utils | ^0.1.0 |
 | oci://registry-1.docker.io/bitnamicharts | redis | ^18.19.0 |
 
 ## Values

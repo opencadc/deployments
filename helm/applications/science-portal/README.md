@@ -16,6 +16,13 @@ Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from H
 |:-----:|:----------:|:----:|
 |2.1.1<!-- x-release-please-version --> | e9517a949cf840f50d26d953a5bc602f54911653 | application |
 
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| file://../utils | utils | ^0.1.0 |
+| oci://registry-1.docker.io/bitnamicharts | redis | ^18.19.0 |
+
 ## Values
 
 | Key | Type | Default | Description |

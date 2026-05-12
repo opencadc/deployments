@@ -33,4 +33,4 @@ dependencies:
     repository: "oci://registry-1.docker.io/bitnamicharts"
   - name: "utils"
     version: "^0.1.0"
-    repository: "file://../utils"
+    repository: "file://../../utils"
