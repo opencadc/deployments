@@ -30,6 +30,6 @@ roleRef:
   name: {{ include "skaha.metricsBackend.clusterRoleName" . }}
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.deployment.skaha.serviceAccountName }}
+    name: {{ include "skaha.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
