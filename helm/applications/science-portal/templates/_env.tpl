@@ -99,6 +99,10 @@ skipNames: map of env var names already set in .Values.env (those win; chart ski
   value: {{ .openstackCloud | quote }}
 {{- end }}
 {{- end }}
+{{- if and $pub.srcnetLogoUrl (not (hasKey $skip "NEXT_PUBLIC_SRCNET_LOGO_URL")) }}
+- name: NEXT_PUBLIC_SRCNET_LOGO_URL
+  value: {{ $pub.srcnetLogoUrl | quote }}
+{{- end }}
 {{- if and (kindIs "bool" $root.Values.app.experimental) (not (hasKey $skip "NEXT_PUBLIC_EXPERIMENTAL")) }}
 - name: NEXT_PUBLIC_EXPERIMENTAL
   value: {{ ternary "true" "false" $root.Values.app.experimental | quote }}
