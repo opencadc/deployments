@@ -597,6 +597,9 @@ ingress:
 metricsBackend:
   # -- When true, install Kueue-read ClusterRole/Binding first (Helm kind order), then Metrics Service and Deployment. Applies fail if cluster RBAC cannot be created (for example forbidden).
   enabled: false
+  rbac:
+    # -- When true, create metricsBackend Kueue-read ClusterRole/ClusterRoleBinding. Set false to disable cluster-scoped RBAC while keeping the metrics workload enabled.
+    enabled: false
   # -- Fixed replica count for the Metrics API (no HPA in this chart version).
   replicaCount: 1
   image:
