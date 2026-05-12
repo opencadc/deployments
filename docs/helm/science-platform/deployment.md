@@ -577,6 +577,7 @@ deployment:
           priorityClass: low
 
       limitRange:
+        create: true
         enabled: true
         rbac:
           create: false

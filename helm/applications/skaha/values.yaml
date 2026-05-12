@@ -47,7 +47,7 @@ deployment:
   hostname: myhost.example.com  # Change this!
   skaha:
     # -- Container image for the Skaha API service.
-    image: images.opencadc.org/platform/skaha:1.2.1
+    image: images.opencadc.org/platform/skaha:1.3.0
     # -- Image pull policy for the Skaha API container.
     imagePullPolicy: Always
 
@@ -157,7 +157,9 @@ deployment:
           # -- Method of the permissions API.
           method: ""
 
-      # YAML to pass to a LimitRange object called "{{ .Release.Name }}-session-limit-range" in the workload Namespace to define the resource limits.
+      # YAML for a LimitRange named `<release>-session-limit-range` (Helm: `{{ .Release.Name }}-session-limit-range`) in the workload namespace.
+      # When `create` is false, that object must already exist with this exact name; the chart will not create or update it.
+      # `enabled` controls only whether `SKAHA_SESSION_LIMIT_RANGE_ENABLED` is set on the Skaha deployment (independent of `create`).
       # These limits will be applied to Container objects (User Sessions).
       # **NOTE**: Pay attention to the deployment.skaha.sessions.flexResourceRequests above as these two features can conflict.
       # **NOTE**: The min clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  The `defaultRequest` is used instead for these session types.
@@ -165,6 +167,7 @@ deployment:
       #
       # Example:
       # limitRange:
+      #   create: true
       #   enabled: true
       #   rbac:
       #     create: true
@@ -182,7 +185,9 @@ deployment:
       #       cpu: "1"
       #       "nvidia.com/gpu": "0"
       limitRange:
-        # -- Enable creation of a LimitRange for session container resources.
+        # -- When true, the chart creates the LimitRange `<release>-session-limit-range` in the workload namespace from `spec` below. When false, skip creating it and assume one with that name already exists (for example provisioned out-of-band).
+        create: false
+        # -- When true, set `SKAHA_SESSION_LIMIT_RANGE_ENABLED` on the Skaha deployment so the service loads the namespace LimitRange for resource context. Independent of `create`.
         enabled: false
 
       # Resource requests and limits for different session types for resource allocation when a "Flex" resource profile is used.
