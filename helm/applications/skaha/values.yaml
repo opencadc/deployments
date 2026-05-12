@@ -159,7 +159,7 @@ deployment:
 
       # YAML for a LimitRange named `<release>-session-limit-range` (Helm: `{{ .Release.Name }}-session-limit-range`) in the workload namespace.
       # When `create` is false, that object must already exist with this exact name; the chart will not create or update it.
-      # `enabled` controls only whether `SKAHA_SESSION_LIMIT_RANGE_ENABLED` is set on the Skaha deployment (independent of `create`).
+      # `enabled` sets `SKAHA_SESSION_LIMIT_RANGE_ENABLED` on the Skaha deployment, gates this chart's LimitRange Role/RoleBinding, and must be true (with `create`) for the chart to create the LimitRange object.
       # These limits will be applied to Container objects (User Sessions).
       # **NOTE**: Pay attention to the deployment.skaha.sessions.flexResourceRequests above as these two features can conflict.
       # **NOTE**: The min clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  The `defaultRequest` is used instead for these session types.
@@ -185,9 +185,9 @@ deployment:
       #       cpu: "1"
       #       "nvidia.com/gpu": "0"
       limitRange:
-        # -- When true, the chart creates the LimitRange `<release>-session-limit-range` in the workload namespace from `spec` below. When false, skip creating it and assume one with that name already exists (for example provisioned out-of-band).
-        create: false
-        # -- When true, set `SKAHA_SESSION_LIMIT_RANGE_ENABLED` on the Skaha deployment so the service loads the namespace LimitRange for resource context. Independent of `create`.
+        # -- When true together with `enabled`, the chart creates the LimitRange `<release>-session-limit-range` in the workload namespace from `spec` below. When false, skip creating it and assume one with that name already exists (for example provisioned out-of-band).
+        create: true
+        # -- When true, set `SKAHA_SESSION_LIMIT_RANGE_ENABLED` on the Skaha deployment and allow this chart to emit the LimitRange Role/RoleBinding (`rbac.create`). Must also be true (with `create`) for the chart to render the LimitRange manifest.
         enabled: false
 
       # Resource requests and limits for different session types for resource allocation when a "Flex" resource profile is used.

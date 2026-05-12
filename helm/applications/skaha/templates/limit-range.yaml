@@ -1,4 +1,5 @@
 {{- $limitRange := .Values.deployment.skaha.sessions.limitRange }}
+{{- if $limitRange.enabled }}
 {{- if $limitRange.create }}
 {{- $spec := $limitRange.spec }}
 ---
@@ -57,5 +58,11 @@ subjects:
 - kind: ServiceAccount
   name: {{ include "skaha.serviceAccountName" $ }}
   namespace: {{ $.Release.Namespace }}
+# End if .create
 {{- end }}
+
+# End with $limitRange.rbac
+{{- end }}
+
+# End if $limitRange.enabled
 {{- end }}
