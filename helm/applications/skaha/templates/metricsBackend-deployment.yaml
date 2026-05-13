@@ -21,7 +21,7 @@ spec:
       labels:
         {{- include "skaha.metricsBackend.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ .Values.deployment.skaha.serviceAccountName }}
+      serviceAccountName: {{ include "skaha.serviceAccountName" . }}
       automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
@@ -29,7 +29,7 @@ spec:
         fsGroup: 65532
       containers:
         - name: metrics-api
-          image: "{{ $img.repository }}:{{ $img.tag | default "v0.1.4" }}"
+          image: "{{ $img.repository }}:{{ $img.tag | default "v0.1.5" }}"
           imagePullPolicy: {{ $img.pullPolicy | default "IfNotPresent" }}
           ports:
             - name: http

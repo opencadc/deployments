@@ -14,7 +14,14 @@ Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from H
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|2.1.0<!-- x-release-please-version --> | eca70d91f45fe6578207c7bd70e67b91d2654700 | application |
+|2.1.1<!-- x-release-please-version --> | e9517a949cf840f50d26d953a5bc602f54911653 | application |
+
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| file://../utils | utils | ^0.1.0 |
+| oci://registry-1.docker.io/bitnamicharts | redis | ^18.19.0 |
 
 ## Values
 
@@ -44,7 +51,7 @@ Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from H
 | httpRoute.parentRefs[0].sectionName | string | `"http"` |  |
 | httpRoute.rules[0].matches[0].path.type | string | `"PathPrefix"` |  |
 | httpRoute.rules[0].matches[0].path.value | string | `"/"` |  |
-| image | object | `{"pullPolicy":"IfNotPresent","repository":"ghcr.io/canfar/science-portal","tag":"eca70d91f45fe6578207c7bd70e67b91d2654700"}` | Container image (repository and tag). |
+| image | object | `{"pullPolicy":"IfNotPresent","repository":"ghcr.io/canfar/science-portal","tag":"e9517a949cf840f50d26d953a5bc602f54911653"}` | Container image (repository and tag). |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `""` |  |
