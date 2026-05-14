@@ -14,7 +14,7 @@ Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from H
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|2.1.1<!-- x-release-please-version --> | e9517a949cf840f50d26d953a5bc602f54911653 | application |
+|2.0.0-rc-001<!-- x-release-please-version --> | e9517a949cf840f50d26d953a5bc602f54911653 | application |
 
 ## Requirements
 
@@ -51,7 +51,7 @@ Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from H
 | httpRoute.parentRefs[0].sectionName | string | `"http"` |  |
 | httpRoute.rules[0].matches[0].path.type | string | `"PathPrefix"` |  |
 | httpRoute.rules[0].matches[0].path.value | string | `"/"` |  |
-| image | object | `{"pullPolicy":"IfNotPresent","repository":"ghcr.io/canfar/science-portal","tag":"e9517a949cf840f50d26d953a5bc602f54911653"}` | Container image (repository and tag). |
+| image | object | `{"pullPolicy":"IfNotPresent","repository":"ghcr.io/canfar/science-portal","tag":"58b6015a808146aecc21521230da1dbc1e893b5b"}` | Container image (repository and tag). |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `""` |  |
