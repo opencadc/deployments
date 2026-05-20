@@ -17,6 +17,14 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | deployment.cavern.adminAPIKeys | object | `{}` |  |
+| deployment.cavern.allocations.authorization.permissionsAPI.authAPIBaseURL | string | `""` | Base URL for the SRCNet Auth API used by the permissions client. |
+| deployment.cavern.allocations.authorization.permissionsAPI.baseURL | string | `""` | Required when enabled is true (Helm validates). |
+| deployment.cavern.allocations.authorization.permissionsAPI.enabled | bool | `false` | When true, SKAHA_PERMISSIONS_API_* vars are set from baseURL, authAPIBaseURL, type, route, name, version, and method. Required baseURL and authAPIBaseURL when enabled (Helm validates). The Skaha service enforces mutually exclusive authorization modes at runtime. |
+| deployment.cavern.allocations.authorization.permissionsAPI.method | string | `""` | Method of the permissions API. |
+| deployment.cavern.allocations.authorization.permissionsAPI.name | string | `"skaha"` | Name of the permissions API. |
+| deployment.cavern.allocations.authorization.permissionsAPI.route | string | `""` | Route of the permissions API. |
+| deployment.cavern.allocations.authorization.permissionsAPI.type | string | `"route"` | Type of the permissions API. |
+| deployment.cavern.allocations.authorization.permissionsAPI.version | string | `""` | Version of the permissions API. |
 | deployment.cavern.allocations.defaultSizeGB | int | `10` |  |
 | deployment.cavern.allocations.parentFolders[0] | string | `"/home"` |  |
 | deployment.cavern.allocations.parentFolders[1] | string | `"/projects"` |  |

@@ -14,14 +14,13 @@ Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from H
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|2.0.0-rc-001<!-- x-release-please-version --> | e9517a949cf840f50d26d953a5bc602f54911653 | application |
+|2.0.0-rc-002<!-- x-release-please-version --> | e9517a949cf840f50d26d953a5bc602f54911653 | application |
 
 ## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
 | file://../utils | utils | ^0.1.0 |
-| oci://registry-1.docker.io/bitnamicharts | redis | ^18.19.0 |
 
 ## Values
 

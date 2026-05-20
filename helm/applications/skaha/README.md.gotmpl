@@ -16,4 +16,14 @@
 
 When `metricsBackend.enabled` is true, the chart emits `ClusterRole`, `ClusterRoleBinding`, `Service`, and `Deployment` for metrics. Helm applies manifest groups in a deterministic [kind order](https://github.com/helm/helm/blob/main/pkg/releaseutil/kind_sorter.go) so RBAC objects are reconciled before typical namespaced workload kinds. If the API server rejects creating or updating those cluster-scoped RBAC rules (for example the caller lacks permission), the release fails instead of only rolling out a broken metrics `Deployment`. `helm test` (optional) still targets the running Service after install; it does not replace RBAC admission checks.
 
-If `metricsBackend.enabled=true` and `metricsBackend.rbac.enabled=false`, this chart will not create the metrics ClusterRole/ClusterRoleBinding. In that mode, the deployer is responsible for ensuring the Skaha ServiceAccount (`deployment.skaha.serviceAccountName`) already has `get`/`list` permissions on the Kueue `ClusterQueue` API before installation.
+**Defaults:** `metricsBackend.enabled` and `metricsBackend.rbac.enabled` are both **false** in `values.yaml`. Production GitOps overlays typically set `metricsBackend.enabled: true` while leaving `metricsBackend.rbac.enabled: false` when Kueue read access for the Skaha ServiceAccount is already provisioned cluster-wide.
+
+If `metricsBackend.enabled=true` and `metricsBackend.rbac.enabled=false`, this chart will not create the metrics ClusterRole/ClusterRoleBinding. In that mode, the deployer is responsible for ensuring the Skaha ServiceAccount (`deployment.skaha.serviceAccountName`) already has `get`/`list` permissions on the Kueue `ClusterQueue` API before installation. Set `metricsBackend.rbac.enabled: true` only when this release should own that cluster-scoped RBAC.
+
+## Skaha and metricsBackend
+
+When `metricsBackend.enabled` is true, the chart injects `SKAHA_METRICS_BACKEND_URL` on the Skaha API Deployment pointing at the co-deployed Metrics Service (port 8000, in-cluster DNS). Skaha uses that URL for **platform stats** (`GET /v1/session?view=stats`): cluster **platform capacity** and **platform allocation** come from `GET /api/v1/metrics/platform` on the Metrics API. If Metrics is unreachable, Skaha returns HTTP 503 for platform stats only; other session routes are unaffected.
+
+The Metrics workload uses the same ServiceAccount as Skaha (`deployment.skaha.serviceAccountName`). Per-session usage on session listings uses the Kubernetes `metrics.k8s.io` pod metrics API in the session workload namespace; the chart grants `get`/`list` on `pods` in that namespace when `rbac.create` is true (requires a cluster **metrics-server** installation).
+
+Configure the Metrics process via `metricsBackend.env` (`METRICS_*` keys). `metricsBackend.redis.enabled` wires `METRICS_REDIS_URL` to this release's Bitnami Redis master unless overridden in `env`. See `science-platform/metrics/docs/environment-contracts.md` for required variables per environment.

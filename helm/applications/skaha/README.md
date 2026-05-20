@@ -4,7 +4,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.6.0-rc-002<!-- x-release-please-version --> | 1.3.0 | application |
+|1.6.0-rc-003<!-- x-release-please-version --> | 1.3.0 | application |
 
 ## Requirements
 
@@ -70,21 +70,21 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | ingress.enabled | bool | `true` | Enable ingress routing for the Skaha API. |
 | ingress.path | string | `"/skaha"` | Ingress path prefix routed to the Skaha API Service. |
 | kubernetesClusterDomain | string | `"cluster.local"` | Kubernetes DNS domain used when building internal service hostnames. |
-| metricsBackend.enabled | bool | `false` | When true, install Kueue-read ClusterRole/Binding first (Helm kind order), then Metrics Service and Deployment. Applies fail if cluster RBAC cannot be created (for example forbidden). |
-| metricsBackend.env | object | `{}` | Map of environment variables for the Metrics container (typically METRICS_*). GitOps should supply the full map per environment. |
+| metricsBackend.enabled | bool | `false` | Enable the Metrics API Deployment and Service in this release. When true, skaha-tomcat receives SKAHA_METRICS_BACKEND_URL pointing at the in-cluster Metrics Service (not the public ingress host). Skaha platform stats (GET /v1/session?view=stats) call GET /api/v1/metrics/platform on that URL and return HTTP 503 if Metrics is down; other Skaha routes are unaffected. Default false so generic installs opt in explicitly; GitOps overlays (for example keel-deploy) set true per environment. |
+| metricsBackend.env | object | `{}` | Required when metricsBackend.enabled is true. Full METRICS_* map per environment (METRICS_ENVIRONMENT, METRICS_PROVIDERS__KUEUE__CLUSTER_QUEUES as JSON array, cache TTLs, etc.). Empty default {}; chart does not ship production-ready Metrics config. See science-platform/metrics/docs/environment-contracts.md and keel-deploy helm/values/canfar.net/skaha/ for reference overlays. |
 | metricsBackend.image.pullPolicy | string | `"IfNotPresent"` | imagePullPolicy for the Metrics API container. |
-| metricsBackend.image.repository | string | `"images.opencadc.org/platform/metrics"` | Metrics container image repository. |
-| metricsBackend.image.tag | string | `"v0.1.5"` | Metrics container image tag. |
-| metricsBackend.ingress.enabled | bool | `false` | When true and top-level ingress.enabled is true, add a path on the same host routing to the Metrics Service. |
-| metricsBackend.ingress.path | string | `"/metrics"` | Ingress path prefix for the Metrics API (Traefik). |
-| metricsBackend.rbac.enabled | bool | `false` | When true, create metricsBackend Kueue-read ClusterRole/ClusterRoleBinding. Set false to disable cluster-scoped RBAC while keeping the metrics workload enabled. |
-| metricsBackend.redis.enabled | bool | `true` | When true, set METRICS_REDIS_URL to this release's Bitnami Redis master Service (<release>-redis-master), same instance Skaha uses. Set false and supply METRICS_REDIS_URL in env if Metrics should use another Redis. |
-| metricsBackend.replicaCount | int | `1` | Fixed replica count for the Metrics API (no HPA in this chart version). |
-| metricsBackend.resources | object | `{"limits":{"cpu":"1","memory":"1Gi"},"requests":{"cpu":"100m","memory":"256Mi"}}` | Resource requests and limits for the Metrics API container. |
-| metricsBackend.revisionHistoryLimit | int | `3` | revisionHistoryLimit for the Metrics API Deployment. |
-| metricsBackend.test.enabled | bool | `true` | Run helm test hook that retries /healthz until success (requires metricsBackend.enabled). |
-| metricsBackend.test.image | string | `"busybox:1.37.0"` | Image for the helm test hook Pod. |
-| metricsBackend.test.maxWaitSeconds | int | `180` | Maximum seconds to wait for Metrics /healthz (should exceed startupProbe worst case plus scheduling margin). |
+| metricsBackend.image.repository | string | `"images.opencadc.org/platform/metrics"` | Metrics container image repository (science-platform/metrics). |
+| metricsBackend.image.tag | string | `"v0.1.5"` | Metrics container image tag. Bump per environment in GitOps when rolling out a new Metrics build. |
+| metricsBackend.ingress.enabled | bool | `false` | Expose Metrics on the Skaha ingress host (Traefik). Default false: Skaha uses in-cluster SKAHA_METRICS_BACKEND_URL only; public Metrics routes are optional and environment-specific. |
+| metricsBackend.ingress.path | string | `"/metrics"` | URL path prefix when metricsBackend.ingress.enabled and ingress.enabled are both true. |
+| metricsBackend.rbac.enabled | bool | `false` | Create a chart-managed ClusterRole and ClusterRoleBinding granting deployment.skaha.serviceAccountName get/list on Kueue clusterqueues.cohort.kueue.x-k8s.io. Default false: many clusters (including CANFAR) already grant Kueue read to the Skaha ServiceAccount outside this chart—set true only for greenfield installs that need chart-owned cluster RBAC. Independent of rbac.create (workload-namespace Role for session jobs and metrics.k8s.io pods). |
+| metricsBackend.redis.enabled | bool | `true` | When true and METRICS_REDIS_URL is not set in metricsBackend.env, chart injects METRICS_REDIS_URL targeting this release's Bitnami Redis master (<release>-redis-master), shared with Skaha. Set false when Metrics uses an external Redis and set METRICS_REDIS_URL in env. |
+| metricsBackend.replicaCount | int | `1` | Metrics API replica count. No HPA is defined for metricsBackend in this chart version. |
+| metricsBackend.resources | object | `{"limits":{"cpu":"1","memory":"1Gi"},"requests":{"cpu":"100m","memory":"256Mi"}}` | CPU and memory requests/limits for the Metrics API container. |
+| metricsBackend.revisionHistoryLimit | int | `3` | Deployment revisionHistoryLimit for the Metrics API workload. |
+| metricsBackend.test.enabled | bool | `true` | Run a post-install helm test hook that polls Metrics /healthz (only rendered when metricsBackend.enabled is true). |
+| metricsBackend.test.image | string | `"busybox:1.37.0"` | Container image for the helm test hook Pod. |
+| metricsBackend.test.maxWaitSeconds | int | `180` | Maximum wait time in seconds for Metrics /healthz during helm test. |
 | podSecurityContext | object | `{}` |  |
 | rbac.clusterRole.create | bool | `false` |  |
 | rbac.create | bool | `true` |  |
@@ -111,4 +111,14 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 When `metricsBackend.enabled` is true, the chart emits `ClusterRole`, `ClusterRoleBinding`, `Service`, and `Deployment` for metrics. Helm applies manifest groups in a deterministic [kind order](https://github.com/helm/helm/blob/main/pkg/releaseutil/kind_sorter.go) so RBAC objects are reconciled before typical namespaced workload kinds. If the API server rejects creating or updating those cluster-scoped RBAC rules (for example the caller lacks permission), the release fails instead of only rolling out a broken metrics `Deployment`. `helm test` (optional) still targets the running Service after install; it does not replace RBAC admission checks.
 
-If `metricsBackend.enabled=true` and `metricsBackend.rbac.enabled=false`, this chart will not create the metrics ClusterRole/ClusterRoleBinding. In that mode, the deployer is responsible for ensuring the Skaha ServiceAccount (`deployment.skaha.serviceAccountName`) already has `get`/`list` permissions on the Kueue `ClusterQueue` API before installation.
+**Defaults:** `metricsBackend.enabled` and `metricsBackend.rbac.enabled` are both **false** in `values.yaml`. Production GitOps overlays typically set `metricsBackend.enabled: true` while leaving `metricsBackend.rbac.enabled: false` when Kueue read access for the Skaha ServiceAccount is already provisioned cluster-wide.
+
+If `metricsBackend.enabled=true` and `metricsBackend.rbac.enabled=false`, this chart will not create the metrics ClusterRole/ClusterRoleBinding. In that mode, the deployer is responsible for ensuring the Skaha ServiceAccount (`deployment.skaha.serviceAccountName`) already has `get`/`list` permissions on the Kueue `ClusterQueue` API before installation. Set `metricsBackend.rbac.enabled: true` only when this release should own that cluster-scoped RBAC.
+
+## Skaha and metricsBackend
+
+When `metricsBackend.enabled` is true, the chart injects `SKAHA_METRICS_BACKEND_URL` on the Skaha API Deployment pointing at the co-deployed Metrics Service (port 8000, in-cluster DNS). Skaha uses that URL for **platform stats** (`GET /v1/session?view=stats`): cluster **platform capacity** and **platform allocation** come from `GET /api/v1/metrics/platform` on the Metrics API. If Metrics is unreachable, Skaha returns HTTP 503 for platform stats only; other session routes are unaffected.
+
+The Metrics workload uses the same ServiceAccount as Skaha (`deployment.skaha.serviceAccountName`). Per-session usage on session listings uses the Kubernetes `metrics.k8s.io` pod metrics API in the session workload namespace; the chart grants `get`/`list` on `pods` in that namespace when `rbac.create` is true (requires a cluster **metrics-server** installation).
+
+Configure the Metrics process via `metricsBackend.env` (`METRICS_*` keys). `metricsBackend.redis.enabled` wires `METRICS_REDIS_URL` to this release's Bitnami Redis master unless overridden in `env`. See `science-platform/metrics/docs/environment-contracts.md` for required variables per environment.
