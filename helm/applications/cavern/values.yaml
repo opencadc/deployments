@@ -69,25 +69,15 @@ deployment:
         - "/home"
         - "/projects"
 
+      # Specific PermissionsAPI configuration when deployed to SKAO Regional Centres.  Not for general consumption.
       authorization:
         permissionsAPI:
           # @see https://permissions.srcnet.skao.int/api/openapi.json for the API specification.
-          # -- When true, SKAHA_PERMISSIONS_API_* vars are set from baseURL, authAPIBaseURL, type, route, name, version, and method. Required baseURL and authAPIBaseURL when enabled (Helm validates). The Skaha service enforces mutually exclusive authorization modes at runtime.
           enabled: false
           # -- Required when enabled is true (Helm validates).
-          baseURL: ""
+          baseURL: "https://permissions.srcnet.skao.int/api"
           # -- Base URL for the SRCNet Auth API used by the permissions client.
-          authAPIBaseURL: ""
-          # -- Type of the permissions API.
-          type: "route"
-          # -- Route of the permissions API.
-          route: ""
-          # -- Name of the permissions API.
-          name: "skaha"
-          # -- Version of the permissions API.
-          version: ""
-          # -- Method of the permissions API.
-          method: ""
+          authAPIBaseURL: "https://authn.srcnet.skao.int/api"
 
     # The /home and /projects folders will be automatically created if not present.
     filesystem:
