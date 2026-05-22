@@ -36,33 +36,21 @@ spec:
       {{- include "skaha.validatePlatformAccess" . }}
       {{ $userStorage := required "Missing .Values.deployment.skaha.sessions.userStorage configuration" .Values.deployment.skaha.sessions.userStorage }}
       {{- with $userStorage }}
-      {{ $userStorageAdmin := required "Missing .Values.deployment.skaha.sessions.userStorage.admin configuration" .admin }}
-      {{- with $userStorageAdmin }}
-      {{ $userStorageAdminAuth := required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth configuration" .auth }}
-      {{- with $userStorageAdminAuth }}
-      {{- if and .certificateSecret (or .apiKey .apiKeySecret) }}
-      {{- fail "Specify only one of .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret, apiKeySecret, or apiKey." }}
-      {{- else if and .apiKeySecret .apiKey }}
-      {{- fail "Specify only one of .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKeySecret and apiKey." }}
-      {{- else if .certificateSecret }}
-      {{- with .certificateSecret -}}
+      {{- with .admin }}
+      {{- $auth := .auth }}
+      {{- if $auth }}
+      {{- if or $auth.apiKey $auth.apiKeySecret }}
+      {{- fail "deployment.skaha.sessions.userStorage.admin.auth.apiKey and apiKeySecret are no longer supported." }}
+      {{- else if $auth.certificateSecret }}
+      {{- with $auth.certificateSecret }}
         - name: SKAHA_USER_STORAGE_ADMIN_CERTIFICATE
           valueFrom:
             secretKeyRef:
               name: {{ .name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret.name" }}
               key: {{ .key | default "cadcproxy.pem" }}
       {{- end }}
-      {{- else if .apiKeySecret }}
-        - name: SKAHA_USER_STORAGE_ADMIN_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ .apiKeySecret.name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKeySecret.name" }}
-              key: {{ .apiKeySecret.key | default "api-key" }}
-      {{- else if .apiKey }}
-        - name: SKAHA_USER_STORAGE_ADMIN_API_KEY
-          value: "{{ .apiKey | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.apiKey" }}"
-      {{- else }}
-      {{- fail "Specify one of .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret, apiKeySecret (recommended), or apiKey." }}
+      {{- else if gt (len (keys $auth)) 0 }}
+      {{- fail "deployment.skaha.sessions.userStorage.admin.auth may only contain certificateSecret; omit admin.auth entirely to authenticate user allocations with the requesting user's token." }}
       {{- end }}
       {{- end }}
       {{- end }}

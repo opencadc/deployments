@@ -273,18 +273,20 @@ deployment:
         #   nodeURIPrefix: "vos://skao.int~cavern"
         # nodeURIPrefix:
 
-        # Required.  These are the credentials and details to connect to the Cavern service to provide Administrative access to User Storage, namely creating new allocations.
-        admin:
-          # -- Authentication settings used for user-storage admin operations.
-          auth:
-            # Alternatively, you can specify a Kubernetes Secret that contains a PEM Client Certificate representing the User Storage Admin.
-            # Only one of certificateSecret, apiKeySecret, or apiKey may be set; Helm will fail otherwise.
-            # Default key is "cadcproxy.pem", but you can override it.
-            # Example:
-            #   certificateSecret:
-            #     name: "science-platform-user-storage-admin-certificate"
-            #     key: "certificate.pem"  # The key in the Secret that contains the PEM certificate
-            # certificateSecret:
+        # Optional.  Optionally supply admin credentials when creating User Storage allocations (new home dirs) requires a PEM client certificate
+        # distinct from users' Bearer tokens.
+        #
+        # If omitted, or if admin.auth is omitted or empty, Skaha uses the authenticated end user's Bearer token when performing user allocations.
+        #
+        # When admin.auth is set, configure certificateSecret — a Kubernetes Secret containing a PEM client certificate for User Storage Admin.
+        # Default Secret key name is "cadcproxy.pem" (override with certificateSecret.key).
+        # Example:
+        # admin:
+        #   auth:
+        #     certificateSecret:
+        #       name: "science-platform-user-storage-admin-certificate"
+        #       key: "certificate.pem"
+        admin: {}
 
       # The image pull policy for User Sessions (applies to ALL types).  This is the default, but can be overridden.  Defaults to Always.
       # @see https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
