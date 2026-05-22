@@ -277,22 +277,6 @@ deployment:
         admin:
           # -- Authentication settings used for user-storage admin operations.
           auth:
-            # Authenticate with an agreed API Key between Skaha and Cavern.  This is used to create new user home directories (allocations).
-            # Generate Key:
-            #   $ openssl rand -base64 32
-            #   $ jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I=
-            # Example:
-            #   apiKey: "jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I="  # Ensure this value is also used in the Cavern deployment's apiKeys object as "skaha:jMTZdM/qqZ0knXUXbiX8T4T0CyGnhqWdJS2tVLZta2I=".
-            # apiKey:
-
-            # Recommended for production: reference a Kubernetes Secret (create out-of-band) instead of plain apiKey in values.
-            # The key holds the raw API key string. Default data key name is "api-key".
-            # Example:
-            #   apiKeySecret:
-            #     name: science-platform-skaha-user-storage-admin-api-key
-            #     key: api-key
-            # apiKeySecret:
-
             # Alternatively, you can specify a Kubernetes Secret that contains a PEM Client Certificate representing the User Storage Admin.
             # Only one of certificateSecret, apiKeySecret, or apiKey may be set; Helm will fail otherwise.
             # Default key is "cadcproxy.pem", but you can override it.
