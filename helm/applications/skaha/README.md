@@ -62,7 +62,7 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.nodeLabelSelector | string | `nil` | Node label selector used when discovering schedulable worker nodes. |
 | deployment.skaha.sessions.priorityClass | object | `{"create":false,"description":"For high-priority user pods. Preempting.","globalDefault":false,"name":"uber-user-preempt-high","preemptionPolicy":"PreemptLowerPriority","value":2000}` | PriorityClass assigned to the Skaha API Pod. |
 | deployment.skaha.sessions.tolerations | list | `[]` | Tolerations applied to user session Pods. |
-| deployment.skaha.sessions.userStorage.admin.auth | object | `{}` | Optional. When omitted or empty, user allocations authenticate with the requesting user's Bearer token. When set, use `certificateSecret` (PEM in a Kubernetes Secret); `apiKey` / `apiKeySecret` are not supported. |
+| deployment.skaha.sessions.userStorage.admin.auth | object | `{}` | Optional. When omitted or empty, user allocations authenticate with the requesting user's Bearer token. With `certificateSecret`, the PEM is mounted under `/config/<key>` (projected volume) and `SKAHA_USER_STORAGE_ADMIN_CERTIFICATE_ENABLED` is set to `true`. `apiKey` / `apiKeySecret` are not supported. |
 | deployment.skaha.sessions.userStorage.homeDirectory | string | `"home"` | Relative path under topLevelDirectory for user home directories. |
 | deployment.skaha.sessions.userStorage.projectsDirectory | string | `"projects"` | Relative path under topLevelDirectory for shared projects storage. |
 | deployment.skaha.sessions.userStorage.topLevelDirectory | string | `"/cavern"` | Absolute mount path containing user home and projects directories. |

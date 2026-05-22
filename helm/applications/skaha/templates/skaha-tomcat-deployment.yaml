@@ -35,6 +35,8 @@ spec:
       - env:
       {{- include "skaha.validatePlatformAccess" . }}
       {{ $userStorage := required "Missing .Values.deployment.skaha.sessions.userStorage configuration" .Values.deployment.skaha.sessions.userStorage }}
+      {{- $adminCertSecretName := "" }}
+      {{- $adminCertSecretKey := "cadcproxy.pem" }}
       {{- with $userStorage }}
       {{- with .admin }}
       {{- $auth := .auth }}
@@ -43,16 +45,17 @@ spec:
       {{- fail "deployment.skaha.sessions.userStorage.admin.auth.apiKey and apiKeySecret are no longer supported." }}
       {{- else if $auth.certificateSecret }}
       {{- with $auth.certificateSecret }}
-        - name: SKAHA_USER_STORAGE_ADMIN_CERTIFICATE
-          valueFrom:
-            secretKeyRef:
-              name: {{ .name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret.name" }}
-              key: {{ .key | default "cadcproxy.pem" }}
+      {{- $adminCertSecretName = .name | required "Missing .Values.deployment.skaha.sessions.userStorage.admin.auth.certificateSecret.name" }}
+      {{- $adminCertSecretKey = .key | default "cadcproxy.pem" }}
       {{- end }}
       {{- else if gt (len (keys $auth)) 0 }}
       {{- fail "deployment.skaha.sessions.userStorage.admin.auth may only contain certificateSecret; omit admin.auth entirely to authenticate user allocations with the requesting user's token." }}
       {{- end }}
       {{- end }}
+      {{- end }}
+      {{- if $adminCertSecretName }}
+        - name: SKAHA_USER_STORAGE_ADMIN_CERTIFICATE_ENABLED
+          value: "true"
       {{- end }}
         - name: SKAHA_USER_STORAGE_SERVICE_URI
           value: "{{ required "Missing .Values.deployment.skaha.sessions.userStorage.serviceURI" .serviceURI }}"
@@ -237,9 +240,22 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "skaha.serviceAccountName" . }}
       volumes:
+      {{- if $adminCertSecretName }}
+      - name: config-volume
+        projected:
+          sources:
+          - configMap:
+              name: {{ .Release.Name }}-skaha-config
+          - secret:
+              name: {{ $adminCertSecretName }}
+              items:
+              - key: {{ $adminCertSecretKey }}
+                path: {{ $adminCertSecretKey }}
+      {{- else }}
       - name: config-volume
         configMap:
           name: {{ .Release.Name }}-skaha-config
+      {{- end }}
       - name: add-user-config
         configMap:
           name: {{ .Release.Name }}-add-user-config

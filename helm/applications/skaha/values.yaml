@@ -278,7 +278,8 @@ deployment:
         #
         # If omitted, or if admin.auth is omitted or empty, Skaha uses the authenticated end user's Bearer token when performing user allocations.
         #
-        # When admin.auth is set, configure certificateSecret — a Kubernetes Secret containing a PEM client certificate for User Storage Admin.
+        # When admin.auth is set, configure certificateSecret — a Kubernetes Secret holding a PEM client certificate for User Storage Admin.
+        # Its key is projected into `/config/<key>` together with chart ConfigMap data (projected volume) so Skaha can read the PEM from disk as a conventionally named file beside other `/config` content. The chart sets SKAHA_USER_STORAGE_ADMIN_CERTIFICATE_ENABLED=true on the Skaha deployment when this is configured.
         # Default Secret key name is "cadcproxy.pem" (override with certificateSecret.key).
         # Example:
         # admin:
