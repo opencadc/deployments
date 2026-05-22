@@ -5,9 +5,9 @@ replicaCount: 1
 
 # -- Container image (repository and tag).
 image:
-  repository: ghcr.io/canfar/science-portal
-  pullPolicy: IfNotPresent
-  tag: 58b6015a808146aecc21521230da1dbc1e893b5b
+  repository: images.opencadc.org/platform/science-portal
+  pullPolicy: Always
+  tag: 2.0.0-rc.3
 
 imagePullSecrets: []
 nameOverride: ""

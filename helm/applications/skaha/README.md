@@ -85,9 +85,9 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | metricsBackend.test.enabled | bool | `true` | Run helm test hook that retries /healthz until success (requires metricsBackend.enabled). |
 | metricsBackend.test.image | string | `"busybox:1.37.0"` | Image for the helm test hook Pod. |
 | metricsBackend.test.maxWaitSeconds | int | `180` | Maximum seconds to wait for Metrics /healthz (should exceed startupProbe worst case plus scheduling margin). |
-| podSecurityContext | object | `{}` |  |
 | rbac.clusterRole.create | bool | `false` |  |
 | rbac.create | bool | `true` |  |
+| podSecurityContext | object | `{}` | Optional container-level security context for the Skaha API container. |
 | redis.architecture | string | `"standalone"` | Redis deployment architecture. |
 | redis.auth.enabled | bool | `false` | Enable Redis authentication. |
 | redis.image.repository | string | `"redis"` | Redis image repository used by the bundled chart dependency. |
