@@ -30,6 +30,10 @@ spec:
       labels:
         run: {{ .Release.Name }}-tomcat
     spec:
+      {{- with .Values.deployment.cavern.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- with .Values.deployment.cavern.nodeAffinity }}
       affinity:
         nodeAffinity:
