@@ -91,17 +91,3 @@ Require either auth.existingSecret (recommended) or deprecated inline credential
 {{- fail "deployment.cavern.uws.db.auth: set existingSecret to a Kubernetes Secret in this namespace (recommended), or set non-empty username and password under auth (deprecated), or legacy db.username and db.password (deprecated; see NOTES.txt). Keys default to username/password (override with auth.secretKeys)." -}}
 {{- end -}}
 {{- end -}}
-
-{{/*
-Validate deployment.cavern.adminAPIKeys: each entry is either a string (deprecated) or a map with existingSecret and key.
-*/}}
-{{- define "cavern.validateAdminAPIKeys" -}}
-{{- range $clientName, $spec := .Values.deployment.cavern.adminAPIKeys }}
-{{- if kindIs "map" $spec }}
-{{- $_ := $spec.existingSecret | required (printf "deployment.cavern.adminAPIKeys[%s].existingSecret is required when using a secret reference" $clientName) }}
-{{- $_ := $spec.key | required (printf "deployment.cavern.adminAPIKeys[%s].key is required when using a secret reference (key field in the Kubernetes Secret)" $clientName) }}
-{{- else if not (kindIs "string" $spec) }}
-{{- fail (printf "deployment.cavern.adminAPIKeys[%s] must be a string (deprecated) or a map with existingSecret and key" $clientName) }}
-{{- end }}
-{{- end }}
-{{- end -}}

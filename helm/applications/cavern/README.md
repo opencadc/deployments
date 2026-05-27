@@ -16,7 +16,6 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| deployment.cavern.adminAPIKeys | object | `{}` |  |
 | deployment.cavern.allocations.defaultSizeGB | int | `10` |  |
 | deployment.cavern.allocations.parentFolders[0] | string | `"/home"` |  |
 | deployment.cavern.allocations.parentFolders[1] | string | `"/projects"` |  |

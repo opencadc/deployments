@@ -6,12 +6,6 @@
 {{- $userKey := $sk.username | default "username" -}}
 {{- $passKey := $sk.password | default "password" -}}
 {{- $uwsDbSecretName := include "cavern.uwsDbAuthSecretName" . -}}
-{{- $hasAdminSecretKeys := false }}
-{{- range $_, $spec := .Values.deployment.cavern.adminAPIKeys }}
-{{- if and (kindIs "map" $spec) $spec.existingSecret }}
-{{- $hasAdminSecretKeys = true }}
-{{- end }}
-{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -59,14 +53,6 @@ spec:
               PASS=$(tr -d '\n' < "/secret/${PASS_KEY}")
               printf '\norg.opencadc.cavern.uws.username=%s\n' "$USER" >> /config-dst/catalina.properties
               printf 'org.opencadc.cavern.uws.password=%s\n' "$PASS" >> /config-dst/catalina.properties
-{{ if $hasAdminSecretKeys }}
-{{- range $clientName, $spec := .Values.deployment.cavern.adminAPIKeys }}
-{{- if and (kindIs "map" $spec) $spec.existingSecret }}
-              API_KEY_VAL=$(tr -d '\n' < "/admin-api-keys/{{ $clientName }}")
-              printf '\norg.opencadc.cavern.adminAPIKey = %s:%s\n' '{{ $clientName }}' "$API_KEY_VAL" >> /config-dst/cavern.properties
-{{- end }}
-{{- end }}
-{{ end }}
           env:
             - name: USER_KEY
               value: {{ $userKey | quote }}
@@ -79,11 +65,6 @@ spec:
             - name: uws-db-secret
               mountPath: /secret
               readOnly: true
-{{ if $hasAdminSecretKeys }}
-            - name: admin-api-keys
-              mountPath: /admin-api-keys
-              readOnly: true
-{{ end }}
             - name: config-merged
               mountPath: /config-dst
           {{- with .Values.volumeInit.securityContext }}
@@ -104,8 +85,17 @@ spec:
         securityContext:
           {{- $tomcatSC := merge (dict "allowPrivilegeEscalation" false) (.Values.securityContext | default dict) }}
           {{- toYaml $tomcatSC | nindent 10 }}
-        {{- with .Values.deployment.cavern.extraEnv }}
         env:
+        {{- $cspkRoot := (.Values.deployment.cavern.cookieSignaturePublicKey | default dict) }}
+        {{- $cspkRef := ($cspkRoot.existingSecret | default dict) }}
+        {{- $cookiePubSecretName := trim (($cspkRef.name | default "") | toString) }}
+        {{- $cookiePubMountPath := "" }}
+        {{- if trim (($cspkRef.path | default "") | toString) }}
+        {{- $cookiePubMountPath = trim (($cspkRef.path | default "") | toString) }}
+        {{- else }}
+        {{- $cookiePubMountPath = "RsaSignaturePub.key" }}
+        {{- end }}
+        {{- with .Values.deployment.cavern.extraEnv }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
         ports:
@@ -147,26 +137,25 @@ spec:
       serviceAccountName: {{ . }}
       {{- end }}
       volumes:
-      - name: config-source
+      {{- if $cookiePubSecretName }}
+      - name: config-volume
+        projected:
+          sources:
+          - configMap:
+              name: {{ .Release.Name }}-config
+          - secret:
+              name: {{ $cookiePubSecretName }}
+              items:
+              - key: RsaSignaturePub.key
+                path: {{ $cookiePubMountPath }}
+      {{- else }}
+      - name: config-volume
         configMap:
           name: {{ .Release.Name }}-config
+      {{- end }}
       - name: uws-db-secret
         secret:
           secretName: {{ $uwsDbSecretName }}
-{{ if $hasAdminSecretKeys }}
-      - name: admin-api-keys
-        projected:
-          sources:
-{{- range $clientName, $spec := .Values.deployment.cavern.adminAPIKeys }}
-{{- if and (kindIs "map" $spec) $spec.existingSecret }}
-            - secret:
-                name: {{ $spec.existingSecret }}
-                items:
-                  - key: {{ $spec.key | quote }}
-                    path: {{ $clientName | quote }}
-{{- end }}
-{{- end }}
-{{ end }}
       - name: config-merged
         emptyDir: {}
       {{- if $storageSpecYAML }}

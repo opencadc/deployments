@@ -71,7 +71,6 @@ $ curl https://myhost.example.com/cavern/availability
 | `deployment.cavern.resourceID` | Resource ID (URI) for this Cavern service | `""` |
 | `deployment.cavern.oidcURI` | URI (or URL) for the OIDC service | `""` |
 | `deployment.cavern.gmsID` | Resource ID (URI) for the IVOA Group Management Service | `""` |
-| `deployment.cavern.adminAPIKeys` | API keys for client applications that can create new allocations | `{}` |
 | `deployment.cavern.allocations.defaultSizeGB` | Default size of user allocations in GB | `10` |
 | `deployment.cavern.allocations.parentFolders` | List of parent folders to create for user allocations.  Best to leave this alone. | `["/home", "/projects"]` |
 | `deployment.cavern.filesystem.dataDir` | Persistent data directory in the Cavern container | `""` |
@@ -107,38 +106,3 @@ $ curl https://myhost.example.com/cavern/availability
 | `secrets` | Secrets to create for the Cavern service, such as CA certificates | `{}` |
 | `service.cavern.extraPorts` | Extra ports to expose for the Cavern service | `[]` |
 | `storage.service.spec` | Storage specification for the Cavern service | `{}` |
-
-## User Allocations with special access
-
-### **Note**
-The `admin-api-key` has admin level permissions.  Rotate them regularly, or keep the values file safe.
-
-Cavern typically accepts user allocation requests from the Administrative user, but it can be configured to allow other users to request allocations as well. This is done by adding the user's API key to the `deployment.cavern.adminAPIKeys` configuration:
-```yaml
-deployment:
-  cavern:
-    adminAPIKeys:
-      skaha: "skahasecretkey1234567890"
-      prepareData: "preparedatasecretkey1234567890"
-```
-
-With this configuration, listed clients can request new user allocations using the `admin-api-key` challenge type in the `Authorization` header.  This `admin-api-key` represents a trusted client application to act on behalf of the Administrative user:
-```sh
-$ curl -Lv --header "Authorization: admin-api-key prepareData:preparedatasecretkey1234567890" --header "content-type: text/xml" --upload-file user-alloc-upload-jwt.xml https://example.org/cavern/nodes/home/new-user
-```
-
-Where the upload XML file would look like this:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<vos:node xmlns:vos="http://www.ivoa.net/xml/VOSpace/v2.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          uri="vos://exmaple.org~cavern/home/new-user" xsi:type="vos:ContainerNode">
-  <vos:properties>
-    <vos:property uri="ivo://opencadc.org/vospace/core#creatorJWT">JWT_TOKEN_REPLACE_ME</vos:property> <!-- JWT token of the new user -->
-    <vos:property uri="ivo://cadc.nrc.ca/vospace/core#inheritPermissions">true</vos:property>
-    <vos:property uri="ivo://ivoa.net/vospace/core#quota">524288000</vos:property>. <!-- 500MB quota example, adjust as needed -->
-  </vos:properties>
-  <vos:nodes />
-</vos:node>
-```
-Where `JWT_TOKEN_REPLACE_ME` is replaced with a valid JWT token of the new user (i.e. the one making the request to be added).  Don't forget to set the `vos:property:uri` to the correct value for your service and the path of the new user.

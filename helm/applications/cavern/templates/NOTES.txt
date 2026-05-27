@@ -14,20 +14,6 @@ The arc system must be able to identify the root owner from the username alone;
 that username may or may not be configured for this install.
 {{- end }}
 
-{{- $inlineAdminAPIKeys := false }}
-{{- range $_, $v := .Values.deployment.cavern.adminAPIKeys }}
-{{- if kindIs "string" $v }}
-{{- $inlineAdminAPIKeys = true }}
-{{- end }}
-{{- end }}
-{{- if $inlineAdminAPIKeys }}
-
-DEPRECATION WARNING: deployment.cavern.adminAPIKeys uses inline string token values.
-Those tokens are embedded in the rendered ConfigMap. Migrate each entry to the
-secret reference form (existingSecret + key) so tokens live only in Kubernetes
-Secrets. See values.yaml comments for adminAPIKeys.
-{{- end }}
-
 {{- $uwsAuth := .Values.deployment.cavern.uws.db.auth | default dict }}
 {{- $uwsDb := .Values.deployment.cavern.uws.db }}
 {{- $uwsInlineU := include "cavern.uwsDbInlineUsername" . | trim }}

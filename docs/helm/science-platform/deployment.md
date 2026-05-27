@@ -238,17 +238,6 @@ deployment:
         # The GID of the root owner.
         gid:
 
-    # The API keys object that will be permitted to perform administrative tasks.  These will be passed as authorization headers to the Cavern API.
-    # The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
-    # Format is <clientApplicationName>: <apiKeyToken>
-    # Example:
-    #   adminAPIKeys:
-    #     skaha: "token-value"
-    #     prepareData: "another-token-value"
-    adminAPIKeys:
-      prepareData: "32fjd93jfn93n3nFjsl293jfn93jf="
-      skaha: "88shdj3en1rBuMVSllWVuuz190HJpF="
-
     # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set uws.db.url, with uws.db.auth.existingSecret for credentials (not in Git).
     uws:
       db:
@@ -548,9 +537,6 @@ deployment:
             claimName: skaha-workload-cavern-pvc
         nodeURIPrefix: "vos://canfar.net~src~cavern"
         serviceURI: "ivo://canfar.net/src/cavern"
-        admin:
-          auth:
-            apiKey: "88shdj3en1rBuMVSllWVuuz190HJpF="
 
       # Set the YAML that will go into the "affinity.nodeAffinity" stanza for Pod Spec in User Sessions.  This can be used to enable GPU scheduling, for example,
       # or to control how and where User Session Pods are scheduled.  This can be potentially dangerous unless you know what you are doing.
