@@ -71,14 +71,17 @@ $ curl https://myhost.example.com/cavern/availability
 | `deployment.cavern.resourceID` | Resource ID (URI) for this Cavern service | `""` |
 | `deployment.cavern.oidcURI` | URI (or URL) for the OIDC service | `""` |
 | `deployment.cavern.gmsID` | Resource ID (URI) for the IVOA Group Management Service | `""` |
-| `deployment.cavern.allocations.defaultSizeGB` | Default size of user allocations in GB | `10` |
-| `deployment.cavern.allocations.parentFolders` | List of parent folders to create for user allocations.  Best to leave this alone. | `["/home", "/projects"]` |
+| `deployment.cavern.allocations` | User allocation settings mapped to `cavern.properties` (default quota, parent folders, authorization) | see `values.yaml` |
+| `deployment.cavern.allocations.defaultSizeGB` | Default allocation size in GiB when no Quota VOSpace property is set (`org.opencadc.cavern.defaultQuotaGB`) | `10` |
+| `deployment.cavern.allocations.parentFolders` | Top-level folders for user allocations; each becomes `org.opencadc.cavern.allocationParent`. Must align with Skaha user-storage paths. At least one required. | `["/home", "/projects"]` |
+| `deployment.cavern.allocations.authorization.groupURIs` | IVOA GMS group URIs allowed to self-allocate; each becomes `org.opencadc.cavern.selfAllocateGroup` | `[]` |
+| `deployment.cavern.allocations.authorization.permissionsAPI` | SRCNet Permissions API (`org.opencadc.cavern.papi.*`). Leave `{}` to omit; when set, `baseURL` and `authAPIBaseURL` are required | `{}` |
 | `deployment.cavern.filesystem.dataDir` | Persistent data directory in the Cavern container | `""` |
 | `deployment.cavern.filesystem.subPath` | Relative path to the node/file content that could be mounted in other containers | `""` |
 | `deployment.cavern.filesystem.rootOwner.username` | Username of the root owner of the filesystem data (parent of allocations) directory | `""` |
 | `deployment.cavern.filesystem.rootOwner.uid` | UID of the root owner of the filesystem data (parent of allocations) directory | `""` |
 | `deployment.cavern.filesystem.rootOwner.gid` | GID of the root owner of the filesystem data (parent of allocations) directory | `""` |
-| `deployment.cavern.filesystem.rootOwner.adminUsername` | Admin username for the filesystem data (parent of allocations) directory
+| `deployment.cavern.filesystem.rootOwner.adminUsername` | Admin username for the filesystem data (parent of allocations) directory | `""` |
 | `deployment.cavern.identityManagerClass` | Class name for the identity manager used by Cavern | `org.opencadc.auth.StandardIdentityManager` |
 | `deployment.cavern.uws.db.install` | Whether to deploy a local PostgreSQL database for UWS | `true` |
 | `deployment.cavern.uws.db.image` | PostgreSQL image to use for UWS | `postgres:15.12` |

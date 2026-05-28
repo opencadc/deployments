@@ -16,7 +16,7 @@ securityContext: {}
 deployment:
   hostname: example.org
   cavern:
-    image: images.opencadc.org/platform/cavern:0.9.4
+    image: images.opencadc.org/platform/cavern:0.10.0
     imagePullPolicy: IfNotPresent
 
     # Undocumented, but applies to local deployments.
@@ -63,11 +63,13 @@ deployment:
     # quotaPlugin: {NoQuotaPlugin | CephFSQuotaPlug}
 
     # User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.
+    # -- User allocation settings mapped to `cavern.properties` (default quota, parent folders, and authorization).
     allocations:
       # Required.  The default size, in GB, of an allocation.  This is used in the absence of the Quota VOSpace property.  Can be a floating point number.
       # Provided value is 10 (10 GiB) by default.
       # Example:
       #   defaultSizeGB: 25.5
+      # -- Default allocation size in GiB when no Quota VOSpace property is set (`org.opencadc.cavern.defaultQuotaGB`).
       defaultSizeGB: 10
 
       # The parent folders that will be used to create new allocations.  This is a list of folders that will be created if they do not exist.
@@ -77,24 +79,29 @@ deployment:
       #     - "/home"
       #     - "/projects"
       #     - "/data"
+      # -- Top-level folders under which user allocations are created; each entry becomes `org.opencadc.cavern.allocationParent`. Must match Skaha user-storage layout. At least one entry is required (Helm validates).
       parentFolders:
         - "/home"
         - "/projects"
 
       # Allocation authorization configuration.
+      # -- Authorization for who may create allocations (`authorization` block in `cavern.properties`).
       authorization:
-        # Specific GMS group configuration to allow users to self-allocate.  Undocumented for now, but applies to local deployments that pull from GMS.
+        # Specific GMS group configuration to allow users to self-allocate.  Applies to deployments that use GMS.
         # Example:
         #   groupURIs:
         #     - "ivo://example.org/gms?group1"
         #     - "ivo://example.org/gms?group2"
+        # -- IVOA GMS group URIs whose members may self-allocate; each URI becomes `org.opencadc.cavern.selfAllocateGroup`. Omit or leave empty to disable GMS self-allocation.
         groupURIs: []
 
         # Specific PermissionsAPI configuration when deployed to SKAO Regional Centres.  Not for general consumption.
+        # When set (non-empty object), both baseURL and authAPIBaseURL are required (Helm validates).
         # Example:
         #   permissionsAPI:
         #     baseURL: "https://permissions.srcnet.skao.int/api"
         #     authAPIBaseURL: "https://authn.srcnet.skao.int/api"
+        # -- SRCNet Permissions API settings (`org.opencadc.cavern.papi.*`). Leave as `{}` to omit. When present, `baseURL` and `authAPIBaseURL` are required.
         permissionsAPI: {}
 
     # The /home and /projects folders will be automatically created if not present.
