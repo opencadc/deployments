@@ -33,13 +33,6 @@
       "monorepo-tags": true,
       "extra-files": ["README.md"]
     },
-    "helm/applications/skaha": {
-      "package-name": "skaha",
-      "release-type": "helm",
-      "changelog-path": "CHANGELOG.md",
-      "monorepo-tags": true,
-      "extra-files": ["README.md"]
-    },
     "helm/applications/sshd": {
       "package-name": "sshd",
       "release-type": "helm",

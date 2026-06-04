@@ -28,7 +28,7 @@ def sample_paths_released() -> list[str]:
     Returns:
         List of sample Helm chart paths that were released.
     """
-    return ["helm/applications/skaha", "helm/common"]
+    return ["helm/applications/cavern", "helm/common"]
 
 
 @pytest.fixture
@@ -40,12 +40,12 @@ def sample_release_outputs() -> dict[str, str]:
 
     Notes:
         Release-please uses the path directly with '--' separator for fields,
-        e.g., 'helm/applications/skaha--version' not 'helm--applications--skaha--version'.
+        e.g., 'helm/applications/cavern--version' not 'helm--applications--cavern--version'.
     """
     return {
-        "helm/applications/skaha--version": "1.2.3",
-        "helm/applications/skaha--tag_name": "skaha-1.2.3",
-        "helm/applications/skaha--sha": "abc123def456",
+        "helm/applications/cavern--version": "1.2.3",
+        "helm/applications/cavern--tag_name": "cavern-1.2.3",
+        "helm/applications/cavern--sha": "abc123def456",
         "helm/common--version": "2.0.0",
         "helm/common--tag_name": "common-2.0.0",
         "helm/common--sha": "def456abc123",
@@ -65,12 +65,12 @@ def expected_matrix() -> list[dict[str, str]]:
     """
     return [
         {
-            "chart_name": "skaha",
-            "chart_path": "helm/applications/skaha",
+            "chart_name": "cavern",
+            "chart_path": "helm/applications/cavern",
             "chart_version": "1.2.3",
-            "tag_name": "skaha-1.2.3",
+            "tag_name": "cavern-1.2.3",
             "sha": "abc123def456",
-            "output_key": "helm/applications/skaha", #gitleaks:allow
+            "output_key": "helm/applications/cavern", #gitleaks:allow
         },
         {
             "chart_name": "common",
@@ -105,7 +105,7 @@ def test_build_release_matrix_with_direct_inputs(
     # Assert
     assert len(result) == 2
     assert result == expected_matrix
-    assert result[0]["chart_name"] == "skaha"
+    assert result[0]["chart_name"] == "cavern"
     assert result[1]["chart_name"] == "common"
 
 
@@ -147,16 +147,16 @@ def test_cli_build_command_with_arguments() -> None:
 
     Notes:
         Uses the actual release-please output format with path containing
-        forward slashes, e.g., 'helm/applications/skaha--version'.
+        forward slashes, e.g., 'helm/applications/cavern--version'.
     """
     # Arrange
     runner = CliRunner()
-    paths = '["helm/applications/skaha"]'
+    paths = '["helm/applications/cavern"]'
     outputs = json.dumps(
         {
-            "helm/applications/skaha--version": "1.0.0",
-            "helm/applications/skaha--tag_name": "skaha-1.0.0",
-            "helm/applications/skaha--sha": "abc123",
+            "helm/applications/cavern--version": "1.0.0",
+            "helm/applications/cavern--tag_name": "cavern-1.0.0",
+            "helm/applications/cavern--sha": "abc123",
         }
     )
 
@@ -176,9 +176,9 @@ def test_cli_build_command_with_arguments() -> None:
     # Assert
     assert result.exit_code == 0
     assert "Release matrix (1 releases):" in result.stdout
-    assert '"chart_name": "skaha"' in result.stdout
+    assert '"chart_name": "cavern"' in result.stdout
     assert '"chart_version": "1.0.0"' in result.stdout
-    assert '"tag_name": "skaha-1.0.0"' in result.stdout
+    assert '"tag_name": "cavern-1.0.0"' in result.stdout
 
 
 def test_cli_build_command_with_output_file(tmp_path: Path) -> None:

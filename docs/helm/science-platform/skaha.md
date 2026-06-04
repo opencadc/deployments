@@ -2,12 +2,17 @@
 
 The Skaha Helm chart facilitates the deployment of the Skaha application within a Kubernetes cluster. This chart is designed to streamline the installation and management of Skaha, ensuring a seamless integration into your Kubernetes environment.
 
+!!! note "Chart source"
+
+    The Skaha Helm chart is co-located with the Skaha service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) under [`helm/`](https://github.com/opencadc/science-platform/tree/main/helm). Install from the published chart `science-platform/skaha`. An archived copy of the former deployments-repo chart is under [`helm/applications/archived/skaha/`](https://github.com/opencadc/deployments/tree/main/helm/applications/archived/skaha) and is no longer released from this repository.
+
 ## Prerequisites
 Before deploying the Skaha Helm chart, ensure that the following conditions are met:
 
 - **Kubernetes Cluster**: A running Kubernetes cluster, version 1.29 or higher.
 - **Helm**: Helm package manager, version 3, installed on your machine. Refer to the [official Helm documentation](https://helm.sh/docs/) for installation instructions.
-- **Kueue**: Kueue is recommended to be installed in your cluster, as Skaha optionally integrates with Kueue for job queueing. Follow the [Kueue installation guide](https://kueue.sigs.k8s.io/docs/) to set it up.
+- **Traefik**: Required before Skaha install (`IngressRoute`, `Middleware`). See the [deployment guide](deployment.md#traefik-install).
+- **Kueue**: Recommended; install and configure per the [deployment guide](deployment.md#kueue-recommended) before Skaha if you use session queueing.
 
 ## Installation
 To deploy the Skaha application using the Helm chart, follow these steps:
@@ -144,4 +149,4 @@ This project is licensed under the MIT License. For more information, refer to t
 
 ## Values Reference
 
---8<-- "helm/applications/skaha/README.md"
+--8<-- "helm/applications/archived/skaha/README.md"

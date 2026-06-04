@@ -1,5 +1,9 @@
 # Base Helm Chart
 
+!!! warning "Obsolete for new deployments"
+
+    The `base` chart is no longer required for new Science Platform installs. Install [Traefik separately](deployment.md#traefik-install), create `skaha-system` / `skaha-workload` namespaces yourself, and use RBAC from the [Skaha](skaha.md) chart. **Existing clusters** may keep a `base` release unchanged.
+
 ## Install
 
 ### Dependencies
@@ -8,7 +12,7 @@ Kubernetes 1.29 and up are supported.
 
 ### From source
 
-The base install also installs the Traefik proxy, which is needed by the Ingress when the Science Platform services are installed.
+Historically, the base chart installed the Traefik proxy and core namespaces. New deployments should follow the [Deployment Guide](deployment.md#traefik-install) instead.
 
 ```sh
 $ git clone https://github.com/opencadc/science-platform.git

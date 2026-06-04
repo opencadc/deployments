@@ -11,7 +11,7 @@ provide the underlying storage for the Services and User Sessions.
 
 Installation depends on a working Kubernetes cluster version 1.23 or greater.
 
-The base install also installs the Traefik proxy, which is needed by the Ingress when the Science Platform services are installed.
+Traefik must be installed before platform services; see the [deployment guide](deployment.md#traefik-install).
 
 ```sh
 $ git clone https://github.com/opencadc/science-platform.git
