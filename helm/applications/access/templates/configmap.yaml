@@ -1,0 +1,75 @@
+{{- include "access.validateRsaSignaturePublicKey" . }}
+{{- $rk := .Values.rsaSignaturePublicKey | default dict }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "access.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+{{- if not $rk.existingSecret }}
+binaryData:
+  "RsaSignaturePub.key": {{ $rk.value | trim | b64enc | quote }}
+{{- end }}
+data:
+  cadc-registry.properties: |+
+    #
+    # local authority map
+    #
+    # <base standardID> = <authority>
+
+    ivo://ivoa.net/std/UMS#resetpass-0.1 = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/std/GMS#search-1.0 = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/std/GMS#search-0.1 = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/std/UMS#users-0.1 = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/std/UMS#users-1.0 = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/std/UMS#reqs-0.1 = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/std/UMS#reqs-1.0 = ivo://cadc.nrc.ca/gms
+    http://www.opencadc.org/std/UMS#login-1.0 = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/sso#OAuth = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/sso#OpenID = ivo://cadc.nrc.ca/gms
+    ivo://ivoa.net/sso#tls-with-password = ivo://cadc.nrc.ca/gms
+
+    {{ range .Values.registryURLs }}
+    ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ . }}
+    {{ end }}
+
+  cadc-log.properties: |+
+{{ with .Values.logging }}
+{{ with .userDistinguishedNames }}
+    {{- range $index, $element := . }}
+    user = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .usernames }}
+    {{- range $index, $element := . }}
+    username = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .groups }}
+    {{- range $index, $element := . }}
+    group = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .secret }}
+    secret = {{ . }}
+{{ end }}
+{{ end }}
+
+  catalina.properties: |-
+    tomcat.connector.scheme={{ include "access.tomcatConnectorScheme" . }}
+    tomcat.connector.proxyName={{ include "access.tomcatConnectorProxyName" . }}
+    tomcat.connector.proxyPort={{ include "access.tomcatConnectorProxyPort" . }}
+    ca.nrc.cadc.auth.PrincipalExtractor.enableClientCertHeader=true
+    ca.nrc.cadc.util.Log4jInit.messageOnly=true
+
+    # Will only work with the ACIdentityManager.
+    ca.nrc.cadc.auth.IdentityManager=ca.nrc.cadc.ac.ACIdentityManager
+
+  access.properties: |
+    # Used for cookies and authentication SSO Login.
+    SSO_SERVERS = {{ include "access.tomcatConnectorProxyName" . }} www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca www.canfar.net
+
+    # Used for GDPR acknowledgement.  Should match SSO_SERVERS.
+    COOKIE_DOMAINS = {{ include "access.tomcatConnectorProxyName" . }} www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca www.canfar.net
+
+    # Cookie lifetime in seconds. Default is ninety-eight percent of forty eight hours (47 hours)
+    SSO_TOKEN_LIFETIME_SECONDS = 169344

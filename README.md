@@ -19,8 +19,11 @@ This section is automatically generated. Do not edit manually.
 
 | Chart | Description |
 | --- | --- |
-| [base](helm/applications/base) | A Helm chart to install base components of the CANFAR Science Platform |
-| [science-portal](helm/applications/canfar-next/science-portal) | A Helm chart for Science Portal Next.js application |
+| [access](helm/applications/access) | A Helm chart for the Access web service, responsible for managing user cookie access CADC and CANFAR services and applications. |
+| [scienceportal](helm/applications/archived/science-portal) | A Helm chart to install the Science Portal UI |
+| [skaha](helm/applications/archived/skaha) | A Helm chart to install the Skaha web service of the CANFAR Science Platform |
+| [canfar-web-portal](helm/applications/canfar-web-portal) | A Helm chart for Kubernetes |
+| [canfar-web-root](helm/applications/canfar-web-root) | A Helm chart for Kubernetes |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
 | [posixmapper](helm/applications/posix-mapper) | A Helm chart to install the UID/GID POSIX Mapper |
 | [reg](helm/applications/reg) | IVOA Registry Service Helm Chart |
@@ -30,8 +33,6 @@ This section is automatically generated. Do not edit manually.
 | [search](helm/applications/sandbox/search) | A Helm chart for the Search User Interface browser application |
 | [stack](helm/applications/sandbox/stack) | A Helm chart for the SC2 Sandbox Stack |
 | [torkeep](helm/applications/sandbox/torkeep) | A CAOM-2 Metadata Repository Helm Chart |
-| [scienceportal](helm/applications/science-portal) | A Helm chart to install the Science Portal UI |
-| [skaha](helm/applications/skaha) | A Helm chart to install the Skaha web service of the CANFAR Science Platform |
 | [sshd](helm/applications/sshd) | An SSHD service with SSSD to get users from LDAP |
 | [storageui](helm/applications/storage-ui) | A Helm chart to install the User Storage UI |
 | [utils](helm/applications/utils) | A library Helm chart for common tasks |

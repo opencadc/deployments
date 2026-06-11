@@ -11,7 +11,7 @@ provide the underlying storage for the Services and User Sessions.
 
 Installation depends on a working Kubernetes cluster version 1.23 or greater.
 
-The base install also installs the Traefik proxy, which is needed by the Ingress when the Science Platform services are installed.
+Traefik must be installed before platform services; see the [deployment guide](deployment.md#traefik-install).
 
 ```sh
 $ git clone https://github.com/opencadc/science-platform.git
@@ -71,25 +71,28 @@ $ curl https://myhost.example.com/cavern/availability
 | `deployment.cavern.resourceID` | Resource ID (URI) for this Cavern service | `""` |
 | `deployment.cavern.oidcURI` | URI (or URL) for the OIDC service | `""` |
 | `deployment.cavern.gmsID` | Resource ID (URI) for the IVOA Group Management Service | `""` |
-| `deployment.cavern.adminAPIKeys` | API keys for client applications that can create new allocations | `{}` |
-| `deployment.cavern.allocations.defaultSizeGB` | Default size of user allocations in GB | `10` |
-| `deployment.cavern.allocations.parentFolders` | List of parent folders to create for user allocations.  Best to leave this alone. | `["/home", "/projects"]` |
+| `deployment.cavern.allocations` | User allocation settings mapped to `cavern.properties` (default quota, parent folders, authorization) | see `values.yaml` |
+| `deployment.cavern.allocations.defaultSizeGB` | Default allocation size in GiB when no Quota VOSpace property is set (`org.opencadc.cavern.defaultQuotaGB`) | `10` |
+| `deployment.cavern.allocations.parentFolders` | Top-level folders for user allocations; each becomes `org.opencadc.cavern.allocationParent`. Must align with Skaha user-storage paths. At least one required. | `["/home", "/projects"]` |
+| `deployment.cavern.allocations.authorization.groupURIs` | IVOA GMS group URIs allowed to self-allocate; each becomes `org.opencadc.cavern.selfAllocateGroup` | `[]` |
+| `deployment.cavern.allocations.authorization.permissionsAPI` | SRCNet Permissions API (`org.opencadc.cavern.papi.*`). Leave `{}` to omit; when set, `baseURL` and `authAPIBaseURL` are required | `{}` |
 | `deployment.cavern.filesystem.dataDir` | Persistent data directory in the Cavern container | `""` |
 | `deployment.cavern.filesystem.subPath` | Relative path to the node/file content that could be mounted in other containers | `""` |
 | `deployment.cavern.filesystem.rootOwner.username` | Username of the root owner of the filesystem data (parent of allocations) directory | `""` |
 | `deployment.cavern.filesystem.rootOwner.uid` | UID of the root owner of the filesystem data (parent of allocations) directory | `""` |
 | `deployment.cavern.filesystem.rootOwner.gid` | GID of the root owner of the filesystem data (parent of allocations) directory | `""` |
-| `deployment.cavern.filesystem.rootOwner.adminUsername` | Admin username for the filesystem data (parent of allocations) directory
+| `deployment.cavern.filesystem.rootOwner.adminUsername` | Admin username for the filesystem data (parent of allocations) directory | `""` |
 | `deployment.cavern.identityManagerClass` | Class name for the identity manager used by Cavern | `org.opencadc.auth.StandardIdentityManager` |
 | `deployment.cavern.uws.db.install` | Whether to deploy a local PostgreSQL database for UWS | `true` |
 | `deployment.cavern.uws.db.image` | PostgreSQL image to use for UWS | `postgres:15.12` |
 | `deployment.cavern.uws.db.runUID` | UID for the PostgreSQL user in the UWS database | `999` |
 | `deployment.cavern.uws.db.database` | Name of the UWS database | `uws` |
 | `deployment.cavern.uws.db.url` | JDBC URL for the UWS database.  Use instead of `database`. | `jdbc:postgresql://cavern-uws-db:5432/uws` |
-| `deployment.cavern.uws.db.username` | Username for the UWS database | `uwsuser` |
-| `deployment.cavern.uws.db.password` | Password for the UWS database | `uwspwd` |
+| `deployment.cavern.uws.db.auth.existingSecret` | Kubernetes `Secret` name (same namespace) with UWS DB username/password; not committed to Git | `""` |
+| `deployment.cavern.uws.db.auth.secretKeys` | Keys in that Secret for username and password (defaults `username`, `password`) | see `values.yaml` |
 | `deployment.cavern.uws.db.schema` | Schema name for the UWS database | `uws` |
 | `deployment.cavern.uws.db.maxActive` | Maximum number of active connections to the UWS database | `2` |
+| `volumeInit` | Init container image used to merge UWS credentials into `catalina.properties` | BusyBox (see `values.yaml`) |
 | `deployment.applicationName` | Optional rename of the application from the default "cavern" | `cavern` |
 | `deployment.endpoint` | Endpoint to serve the Cavern service from | `/cavern` |
 | `deployment.extraEnv` | Extra environment variables to set in the Cavern container | `[]` |
@@ -106,38 +109,3 @@ $ curl https://myhost.example.com/cavern/availability
 | `secrets` | Secrets to create for the Cavern service, such as CA certificates | `{}` |
 | `service.cavern.extraPorts` | Extra ports to expose for the Cavern service | `[]` |
 | `storage.service.spec` | Storage specification for the Cavern service | `{}` |
-
-## User Allocations with special access
-
-### **Note**
-The `admin-api-key` has admin level permissions.  Rotate them regularly, or keep the values file safe.
-
-Cavern typically accepts user allocation requests from the Administrative user, but it can be configured to allow other users to request allocations as well. This is done by adding the user's API key to the `deployment.cavern.adminAPIKeys` configuration:
-```yaml
-deployment:
-  cavern:
-    adminAPIKeys:
-      skaha: "skahasecretkey1234567890"
-      prepareData: "preparedatasecretkey1234567890"
-```
-
-With this configuration, listed clients can request new user allocations using the `admin-api-key` challenge type in the `Authorization` header.  This `admin-api-key` represents a trusted client application to act on behalf of the Administrative user:
-```sh
-$ curl -Lv --header "Authorization: admin-api-key prepareData:preparedatasecretkey1234567890" --header "content-type: text/xml" --upload-file user-alloc-upload-jwt.xml https://example.org/cavern/nodes/home/new-user
-```
-
-Where the upload XML file would look like this:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<vos:node xmlns:vos="http://www.ivoa.net/xml/VOSpace/v2.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          uri="vos://exmaple.org~cavern/home/new-user" xsi:type="vos:ContainerNode">
-  <vos:properties>
-    <vos:property uri="ivo://opencadc.org/vospace/core#creatorJWT">JWT_TOKEN_REPLACE_ME</vos:property> <!-- JWT token of the new user -->
-    <vos:property uri="ivo://cadc.nrc.ca/vospace/core#inheritPermissions">true</vos:property>
-    <vos:property uri="ivo://ivoa.net/vospace/core#quota">524288000</vos:property>. <!-- 500MB quota example, adjust as needed -->
-  </vos:properties>
-  <vos:nodes />
-</vos:node>
-```
-Where `JWT_TOKEN_REPLACE_ME` is replaced with a valid JWT token of the new user (i.e. the one making the request to be added).  Don't forget to set the `vos:property:uri` to the correct value for your service and the path of the new user.

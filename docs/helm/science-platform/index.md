@@ -16,11 +16,11 @@ To deploy the CANFAR Science Platform using Helm charts, follow [the deployment 
 <h4>Discover the configurable values for each Helm Chart</h4>
 <div class="grid cards" markdown>
 
-- [:material-cloud-outline: __Base__ <small>to install core objects like an Ingress Controller and Service Accounts</small>](base.md)
+- [:material-cloud-outline: __Base__ <small>obsolete; Traefik and RBAC moved to Traefik + Skaha charts</small>](base.md)
 - [:material-identifier: __POSIX Mapper__ <small>for UID and GID mapping</small>](posix-mapper.md)
 - [:material-file-cloud-outline: __Cavern__ <small>for IVOA VOSpace storage</small>](cavern.md)
 - [:material-network-outline: __Skaha__ <small>to manage user sessions and workloads</small>](skaha.md)
-- [:material-monitor-dashboard: __Science Portal__ <small>interactive user sessions</small>](science-portal.md)
+- [:material-monitor-dashboard: __Science Portal__ <small>Next.js session dashboard (legacy Tomcat chart documented)</small>](science-portal.md)
 - [:material-monitor-arrow-down: __Storage UI__ <small>manage Cavern storage from the Browser</small>](storage-ui.md)
 
 </div>

@@ -4,79 +4,141 @@
 
 ## Dependencies
 
-- An existing Kubernetes cluster.
-- An [IVOA Service Registry deployment](https://github.com/opencadc/reg/tree/master/reg)
+Install and configure these **before** the platform application charts.
+
+- A Kubernetes cluster (1.29+).
+- An [IVOA Service Registry](https://github.com/opencadc/reg/tree/master/reg) deployment.
+- **Traefik** v2.11 or newer with the Kubernetes CRD provider enabled. Skaha user sessions and several platform charts rely on Traefik `IngressRoute` and `Middleware` objects (`traefik.io/v1alpha1`). Standard `Ingress` resources (Cavern, POSIX Mapper, Science Portal, and others) also expect an ingress class of `traefik`. See [Traefik install](#traefik-install) below.
+- **Namespaces** `skaha-system` (APIs and UIs) and `skaha-workload` (user session pods). Create them yourself, or let the Skaha chart create `skaha-workload` when `deployment.skaha.sessions.namespace.create` is `true`.
+- **Shared storage** PersistentVolumes and PersistentVolumeClaims in both namespaces (see [Persistent Volumes and Persistent Volume Claims](#persistent-volumes-and-persistent-volume-claims)).
+
+### Kueue (recommended)
+
+[Kueue](https://kueue.sigs.k8s.io/) is a Kubernetes-native job queue for user sessions. It is optional but strongly recommended for production.
+
+See https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version for upstream details.
+
+#### Install Kueue
+
+```bash
+helm -n kueue-system install kueue oci://registry.k8s.io/kueue/charts/kueue --create-namespace
+```
+
+#### ClusterQueue
+
+A `ClusterQueue` is a cluster-wide queue template. An example is in [Skaha Example Kueue ClusterQueue](https://github.com/opencadc/science-platform/blob/main/helm/kueue/examples/clusterQueue.config.yaml). Adjust for your cluster, then apply:
+
+```bash
+git clone https://github.com/opencadc/science-platform.git
+cp science-platform/helm/kueue/examples/clusterQueue.config.yaml ./
+# Edit as needed.
+kubectl apply -f ./clusterQueue.config.yaml
+```
+
+#### LocalQueue
+
+A `LocalQueue` is namespace-scoped and must exist in the workload namespace (`skaha-workload` by default). See [Skaha Example Kueue LocalQueue](https://github.com/opencadc/science-platform/blob/main/helm/kueue/examples/localQueue.config.yaml).
+
+```bash
+git clone https://github.com/opencadc/science-platform.git
+cp science-platform/helm/kueue/examples/localQueue.config.yaml ./
+# Edit as needed.
+kubectl apply -f ./localQueue.config.yaml
+```
+
+#### Kueue RBAC
+
+Additional RBAC lets Skaha and session workloads interact with Kueue. This is separate from the RBAC the [Skaha](skaha.md) chart creates for session management (Jobs, Pods, `IngressRoute`, and `Middleware` in `skaha-workload`).
+
+Example manifests: [Skaha Example Kueue RBAC](https://github.com/opencadc/science-platform/blob/main/helm/kueue/examples/rbac.yaml).
+
+```bash
+git clone https://github.com/opencadc/science-platform.git
+cp science-platform/helm/kueue/examples/rbac.yaml ./
+kubectl apply -f ./rbac.yaml
+```
+
+### Traefik install
+
+Traefik must be running **before** you install Skaha. The Skaha chart renders `IngressRoute` and `Middleware` resources for interactive sessions (notebooks, CARTA, desktops, and similar). Platform `Ingress` objects use `ingressClassName: traefik`.
+
+Use Traefik **v2.11.0** or newer. The charts use API group `traefik.io` (not the older `traefik.containo.us` group).
+
+```bash
+helm repo add traefik https://traefik.github.io/charts
+helm repo update
+
+helm upgrade --install traefik traefik/traefik \
+  -n traefik --create-namespace \
+  --set providers.kubernetesCRD.enabled=true \
+  --set providers.kubernetesCRD.allowCrossNamespace=true \
+  --set providers.kubernetesIngress.enabled=true \
+  --set providers.kubernetesIngress.ingressClass=traefik \
+  --set ingressClass.enabled=true \
+  --set ingressClass.isDefaultClass=false \
+  --set ingressClass.name=traefik
+```
+
+!!! tip "TLS termination"
+
+    For HTTPS with your own certificate, create a TLS Secret in the `traefik` namespace and configure Traefik’s default certificate or per-route TLS. The obsolete [Base](base.md) chart documented this pattern under `secrets.default-certificate` and `traefik.tlsStore`; the same approach applies when Traefik is installed standalone.
+
+Verify the controller is ready:
+
+```bash
+kubectl -n traefik get pods
+kubectl get ingressclass traefik
+```
+
+## Base chart (obsolete)
+
+The [`base`](base.md) Helm chart (`science-platform/base`) is **obsolete for new deployments**. It previously bundled:
+
+- Traefik installation
+- `skaha-system` / `skaha-workload` namespace creation
+- RBAC for the Skaha service account
+
+**New installs** should use [Traefik install](#traefik-install), create namespaces explicitly (or via Skaha values), and rely on RBAC from the [Skaha](skaha.md) chart (`rbac.create`, enabled by default).
+
+**Existing deployments** may keep the `base` release to avoid churn. If you still use it, only the Traefik and namespace behaviour above is relevant; do not install `base` again on greenfield clusters.
+
+```bash
+# Legacy only — not required for new Science Platform installs
+helm upgrade --install -n traefik --create-namespace \
+  --values my-base-local-values-file.yaml base science-platform/base
+```
 
 ## Quick Start
+
+After [Traefik](#traefik-install), namespaces, storage, and optional Kueue are in place:
 
 ```bash
 helm repo add science-platform https://images.opencadc.org/chartrepo/platform
 helm repo add science-platform-client https://images.opencadc.org/chartrepo/client
 helm repo update
 
-helm upgrade --install -n traefik --create-namespace --values my-base-local-values-file.yaml base science-platform/base
-helm upgrade --install -n skaha-system --values my-posix-mapper-local-values-file.yaml posix-mapper science-platform/posixmapper
+helm upgrade --install -n skaha-system --create-namespace --values my-posix-mapper-local-values-file.yaml posix-mapper science-platform/posixmapper
 helm upgrade --install -n skaha-system --values my-cavern-local-values-file.yaml cavern science-platform/cavern
 helm upgrade --install -n skaha-system --values my-skaha-local-values-file.yaml skaha science-platform/skaha
-helm upgrade --install -n skaha-system --values my-scienceportal-local-values-file.yaml science-portal science-platform/scienceportal
+helm upgrade --install -n skaha-system --values my-science-portal-local-values-file.yaml science-portal science-platform/science-portal
 helm upgrade --install -n skaha-system --values my-storage-ui-local-values-file.yaml storage-ui science-platform-client/storageui
 ```
 
-### Base install
-
-The [Base](base) install will create ServiceAccount, Role, Namespace, and RBAC objects needed to deploy the Skaha service, as such it requires cluster-admin privileges.
-
-
-!!! important "Important"
-
-    :vertical_traffic_light: :warning:
-
-    The `base` chart itself is optional, but the objects it creates are required for the other services to operate correctly.  If you have already created the necessary Namespaces and RBAC objects, or if
-    they have been created for you by your Cluster Administrator, you can skip this step.
-
-
-Create a `my-base-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/base/values.yaml).  Mainly the
-Traefik Default Server certificate (optional if needed):
-
-`my-base-local-values-file.yaml`
-```yaml
-secrets:
-    default-certificate:
-        tls.crt: <base64 encoded server certificate>
-        tls.key: <base64 encoded server key>
-
-# Settings passed to Traefik.  The install flag is used by Helm to proceed to install Traefik or not.  If false, ensure v2.11.0 is at minimum installed.
-traefik:
-  install: true
-  tlsStore:
-    default:
-      defaultCertificate:
-        # See default-certificate secret(s) above
-        secretName: default-certificate
-```
-
-```bash
-helm upgrade --install -n traefik --create-namespace --values my-base-local-values-file.yaml base science-platform/base
-
-NAME: base
-LAST DEPLOYED: Thu Nov 11 07:28:45 2025
-NAMESPACE: traefik
-STATUS: deployed
-REVISION: 4
-```
-
-### Persistent Volumes and Persistent Volume Claims
-
-!!! important "Important"
-
-    The `base` Helm Chart **must** be installed first as it creates the necessary Namespaces for the Persistent Volume Claims!
+## Persistent Volumes and Persistent Volume Claims
 
 There are two (2) Persistent Volume Claims that are used in the system, due to the fact that there are two (2) Namespaces (`skaha-system` and `skaha-workload`).  These PVCs, while
 having potentially different configurations, **must** point to the same storage.  For example, if two `hostPath` PVCs are created, the `hostPath.path` **must** point to the same
 folder in order to have shared content between the Cavern Service (`cavern`) and the User Sessions (Notebooks, CARTA, etc.).
 
+Create the `skaha-system` and `skaha-workload` namespaces if they do not exist yet:
+
+```bash
+kubectl create namespace skaha-system
+kubectl create namespace skaha-workload
+```
+
 It is expected that the deployer, or an Administrator, will create the necessary Persistent Volumes (if needed), and the required Persistent Volume Claims at
-this point.  There are sample [Local Storage](https://kubernetes.io/docs/concepts/storage/volumes/#local) [Persistent Volume examples](../../../helm/applications/base/volumes) in the `base/volumes` folder.
+this point. Sample [local PersistentVolume manifests](https://github.com/opencadc/science-platform/tree/master/deployment/helm/base/volumes) are in the upstream `base/volumes` folder (historical reference from the obsolete base chart).
 
 Two (2) Persistent Volume Claims are required.  While both point to the same underlying storage, they are in different Namespaces.  This leads to somewhat duplicated effort, but it is necessary to ensure that both the `skaha-system` and `skaha-workload` namespaces have access to the required storage resources.
 See this [short explanation](https://youtu.be/NSO0HioWLiI) for more information.
@@ -238,23 +300,14 @@ deployment:
         # The GID of the root owner.
         gid:
 
-    # The API keys object that will be permitted to perform administrative tasks.  These will be passed as authorization headers to the Cavern API.
-    # The token values will be used by client applications, and each client matching a clientApplicationName should be configured with the matching token.
-    # Format is <clientApplicationName>: <apiKeyToken>
-    # Example:
-    #   adminAPIKeys:
-    #     skaha: "token-value"
-    #     prepareData: "another-token-value"
-    adminAPIKeys:
-      prepareData: "32fjd93jfn93n3nFjsl293jfn93jf="
-      skaha: "88shdj3en1rBuMVSllWVuuz190HJpF="
-
-    # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set the uws.db.url property, with authentication.
+    # Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set uws.db.url, with uws.db.auth.existingSecret for credentials (not in Git).
     uws:
       db:
         install: true
         schema: uws
         maxActive: 2
+        auth:
+          existingSecret: cavern-uws-db
 
     # Optional rename of the application from the default "cavern"
     # applicationName: "cavern"
@@ -355,62 +408,13 @@ storage:
       #   claimName: skaha-pvc
 ```
 
-### Kueue install
-
-Kueue is a Kubernetes-native job queuing and scheduling system that enhances the management of workloads in a Kubernetes cluster. It provides advanced features for job scheduling, resource management, and workload prioritization,
-making it particularly useful for environments where efficient resource utilization and job handling are critical.
-Kueue is optional, but highly recommended for production deployments.
-
-See https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version for details.
-
-#### Helm
-
-Install CRDs and the various components:
-```bash
-helm -n kueue-system install kueue oci://registry.k8s.io/kueue/charts/kueue --create-namespace
-```
-
-#### ClusterQueue
-
-A `ClusterQueue` is a global resource in Kueue that defines a set of resources and policies for managing workloads across the entire Kubernetes cluster. It serves as a template for creating and managing `LocalQueues`, which are specific to namespaces.
-
-An example `ClusterQueue` has been added to the [Skaha Example Kueue ClusterQueue](../skaha/kueue/examples/clusterQueue.config.yaml) file.  Adjust as needed.
-
-Create the `ClusterQueue`, with the associated `ResourceFlavor` and `WorkloadPriorityClass` objects:
-```bash
-cp ../skaha/kueue/examples/clusterQueue.config.yaml ./
-# Edit as needed.
-
-kubectl apply -f ./clusterQueue.config.yaml
-```
-
-#### LocalQueue
-A `LocalQueue` is a namespace-specific resource in Kueue that allows for the management of workloads within a particular Kubernetes namespace. It provides a way to define how jobs are queued, prioritized, and scheduled based on the policies set in the associated `ClusterQueue`.
-
-An example `LocalQueue` has been added to the [Skaha Example Kueue LocalQueue](../skaha/kueue/examples/localQueue.config.yaml) file.  Adjust as needed, but it needs to exist in the workload namespace (`skaha-workload` by default).
-
-Create the `LocalQueue` in the `skaha-workload` namespace:
-```bash
-cp ../skaha/kueue/examples/localQueue.config.yaml ./
-# Edit as needed.
-
-kubectl apply -f ./localQueue.config.yaml
-```
-
-#### RBAC
-The Science Platform (`skaha`) requires certain RBAC permissions to operate correctly within the Kubernetes cluster. These permissions allow Kueue to manage resources, schedule jobs, and interact with other components in the cluster.
-
-An example `RBAC` configuration has been added to the [Skaha Example Kueue RBAC](../skaha/kueue/examples/rbac.yaml) file.  Adjust as needed.
-The example files contains rules to allow both the `skaha` system to query for the existence of any configured LocalQueues to ensure integrity, as well
-as permitting Jobs to be scheduled into it from the Workload Namespace.
-
-Create the `RBAC` objects in the `skaha-system` namespace:
-```bash
-cp ../skaha/kueue/examples/rbac.yaml ./
-kubectl apply -f ./rbac.yaml
-```
-
 ### Skaha install
+
+Install Skaha **after** Traefik, POSIX Mapper, and Cavern. The chart creates the Skaha service account RBAC (Jobs, Pods, `IngressRoute`, `Middleware` in the workload namespace, and related permissions) when `rbac.create` is `true` (default). Optional Kueue integration RBAC is configured under `deployment.skaha.sessions.kueue.rbac` or via the [Kueue RBAC](#kueue-rbac) manifests above.
+
+!!! note "Chart source"
+
+    The Skaha Helm chart lives alongside the service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) (`helm/`). Install from the published chart `science-platform/skaha`, or use that directory when developing the chart.
 
 The Skaha service will manage User Sessions.  It relies on the POSIX Mapper being deployed, and available to be found
 via the IVOA Registry:
@@ -423,7 +427,7 @@ ivo://example.org/posix-mapper = https://example.host.com/posix-mapper/capabilit
 ...
 ```
 
-Create a `my-skaha-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/skaha/values.yaml).
+Create a `my-skaha-local-values-file.yaml` file to override Values from the main [template `values.yaml`](https://github.com/opencadc/science-platform/blob/main/helm/values.yaml) in `opencadc/science-platform` (see also the [Skaha](skaha.md) chart page).
 
 `my-skaha-local-values-file.yaml`
 ```yaml
@@ -447,10 +451,6 @@ deployment:
 
     # Space delimited list of allowed Image Registry hosts.  These hosts should match the hosts in the User Session images.
     registryHosts: "images.canfar.net"
-
-    # The IVOA GMS Group URI to verify users against for permission to use the Science Platform.
-    # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
-    usersGroup: "ivo://example.org/gms?skaha-platform-users"
 
     # The IVOA GMS Group URI to verify images without contacting Harbor.
     # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
@@ -508,6 +508,21 @@ deployment:
       minEphemeralStorage: "20Gi"   # The initial requested amount of ephemeral (local) storage.  Does NOT apply to Desktop sessions.
       maxEphemeralStorage: "200Gi"  # The maximum amount of ephemeral (local) storage to allow a Session to extend to.  Does NOT apply to Desktop sessions.
 
+      # Platform access — prefer deployment.skaha.sessions.authorization; deployment.skaha.usersGroup is deprecated when group.enabled / permissionsAPI.enabled are unset.
+      # Deployments receive SKAHA_SESSIONS_AUTHORIZATION_GROUP_ENABLED and SKAHA_SESSIONS_AUTHORIZATION_PERMISSIONS_API_ENABLED plus mode-specific env vars.
+      # See https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2
+      authorization:
+        group:
+          enabled: true
+          uri: "ivo://example.org/gms?skaha-platform-users"
+      # Alternative (Permissions API instead of GMS group):
+      # authorization:
+      #   permissionsAPI:
+      #     enabled: true
+      #     baseURL: "https://permissions.example.org/api"
+      #     type: "route"
+      #     name: "skaha"
+
       # Optionally setup a separate host for User Sessions for Skaha to redirect to.  The HTTPS scheme is assumed.  Defaults to the Skaha hostname (.Values.deployment.hostname).
       # Example:
       #   hostname: myhost.example.org
@@ -530,12 +545,11 @@ deployment:
       nodeLabelSelector:
 
       userStorage:
-        persistentVolumeClaimName: skaha-workload-cavern-pvc
+        spec:
+          persistentVolumeClaim:
+            claimName: skaha-workload-cavern-pvc
         nodeURIPrefix: "vos://canfar.net~src~cavern"
         serviceURI: "ivo://canfar.net/src/cavern"
-        admin:
-          auth:
-            apiKey: "88shdj3en1rBuMVSllWVuuz190HJpF="
 
       # Set the YAML that will go into the "affinity.nodeAffinity" stanza for Pod Spec in User Sessions.  This can be used to enable GPU scheduling, for example,
       # or to control how and where User Session Pods are scheduled.  This can be potentially dangerous unless you know what you are doing.
@@ -560,6 +574,25 @@ deployment:
           # Ensure this name matches whatever was created as the LocalQueue in the workload namespace.
           queueName: canfar-science-platform-local-queue
           priorityClass: low
+
+      limitRange:
+        create: true
+        enabled: true
+        rbac:
+          create: false
+        spec:
+          max:  # maximum allowed requested
+            memory: "192Gi"
+            cpu: "16"
+            nvidia.com/gpu: "1"
+          default:  # actually refers to default limits
+            memory: "24Gi"
+            cpu: "4"
+            nvidia.com/gpu: "0"
+          defaultRequest:  # default requests
+            memory: "4Gi"
+            cpu: "1"
+            nvidia.com/gpu: "0"
 
     # Optionally mount a custom CA certificate as an extra mount in Skaha (*not* user sessions)
     # extraVolumeMounts:
@@ -600,27 +633,6 @@ deployment:
   #
   # extraHosts: []
 
-# Enable experimental feature flags
-experimentalFeatures:
-  enabled: true
-  sessionLimitRange:
-    enabled: true
-    rbac:
-      create: false
-    limitSpec:
-      max:  # maximum allowed requested
-        memory: "192Gi"
-        cpu: "16"
-        nvidia.com/gpu: "1"
-      default:  # actually refers to default limits
-        memory: "24Gi"
-        cpu: "4"
-        nvidia.com/gpu: "0"
-      defaultRequest:  # default requests
-        memory: "4Gi"
-        cpu: "1"
-        nvidia.com/gpu: "0"
-
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
 #   skaha-cacert-secret:
@@ -648,124 +660,172 @@ curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com
 curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" -d "ram=1" -d "cores=1" -d "image=images.canfar.net/canucs/canucs:1.2.5" -d "name=myjupyternotebook" "https://example.host.com/skaha/v1/session"
 ```
 
-### Science Portal User Interface install
+### Science Portal (Next.js)
 
-The Science Portal service will manage User Sessions.  It relies on the Skaha service being deployed, and available to be found
-via the IVOA Registry:
+The Science Portal is the browser UI for launching and monitoring Skaha sessions. Install it **after** Skaha is running and registered in the IVOA Registry.
 
 `/reg/resource-caps`
 ```
 ...
-# Ensure the hostname matches the deployment hostname.
 ivo://example.org/skaha = https://example.host.com/skaha/capabilities
 ...
 ```
 
-Create a `my-science-portal-local-values-file.yaml` file to override Values from the main [template `values.yaml` file](https://github.com/opencadc/deployments/tree/main/helm/applications/science-portal/values.yaml).
+#### New stack vs legacy (plain language)
+
+| Topic | **science-portal** chart (`science-platform/science-portal`) | **science-portal legacy** chart (`science-platform/scienceportal`) |
+|-------|----------------------------------------------------------------|----------------------------------------------------------------------|
+| What users see | A modern single-page style site: pages load quickly and update in place (React + Next.js). | A classic Java web application: each click often reloads a server-built page (JSP on Tomcat). |
+| How it runs in Kubernetes | A lightweight Node.js container (port 3000). | A Java/Tomcat container (port 8080) plus a bundled Redis chart for session storage. |
+| How you configure it | `app` settings in values (API URLs, OIDC, NextAuth) — see [chart source](https://github.com/opencadc/science-portal/tree/main/helm). | `deployment.sciencePortal` and Tomcat property files — see [archived values](https://github.com/opencadc/deployments/tree/main/helm/applications/archived/science-portal/values.yaml). |
+| When to use it | **Default for new deployments.** | Existing sites still on the 1.x Tomcat image; migrate when ready. |
+
+!!! note "Chart source"
+
+    The Science Portal Helm chart lives in [`opencadc/science-portal`](https://github.com/opencadc/science-portal) under [`helm/`](https://github.com/opencadc/science-portal/tree/main/helm). The same chart is published in the `science-platform` Helm repository as **`science-portal`** (note the hyphen). The older chart name in that repository is **`scienceportal`** (no hyphen).
+
+#### Before you install
+
+1. **Skaha** and **Cavern** must be deployed and reachable at the SRC API URLs you set in `app.api.srcSkaha` / `app.api.srcCavern` (and the matching `app.public.api` entries).
+2. **OIDC image**: Use a container image built for OIDC (`NEXT_PUBLIC_USE_CANFAR=false`). Set `app.useCanfar: false` in values — see upstream [DEPLOYMENT-MODES.md](https://github.com/opencadc/science-portal/blob/main/helm/DEPLOYMENT-MODES.md).
+3. **SKA IAM**: Register your client redirect URI with the OpenID Provider (for example [SKA IAM](https://ska-iam.stfc.ac.uk/)) before go-live.
+4. **Secrets** (OIDC + NextAuth):
+
+```bash
+kubectl -n skaha-system create secret generic science-portal-secrets \
+  --from-literal=oidc-client-secret='REPLACE_WITH_IDP_CLIENT_SECRET' \
+  --from-literal=auth-secret="$(openssl rand -base64 32)"
+```
+
+Register redirect URIs with your OpenID Provider to match `app.oidc.redirectUri` and your NextAuth routes.
+
+#### Example values file
+
+Create `my-science-portal-local-values-file.yaml` from the [template `values.yaml`](https://github.com/opencadc/science-portal/blob/main/helm/values.yaml) in `opencadc/science-portal` (also mirrored under [helm/applications/science-portal/values.yaml](https://github.com/opencadc/deployments/tree/main/helm/applications/science-portal/values.yaml) in this repo). Replace hostnames, IAM client id, and registry IDs with your site.
 
 `my-science-portal-local-values-file.yaml`
 ```yaml
-deployment:
-  hostname: example.org
-  sciencePortal:
-    # The Resource ID of the Service that contains the URL of the Skaha service in the IVOA Registry
-    skahaResourceID: ivo://example.org/skaha
+# Science Portal (Next.js) — SRC deployment with OIDC (SKA IAM)
 
-    # OIDC (IAM) server configuration.  These are required
-    # oidc:
-    #
-    # Location of the OpenID Provider (OIdP), and where users will login
-    #   uri: https://iam.example.org/
+replicaCount: 1
 
-      # The Client ID as listed on the OIdP.  Create one at the uri above.
-    #   clientID: my-client-id
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 250m
+  limits:
+    memory: 1Gi
+    cpu: 750m
 
-      # The Client Secret, which should be generated by the OIdP.
-    #   clientSecret: my-client-secret
-
-      # Where the OIdP should send the User after successful authentication.  This is also known as the redirect_uri in OpenID.
-    #   redirectURI: https://example.com/science-portal/oidc-callback
-
-      # Where to redirect to after the redirectURI callback has completed.  This will almost always be the URL to the /science-portal main page (https://example.com/science-portal).
-    #   callbackURI: https://example.com/science-portal/
-
-      # The standard OpenID scopes for token requests.  This is required, and if using the SKAO IAM, can be left as-is.
-    #   scope: "openid profile offline_access"
-
-    # Optionally mount a custom CA certificate
-    # extraVolumeMounts:
-    # - mountPath: "/config/cacerts"
-    #   name: cacert-volume
-
-    # Create the CA certificate volume to be mounted in extraVolumeMounts
-    # extraVolumes:
-    # - name: cacert-volume
-    #   secret:
-    #     defaultMode: 420
-    #     secretName: science-portal-cacert-secret
-
-    # The theme name for styling.
-    # src: The SRCNet theme
-    # canfar: The CANFAR theme for internal CADC deployment
-    # themeName: {src | canfar}
-
-    # Labels on the tabs
-    # Default:
-    # tabLabels:
-    #  - Public
-    #  - Advanced
-    # tabLabels: []
-
-    # Other data to be included in the main ConfigMap of this deployment.
-    # Of note, files that end in .key are special and base64 decoded.
-    #
-    # extraConfigData:
-
-    # Resources provided to the Science Portal service.
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "500m"
-      limits:
-        memory: "1500Mi"
-        cpu: "750m"
-
-    # Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Science Portal itself.
-    # See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/
-    # Example:
-    nodeAffinity:
-      # Only allow Science Portal to run on specific Nodes.
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: kubernetes.io/hostname
-            operator: In
-            values:
-            - my-special-ui-host
-
-experimentalFeatures:
+# Expose via Traefik (see Traefik install). Match the host used for Skaha/Cavern.
+ingress:
   enabled: true
-  slider:
+  className: traefik
+  hosts:
+    - host: example.host.com
+      paths:
+        - path: /science-portal
+          pathType: Prefix
+
+app:
+  basePath: science-portal
+  useCanfar: false
+
+  # Server-side API bases (pod → platform services on your Science Platform host).
+  api:
+    storage: https://example.host.com/cavern/nodes/home/
+    srcSkaha: https://example.host.com/skaha
+    srcCavern: https://example.host.com/cavern
+    timeoutMs: "30000"
+
+  # Browser-visible SRC API bases (same host as api.* for a single-site install).
+  public:
+    api:
+      srcSkaha: https://example.host.com/skaha
+      srcCavern: https://example.host.com/cavern
+      timeoutMs: "30000"
+    services:
+      storageManagement: https://example.host.com/cavern/
+      groupManagement: https://example.host.com/gms/
+      sciencePortal: https://example.host.com/science-portal/
+
+  # OpenID Connect via SKA IAM (register redirectUri with the IdP).
+  oidc:
     enabled: true
+    uri: https://ska-iam.stfc.ac.uk/
+    clientId: my-client-id
+    redirectUri: https://example.host.com/science-portal/api/auth/callback/oidc
+    callbackUri: https://example.host.com/science-portal/
+    scope: "openid profile offline_access"
+    clientSecret:
+      existingSecret: science-portal-secrets
+      secretKey: oidc-client-secret
 
-  # Specify extra hostnames that will be added to the Pod's /etc/hosts file.  Note that this is in the
-  # deployment object, not the sciencePortal one.
-  #
-  # These entries get added as hostAliases entries to the Deployment.
-  #
-  # Example:
-  # extraHosts:
-  #   - ip: 127.3.34.5
-  #     hostname: myhost.example.org
-  #
-  # extraHosts: []
-
-# secrets:
-  # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
-  # science-portal-cacert-secret:
-    # ca.crt: <base64 encoded ca.crt blob>
+  auth:
+    trustHost: true
+    nextauthUrl: https://example.host.com/science-portal
+    authSecret:
+      existingSecret: science-portal-secrets
+      secretKey: auth-secret
 ```
 
+#### Install and verify
+
+```bash
+helm upgrade --install -n skaha-system \
+  --values my-science-portal-local-values-file.yaml \
+  science-portal science-platform/science-portal
+
+kubectl -n skaha-system get pods -l app.kubernetes.io/name=science-portal
+kubectl -n skaha-system logs deploy/science-portal --tail=50
+```
+
+Open `https://example.host.com/science-portal` (substitute your host). Sign in with OIDC, then confirm that starting a test session reaches Skaha.
+
+Further chart options: [Science Portal](science-portal.md) and [helm/README.md](https://github.com/opencadc/science-portal/blob/main/helm/README.md).
+
+### Science Portal legacy (JSP / Tomcat)
+
+The legacy chart installs the 1.x Tomcat-based Science Portal (`science-platform/scienceportal`). Configuration uses `deployment.hostname` and `deployment.sciencePortal` (not the `app` block).
+
+`/reg/resource-caps` — same Skaha registration requirement as above.
+
+Create `my-science-portal-legacy-local-values-file.yaml` from the [archived template `values.yaml`](https://github.com/opencadc/deployments/tree/main/helm/applications/archived/science-portal/values.yaml).
+
+`my-science-portal-legacy-local-values-file.yaml`
+```yaml
+deployment:
+  hostname: example.host.com
+  sciencePortal:
+    skahaResourceID: ivo://example.org/skaha
+
+    oidc:
+      uri: https://iam.example.org/
+      clientID: my-client-id
+      clientSecret: my-client-secret
+      redirectURI: https://example.host.com/science-portal/oidc-callback
+      callbackURI: https://example.host.com/science-portal/
+      scope: "openid profile offline_access"
+
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 500m
+      limits:
+        memory: 1500Mi
+        cpu: 750m
+
+experimentalFeatures:
+  enabled: false
+```
+
+```bash
+helm upgrade --install -n skaha-system \
+  --values my-science-portal-legacy-local-values-file.yaml \
+  science-portal-legacy science-platform/scienceportal
+```
+
+The legacy UI is served at `https://<hostname>/science-portal` via a Traefik Ingress created by the chart. Do not install **both** charts behind the same path unless you are deliberately migrating.
 
 ### User Storage UI installation
 

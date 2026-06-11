@@ -3,13 +3,25 @@ kubernetesClusterDomain: cluster.local
 # Tell Kubernetes to spin up multiple instances.  Defaults to 1.
 replicaCount: 1
 
-# @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
-# securityContext: {}
+# @param podSecurityContext - Optional security context for the Pod (spec.template.spec.securityContext).
+# See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+#
+# Example:
+# podSecurityContext:
+#   seccompProfile:
+#     type: RuntimeDefault
+podSecurityContext: {}
+
+# @param securityContext - Optional security context for the Storage UI container only (containers[].securityContext).
+# See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 #
 # Example:
 # securityContext:
-#   seccompProfile:
-#     type: RuntimeDefault
+#   allowPrivilegeEscalation: false
+#   capabilities:
+#     drop:
+#       - ALL
+securityContext: {}
 
 # @param applicationName - The name of the application.  This will rename the underlying WAR file, thus changing the endpoint.  Defaults to storage.
 # applicationName: storage
@@ -111,10 +123,15 @@ deployment:
     #     defaultMode: 420
     #     secretName: storage-ui-cacert-secret
 
-    # Theme to use for presentation layer.
-    # Values are:
-    # - src   (SRCNet)
-    # - canfar  (CANFAR)
+    # Supported themes (src or canfar), and optionally a logo URL (preferred over themeName).
+    # Example:
+    # theme:
+    #   name: canfar
+    #   logoURL: https://example.org/mylogo.png
+    theme: {}
+
+    # Deprecated: use theme.name instead. Ignored when theme is non-empty.
+    # Values are src (SRCNet) or canfar (CANFAR).
     themeName:
 
 # This is a list of tolerations that will be added to the Pod spec of the Storage UI.

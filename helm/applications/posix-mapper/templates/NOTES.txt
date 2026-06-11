@@ -5,6 +5,10 @@ Post-install notes for POSIX Mapper.
 POSIX Mapper release: {{ .Release.Name }}
 Namespace: {{ .Release.Namespace }}
 
+Pod vs container security context:
+- Use `podSecurityContext` in values for Pod spec fields (e.g. fsGroup, seccompProfile).
+- Use `securityContext` for the Tomcat container only. Earlier chart versions incorrectly applied a single top-level `securityContext` to the Pod; move those fields to `podSecurityContext`.
+
 PostgreSQL config:
 - Connecting to host: {{ .Values.postgresql.url }}
 - Schema: {{ .Values.postgresql.schema }}

@@ -11,8 +11,6 @@ metadata:
     app: {{ $releaseName }}-uws-postgres
 data:
   POSTGRES_DB: {{ .database }}
-  POSTGRES_USER: {{ .username }}
-  POSTGRES_PASSWORD: {{ .password }}
 ---
 apiVersion: v1
 kind: ConfigMap
