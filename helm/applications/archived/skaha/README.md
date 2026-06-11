@@ -4,13 +4,13 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|1.6.0-rc-002<!-- x-release-please-version --> | 1.3.0 | application |
+|1.6.0-rc.5<!-- x-release-please-version --> | 1.3.0 | application |
 
 ## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../utils | utils | ^0.1.0 |
+| file://../../utils | utils | ^0.1.0 |
 | oci://registry-1.docker.io/bitnamicharts | redis | ^18.19.0 |
 
 ## Values
@@ -62,7 +62,6 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | deployment.skaha.sessions.nodeLabelSelector | string | `nil` | Node label selector used when discovering schedulable worker nodes. |
 | deployment.skaha.sessions.priorityClass | object | `{"create":false,"description":"For high-priority user pods. Preempting.","globalDefault":false,"name":"uber-user-preempt-high","preemptionPolicy":"PreemptLowerPriority","value":2000}` | PriorityClass assigned to the Skaha API Pod. |
 | deployment.skaha.sessions.tolerations | list | `[]` | Tolerations applied to user session Pods. |
-| deployment.skaha.sessions.userStorage.admin.auth | object | `{}` | Optional. When omitted or empty, user allocations authenticate with the requesting user's Bearer token. With `certificateSecret`, the PEM is mounted under `/config/<key>` (projected volume) and `SKAHA_USER_STORAGE_ADMIN_CERTIFICATE_ENABLED` is set to `true`. `apiKey` / `apiKeySecret` are not supported. |
 | deployment.skaha.sessions.userStorage.homeDirectory | string | `"home"` | Relative path under topLevelDirectory for user home directories. |
 | deployment.skaha.sessions.userStorage.projectsDirectory | string | `"projects"` | Relative path under topLevelDirectory for shared projects storage. |
 | deployment.skaha.sessions.userStorage.topLevelDirectory | string | `"/cavern"` | Absolute mount path containing user home and projects directories. |
@@ -85,9 +84,9 @@ A Helm chart to install the Skaha web service of the CANFAR Science Platform
 | metricsBackend.test.enabled | bool | `true` | Run helm test hook that retries /healthz until success (requires metricsBackend.enabled). |
 | metricsBackend.test.image | string | `"busybox:1.37.0"` | Image for the helm test hook Pod. |
 | metricsBackend.test.maxWaitSeconds | int | `180` | Maximum seconds to wait for Metrics /healthz (should exceed startupProbe worst case plus scheduling margin). |
+| podSecurityContext | object | `{}` |  |
 | rbac.clusterRole.create | bool | `false` |  |
 | rbac.create | bool | `true` |  |
-| podSecurityContext | object | `{}` | Optional container-level security context for the Skaha API container. |
 | redis.architecture | string | `"standalone"` | Redis deployment architecture. |
 | redis.auth.enabled | bool | `false` | Enable Redis authentication. |
 | redis.image.repository | string | `"redis"` | Redis image repository used by the bundled chart dependency. |

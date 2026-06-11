@@ -33,7 +33,6 @@ This section is automatically generated. Do not edit manually.
 | [search](helm/applications/sandbox/search) | A Helm chart for the Search User Interface browser application |
 | [stack](helm/applications/sandbox/stack) | A Helm chart for the SC2 Sandbox Stack |
 | [torkeep](helm/applications/sandbox/torkeep) | A CAOM-2 Metadata Repository Helm Chart |
-| [science-portal](helm/applications/science-portal) | A Helm chart for the CANFAR Next.js Science Portal application |
 | [sshd](helm/applications/sshd) | An SSHD service with SSSD to get users from LDAP |
 | [storageui](helm/applications/storage-ui) | A Helm chart to install the User Storage UI |
 | [utils](helm/applications/utils) | A library Helm chart for common tasks |

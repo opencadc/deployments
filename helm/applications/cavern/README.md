@@ -4,7 +4,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.10.0-rc.10<!-- x-release-please-version --> | 0.10.0 | application |
+|0.10.0<!-- x-release-please-version --> | 0.10.0 | application |
 
 ## Requirements
 
