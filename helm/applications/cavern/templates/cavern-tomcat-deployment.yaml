@@ -34,10 +34,6 @@ spec:
 {{ . | toYaml | indent 10 }}
 {{- end }}
       securityContext:
-        {{- $ro := .Values.deployment.cavern.filesystem.rootOwner | default dict }}
-        {{- if and $ro (hasKey $ro "gid") (ne (index $ro "gid") nil) }}
-        fsGroup: {{ index $ro "gid" }}
-        {{- end }}
         {{- with .Values.volumeInit.podSecurityContext }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
