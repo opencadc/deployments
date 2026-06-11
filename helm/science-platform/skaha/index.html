@@ -642,12 +642,17 @@
 
 <h1 id="skaha-helm-chart">Skaha Helm Chart<a class="headerlink" href="#skaha-helm-chart" title="Permanent link">&para;</a></h1>
 <p>The Skaha Helm chart facilitates the deployment of the Skaha application within a Kubernetes cluster. This chart is designed to streamline the installation and management of Skaha, ensuring a seamless integration into your Kubernetes environment.</p>
+<div class="admonition note">
+<p class="admonition-title">Chart source</p>
+<p>The Skaha Helm chart is co-located with the Skaha service in <a href="https://github.com/opencadc/science-platform"><code>opencadc/science-platform</code></a> under <a href="https://github.com/opencadc/science-platform/tree/main/helm"><code>helm/</code></a>. Install from the published chart <code>science-platform/skaha</code>. An archived copy of the former deployments-repo chart is under <a href="https://github.com/opencadc/deployments/tree/main/helm/applications/archived/skaha"><code>helm/applications/archived/skaha/</code></a> and is no longer released from this repository.</p>
+</div>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>Before deploying the Skaha Helm chart, ensure that the following conditions are met:</p>
 <ul>
 <li><strong>Kubernetes Cluster</strong>: A running Kubernetes cluster, version 1.29 or higher.</li>
 <li><strong>Helm</strong>: Helm package manager, version 3, installed on your machine. Refer to the <a href="https://helm.sh/docs/">official Helm documentation</a> for installation instructions.</li>
-<li><strong>Kueue</strong>: Kueue is recommended to be installed in your cluster, as Skaha optionally integrates with Kueue for job queueing. Follow the <a href="https://kueue.sigs.k8s.io/docs/">Kueue installation guide</a> to set it up.</li>
+<li><strong>Traefik</strong>: Required before Skaha install (<code>IngressRoute</code>, <code>Middleware</code>). See the <a href="../deployment/#traefik-install">deployment guide</a>.</li>
+<li><strong>Kueue</strong>: Recommended; install and configure per the <a href="../deployment/#kueue-recommended">deployment guide</a> before Skaha if you use session queueing.</li>
 </ul>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>To deploy the Skaha application using the Helm chart, follow these steps:</p>
@@ -681,6 +686,7 @@ Replace <code>skaha-release</code> with your desired release name.</p>
 <h3 id="limitrange">LimitRange<a class="headerlink" href="#limitrange" title="Permanent link">&para;</a></h3>
 <p>You can define a <code>LimitRange</code> for User Session Pods by modifying the <code>deployment.skaha.sessions.limitRange</code> section in your <code>values.yaml</code> file. This configuration allows you to set resource limits and requests for different session types.  The <code>min</code> clause is ignored due to hard-coded resources for Desktop and Firefly sessions.  This will go directly into a <code>LimitRange</code> object created in the Skaha workload Namespace, and, as such, supports the Kubernetes
 units.</p>
+<p>When limit-range integration is enabled, the Skaha service uses the <strong>first</strong> <code>LimitRange</code> object returned for the workload namespace (not a specific name); the object name is therefore mostly irrelevant at runtime, though this chart uses a stable name when it creates the resource.</p>
 <p>The <code>rbac</code> section allows you to create the necessary Role and RoleBinding for the LimitRange object.  If your organization does not permit the creation of RBAC objects, you can set <code>create</code> to <code>false</code> and manage the RBAC externally.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">deployment</span><span class="p">:</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
@@ -768,8 +774,8 @@ units.</p>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: center;">1.5.0<!-- x-release-please-version --></td>
-<td style="text-align: center;">1.2.0</td>
+<td style="text-align: center;">1.6.0-rc.5<!-- x-release-please-version --></td>
+<td style="text-align: center;">1.3.0</td>
 <td style="text-align: center;">application</td>
 </tr>
 </tbody>
@@ -785,7 +791,7 @@ units.</p>
 </thead>
 <tbody>
 <tr>
-<td>file://../utils</td>
+<td>file://../../utils</td>
 <td>utils</td>
 <td>^0.1.0</td>
 </tr>
@@ -808,250 +814,406 @@ units.</p>
 </thead>
 <tbody>
 <tr>
+<td>autoscaling.enabled</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Enable HorizontalPodAutoscaler for skaha-tomcat. Target and scaling behavior are intentionally chart-managed (CPU 65%).</td>
+</tr>
+<tr>
+<td>autoscaling.maxReplicas</td>
+<td>int</td>
+<td><code>6</code></td>
+<td>Maximum number of skaha-tomcat replicas.</td>
+</tr>
+<tr>
+<td>autoscaling.minReplicas</td>
+<td>int</td>
+<td><code>2</code></td>
+<td>Minimum number of skaha-tomcat replicas.</td>
+</tr>
+<tr>
 <td>deployment.hostname</td>
 <td>string</td>
 <td><code>"myhost.example.com"</code></td>
-<td></td>
+<td>Public hostname for the Skaha API.</td>
 </tr>
 <tr>
 <td>deployment.skaha.apiVersion</td>
 <td>string</td>
 <td><code>"v1"</code></td>
-<td></td>
+<td>Skaha API version path segment (for example, <code>v1</code> -&gt; <code>/skaha/v1/...</code>).</td>
 </tr>
 <tr>
 <td>deployment.skaha.defaultQuotaGB</td>
 <td>string</td>
 <td><code>"10"</code></td>
-<td></td>
+<td>Default user storage quota in GiB for first-time users.</td>
 </tr>
 <tr>
 <td>deployment.skaha.identityManagerClass</td>
 <td>string</td>
 <td><code>"org.opencadc.auth.StandardIdentityManager"</code></td>
-<td></td>
+<td>Java IdentityManager implementation used for authentication.</td>
 </tr>
 <tr>
 <td>deployment.skaha.image</td>
 <td>string</td>
-<td><code>"images.opencadc.org/platform/skaha:1.2.0"</code></td>
-<td></td>
+<td><code>"images.opencadc.org/platform/skaha:1.3.0"</code></td>
+<td>Container image for the Skaha API service.</td>
 </tr>
 <tr>
 <td>deployment.skaha.imageCache.refreshSchedule</td>
 <td>string</td>
 <td><code>"*/30 * * * *"</code></td>
-<td></td>
+<td>Cron schedule used to refresh cached images.</td>
 </tr>
 <tr>
 <td>deployment.skaha.imagePullPolicy</td>
 <td>string</td>
 <td><code>"Always"</code></td>
-<td></td>
+<td>Image pull policy for the Skaha API container.</td>
 </tr>
 <tr>
 <td>deployment.skaha.init.image</td>
 <td>string</td>
 <td><code>"busybox:1.37.0"</code></td>
-<td></td>
+<td>Init container image used to bootstrap user storage paths.</td>
 </tr>
 <tr>
 <td>deployment.skaha.init.imagePullPolicy</td>
 <td>string</td>
 <td><code>"IfNotPresent"</code></td>
-<td></td>
+<td>Image pull policy for the bootstrap init container.</td>
 </tr>
 <tr>
 <td>deployment.skaha.posixMapperCacheTTLSeconds</td>
 <td>string</td>
 <td><code>"86400"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.skaha.priorityClassName</td>
-<td>string</td>
-<td><code>"uber-user-preempt-high"</code></td>
-<td></td>
+<td>TTL in seconds for cached POSIX mapper entries.</td>
 </tr>
 <tr>
 <td>deployment.skaha.registryHosts</td>
 <td>string</td>
 <td><code>"images.canfar.net"</code></td>
-<td></td>
+<td>Space-delimited list of image registry hosts allowed for sessions.</td>
 </tr>
 <tr>
 <td>deployment.skaha.resources.limits.cpu</td>
 <td>string</td>
 <td><code>"2000m"</code></td>
-<td></td>
+<td>CPU limit for the Skaha API container.</td>
 </tr>
 <tr>
 <td>deployment.skaha.resources.limits.memory</td>
 <td>string</td>
 <td><code>"3Gi"</code></td>
-<td></td>
+<td>Memory limit for the Skaha API container.</td>
 </tr>
 <tr>
 <td>deployment.skaha.resources.requests.cpu</td>
 <td>string</td>
 <td><code>"1000m"</code></td>
-<td></td>
+<td>CPU request for the Skaha API container.</td>
 </tr>
 <tr>
 <td>deployment.skaha.resources.requests.memory</td>
 <td>string</td>
 <td><code>"2Gi"</code></td>
-<td></td>
+<td>Memory request for the Skaha API container.</td>
 </tr>
 <tr>
-<td>deployment.skaha.serviceAccountName</td>
+<td>deployment.skaha.sessions</td>
+<td>object</td>
+<td><code>{"authorization":{"group":{"enabled":false,"uri":""},"permissionsAPI":{"authAPIBaseURL":"","baseURL":"","enabled":false,"method":"","name":"skaha","route":"","type":"route","version":""}},"expirySeconds":"345600","flexResourceRequests":{"headless":{"cpuCores":"1","memoryInGB":"4"}},"headlessPriorityClass":{"create":false,"description":"For high-priority headless jobs. Preempting.","globalDefault":false,"preemptionPolicy":"PreemptLowerPriority","value":2000},"imagePullPolicy":"Always","ingress":{"customResponseHeaders":{},"tls":{}},"initContainerImage":"redis:8.2.2-bookworm","kueue":{"rbac":{"create":false}},"limitRange":{"create":true,"enabled":false},"maxCount":"5","maxEphemeralStorage":"200Gi","minEphemeralStorage":"20Gi","namespace":{"create":false,"name":"skaha-workload"},"nodeLabelSelector":null,"priorityClass":{"create":false,"description":"For high-priority user pods. Preempting.","globalDefault":false,"name":"uber-user-preempt-high","preemptionPolicy":"PreemptLowerPriority","value":2000},"tolerations":[],"userStorage":{"admin":{},"homeDirectory":"home","projectsDirectory":"projects","spec":{},"topLevelDirectory":"/cavern"}}</code></td>
+<td><a class="magiclink magiclink-github magiclink-mention" href="https://github.com/deprecated" title="GitHub User: deprecated">@deprecated</a> Prefer deployment.skaha.sessions.authorization or deprecated usersGroup alone. Still honoured when sessions.authorization.group.enabled is false. The IVOA GMS Group URI to verify users against for permission to use the Science Platform. See <a href="https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2">https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2</a> usersGroup: "ivo://example.org/gms?prototyping-groups/mini-src/platform-users" Group URI for users to ensure priority for their headless jobs. See <a href="https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2">https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2</a> headlessPriorityGroup: "ivo://example.org/gms?skaha-priority-headless-users" Array of GMS Group URIs allowed to set the logging level.  If none set, then nobody can change the log level. See <a href="https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2">https://www.ivoa.net/documents/GMS/20220222/REC-GMS-1.0.html#tth_sEc3.2</a> for GMS Group URIs See <a href="https://github.com/opencadc/core/tree/main/cadc-log">https://github.com/opencadc/core/tree/main/cadc-log</a> for Logging control loggingGroups:   - "ivo://example.org/gms?prototyping-groups/mini-src/platform-users" The Resource ID (URI) of the Service that contains the Posix Mapping information posixMapperResourceID: "ivo://example.org/posix-mapper" URI or URL of the OIDC (IAM) server.  Used to validate incoming tokens. oidcURI: <a href="https://iam.example.org/">https://iam.example.org/</a> The Resource ID (URI) of the GMS Service. gmsID: ivo://example.org/gms The absolute URL of the IVOA Registry where services are registered registryURL: <a href="https://spsrc27.iaa.csic.es/reg">https://spsrc27.iaa.csic.es/reg</a> This applies to Skaha itself.  Meaning, this Pod will be scheduled as described by the nodeAffinity clause. Note the different indentation level compared to the sessions.nodeAffinity. See <a href="https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/">https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/</a> nodeAffinity: {} Settings for User Sessions.  Sensible defaults supplied, but can be overridden. For units of storage, see <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory</a>.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.group.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>When true, SKAHA_USERS_GROUP is set from uri. Required uri when enabled (Helm validates). The Skaha service enforces mutually exclusive authorization modes at runtime.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.permissionsAPI.authAPIBaseURL</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Base URL for the SRCNet Auth API used by the permissions client.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.permissionsAPI.baseURL</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Required when enabled is true (Helm validates).</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.permissionsAPI.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>When true, SKAHA_PERMISSIONS_API_* vars are set from baseURL, authAPIBaseURL, type, route, name, version, and method. Required baseURL and authAPIBaseURL when enabled (Helm validates). The Skaha service enforces mutually exclusive authorization modes at runtime.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.permissionsAPI.method</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Method of the permissions API.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.permissionsAPI.name</td>
 <td>string</td>
 <td><code>"skaha"</code></td>
-<td></td>
+<td>Name of the permissions API.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.permissionsAPI.route</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Route of the permissions API.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.permissionsAPI.type</td>
+<td>string</td>
+<td><code>"route"</code></td>
+<td>Type of the permissions API.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.authorization.permissionsAPI.version</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Version of the permissions API.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.expirySeconds</td>
 <td>string</td>
 <td><code>"345600"</code></td>
-<td></td>
+<td>Session lifetime in seconds before expiry and shutdown.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.flexResourceRequests.headless.cpuCores</td>
 <td>string</td>
 <td><code>"1"</code></td>
-<td></td>
+<td>Default CPU request (cores) for flex headless sessions.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.flexResourceRequests.headless.memoryInGB</td>
 <td>string</td>
 <td><code>"4"</code></td>
-<td></td>
+<td>Default memory request (GiB) for flex headless sessions.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.headlessPriorityClass</td>
+<td>object</td>
+<td><code>{"create":false,"description":"For high-priority headless jobs. Preempting.","globalDefault":false,"preemptionPolicy":"PreemptLowerPriority","value":2000}</code></td>
+<td>Effective headless PriorityClass configuration (merged with legacy headlessPriorityClass).</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.imagePullPolicy</td>
 <td>string</td>
 <td><code>"Always"</code></td>
-<td></td>
+<td>Image pull policy applied to all user session containers.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.ingress.customResponseHeaders</td>
 <td>object</td>
 <td><code>{}</code></td>
-<td></td>
+<td>Custom response headers added to user-session ingress responses.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.ingress.tls</td>
 <td>object</td>
 <td><code>{}</code></td>
-<td></td>
+<td>TLS configuration for the user-session Traefik IngressRoute.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.initContainerImage</td>
 <td>string</td>
 <td><code>"redis:8.2.2-bookworm"</code></td>
-<td></td>
+<td>Image used by the session init container that manages POSIX data.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.kueue</td>
 <td>object</td>
-<td><code>{}</code></td>
-<td></td>
+<td><code>{"rbac":{"create":false}}</code></td>
+<td>Per-session-type Kueue configuration.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.limitRange.create</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>When true together with <code>enabled</code>, the chart creates the LimitRange <code>&lt;release&gt;-session-limit-range</code> in the workload namespace from <code>spec</code> below. When false, do not create one here; ensure the namespace has a LimitRange Skaha can use (Skaha uses the first LimitRange returned; the name is mostly irrelevant).</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.limitRange.enabled</td>
 <td>bool</td>
 <td><code>false</code></td>
-<td></td>
+<td>When true, set <code>SKAHA_SESSION_LIMIT_RANGE_ENABLED</code> on the Skaha deployment so it loads the <strong>first</strong> <code>LimitRange</code> in the workload namespace (name is mostly irrelevant). Also gates this chart's LimitRange Role/RoleBinding (<code>rbac.create</code>). Must also be true (with <code>create</code>) for the chart to render the LimitRange manifest.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.maxCount</td>
 <td>string</td>
 <td><code>"5"</code></td>
-<td></td>
+<td>Maximum number of active sessions allowed per user.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.maxEphemeralStorage</td>
 <td>string</td>
 <td><code>"200Gi"</code></td>
-<td></td>
+<td>Maximum ephemeral storage limit for sessions (non-desktop).</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.minEphemeralStorage</td>
 <td>string</td>
 <td><code>"20Gi"</code></td>
-<td></td>
+<td>Initial ephemeral storage request for new sessions (non-desktop).</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.nodeLabelSelector</td>
 <td>string</td>
 <td><code>nil</code></td>
-<td></td>
+<td>Node label selector used when discovering schedulable worker nodes.</td>
+</tr>
+<tr>
+<td>deployment.skaha.sessions.priorityClass</td>
+<td>object</td>
+<td><code>{"create":false,"description":"For high-priority user pods. Preempting.","globalDefault":false,"name":"uber-user-preempt-high","preemptionPolicy":"PreemptLowerPriority","value":2000}</code></td>
+<td>PriorityClass assigned to the Skaha API Pod.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.tolerations</td>
 <td>list</td>
 <td><code>[]</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.skaha.sessions.userStorage.admin.auth</td>
-<td>string</td>
-<td><code>nil</code></td>
-<td></td>
+<td>Tolerations applied to user session Pods.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.userStorage.homeDirectory</td>
 <td>string</td>
 <td><code>"home"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.skaha.sessions.userStorage.persistentVolumeClaimName</td>
-<td>string</td>
-<td><code>"skaha-workload-cavern-pvc"</code></td>
-<td></td>
+<td>Relative path under topLevelDirectory for user home directories.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.userStorage.projectsDirectory</td>
 <td>string</td>
 <td><code>"projects"</code></td>
-<td></td>
+<td>Relative path under topLevelDirectory for shared projects storage.</td>
 </tr>
 <tr>
 <td>deployment.skaha.sessions.userStorage.topLevelDirectory</td>
 <td>string</td>
 <td><code>"/cavern"</code></td>
-<td></td>
+<td>Absolute mount path containing user home and projects directories.</td>
 </tr>
 <tr>
 <td>experimentalFeatures.enabled</td>
 <td>bool</td>
 <td><code>false</code></td>
-<td></td>
-</tr>
-<tr>
-<td>experimentalFeatures.sessionLimitRange</td>
-<td>object</td>
-<td><code>{}</code></td>
-<td></td>
+<td>Enable processing of experimental feature gates.</td>
 </tr>
 <tr>
 <td>ingress.enabled</td>
 <td>bool</td>
 <td><code>true</code></td>
-<td></td>
+<td>Enable ingress routing for the Skaha API.</td>
 </tr>
 <tr>
 <td>ingress.path</td>
 <td>string</td>
 <td><code>"/skaha"</code></td>
-<td></td>
+<td>Ingress path prefix routed to the Skaha API Service.</td>
 </tr>
 <tr>
 <td>kubernetesClusterDomain</td>
 <td>string</td>
 <td><code>"cluster.local"</code></td>
-<td></td>
+<td>Kubernetes DNS domain used when building internal service hostnames.</td>
+</tr>
+<tr>
+<td>metricsBackend.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>When true, install Kueue-read ClusterRole/Binding first (Helm kind order), then Metrics Service and Deployment. Applies fail if cluster RBAC cannot be created (for example forbidden).</td>
+</tr>
+<tr>
+<td>metricsBackend.env</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td>Map of environment variables for the Metrics container (typically METRICS_*). GitOps should supply the full map per environment.</td>
+</tr>
+<tr>
+<td>metricsBackend.image.pullPolicy</td>
+<td>string</td>
+<td><code>"IfNotPresent"</code></td>
+<td>imagePullPolicy for the Metrics API container.</td>
+</tr>
+<tr>
+<td>metricsBackend.image.repository</td>
+<td>string</td>
+<td><code>"images.opencadc.org/platform/metrics"</code></td>
+<td>Metrics container image repository.</td>
+</tr>
+<tr>
+<td>metricsBackend.image.tag</td>
+<td>string</td>
+<td><code>"v0.1.5"</code></td>
+<td>Metrics container image tag.</td>
+</tr>
+<tr>
+<td>metricsBackend.ingress.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>When true and top-level ingress.enabled is true, add a path on the same host routing to the Metrics Service.</td>
+</tr>
+<tr>
+<td>metricsBackend.ingress.path</td>
+<td>string</td>
+<td><code>"/metrics"</code></td>
+<td>Ingress path prefix for the Metrics API (Traefik).</td>
+</tr>
+<tr>
+<td>metricsBackend.rbac.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>When true, create metricsBackend Kueue-read ClusterRole/ClusterRoleBinding. Set false to disable cluster-scoped RBAC while keeping the metrics workload enabled.</td>
+</tr>
+<tr>
+<td>metricsBackend.redis.enabled</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>When true, set METRICS_REDIS_URL to this release's Bitnami Redis master Service (<release>-redis-master), same instance Skaha uses. Set false and supply METRICS_REDIS_URL in env if Metrics should use another Redis.</td>
+</tr>
+<tr>
+<td>metricsBackend.replicaCount</td>
+<td>int</td>
+<td><code>1</code></td>
+<td>Fixed replica count for the Metrics API (no HPA in this chart version).</td>
+</tr>
+<tr>
+<td>metricsBackend.resources</td>
+<td>object</td>
+<td><code>{"limits":{"cpu":"1","memory":"1Gi"},"requests":{"cpu":"100m","memory":"256Mi"}}</code></td>
+<td>Resource requests and limits for the Metrics API container.</td>
+</tr>
+<tr>
+<td>metricsBackend.revisionHistoryLimit</td>
+<td>int</td>
+<td><code>3</code></td>
+<td>revisionHistoryLimit for the Metrics API Deployment.</td>
+</tr>
+<tr>
+<td>metricsBackend.test.enabled</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Run helm test hook that retries /healthz until success (requires metricsBackend.enabled).</td>
+</tr>
+<tr>
+<td>metricsBackend.test.image</td>
+<td>string</td>
+<td><code>"busybox:1.37.0"</code></td>
+<td>Image for the helm test hook Pod.</td>
+</tr>
+<tr>
+<td>metricsBackend.test.maxWaitSeconds</td>
+<td>int</td>
+<td><code>180</code></td>
+<td>Maximum seconds to wait for Metrics /healthz (should exceed startupProbe worst case plus scheduling margin).</td>
 </tr>
 <tr>
 <td>podSecurityContext</td>
@@ -1060,82 +1222,94 @@ units.</p>
 <td></td>
 </tr>
 <tr>
+<td>rbac.clusterRole.create</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td></td>
+</tr>
+<tr>
+<td>rbac.create</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td></td>
+</tr>
+<tr>
 <td>redis.architecture</td>
 <td>string</td>
 <td><code>"standalone"</code></td>
-<td></td>
+<td>Redis deployment architecture.</td>
 </tr>
 <tr>
 <td>redis.auth.enabled</td>
 <td>bool</td>
 <td><code>false</code></td>
-<td></td>
+<td>Enable Redis authentication.</td>
 </tr>
 <tr>
 <td>redis.image.repository</td>
 <td>string</td>
 <td><code>"redis"</code></td>
-<td></td>
+<td>Redis image repository used by the bundled chart dependency.</td>
 </tr>
 <tr>
 <td>redis.image.tag</td>
 <td>string</td>
 <td><code>"8.2.2-bookworm"</code></td>
-<td></td>
+<td>Redis image tag used by the bundled chart dependency.</td>
 </tr>
 <tr>
 <td>redis.master.containerSecurityContext.allowPrivilegeEscalation</td>
 <td>bool</td>
 <td><code>false</code></td>
-<td></td>
+<td>Disallow privilege escalation in the Redis master container.</td>
 </tr>
 <tr>
-<td>redis.master.containerSecurityContext.capabilities.drop[0]</td>
-<td>string</td>
-<td><code>"ALL"</code></td>
-<td></td>
+<td>redis.master.containerSecurityContext.capabilities.drop</td>
+<td>list</td>
+<td><code>["ALL"]</code></td>
+<td>Linux capabilities dropped from the Redis master container.</td>
 </tr>
 <tr>
 <td>redis.master.containerSecurityContext.readOnlyRootFilesystem</td>
 <td>bool</td>
 <td><code>true</code></td>
-<td></td>
+<td>Mount Redis master root filesystem as read-only.</td>
 </tr>
 <tr>
 <td>redis.master.containerSecurityContext.runAsGroup</td>
 <td>int</td>
 <td><code>1001</code></td>
-<td></td>
+<td>Group ID for the Redis master container.</td>
 </tr>
 <tr>
 <td>redis.master.containerSecurityContext.runAsNonRoot</td>
 <td>bool</td>
 <td><code>true</code></td>
-<td></td>
+<td>Require Redis master to run as a non-root user.</td>
 </tr>
 <tr>
 <td>redis.master.containerSecurityContext.runAsUser</td>
 <td>int</td>
 <td><code>1001</code></td>
-<td></td>
+<td>User ID for the Redis master container.</td>
 </tr>
 <tr>
 <td>redis.master.containerSecurityContext.seccompProfile.type</td>
 <td>string</td>
 <td><code>"RuntimeDefault"</code></td>
-<td></td>
+<td>Seccomp profile type for Redis master.</td>
 </tr>
 <tr>
 <td>redis.master.persistence.enabled</td>
 <td>bool</td>
 <td><code>false</code></td>
-<td></td>
+<td>Enable persistence for the Redis master StatefulSet.</td>
 </tr>
 <tr>
 <td>replicaCount</td>
 <td>int</td>
 <td><code>1</code></td>
-<td></td>
+<td>Number of skaha-tomcat replicas when autoscaling is disabled.</td>
 </tr>
 <tr>
 <td>secrets</td>
@@ -1147,28 +1321,31 @@ units.</p>
 <td>securityContext</td>
 <td>object</td>
 <td><code>{}</code></td>
-<td></td>
+<td>Optional Pod-level security context for the Skaha API Deployment.</td>
 </tr>
 <tr>
 <td>service.port</td>
 <td>int</td>
 <td><code>8080</code></td>
-<td></td>
+<td>Service port exposed for the Skaha API Service.</td>
 </tr>
 <tr>
-<td>skahaWorkload.namespace</td>
-<td>string</td>
-<td><code>"skaha-workload"</code></td>
-<td></td>
+<td>serviceAccount</td>
+<td>object</td>
+<td><code>{"annotations":{},"automount":true,"create":true,"name":""}</code></td>
+<td>ServiceAccount used by the Skaha API Pod.</td>
 </tr>
 <tr>
 <td>tolerations</td>
 <td>list</td>
 <td><code>[]</code></td>
-<td></td>
+<td>Tolerations applied to the Skaha API Pod.</td>
 </tr>
 </tbody>
 </table>
+<h2 id="metricsbackend-install-ordering">metricsBackend install ordering<a class="headerlink" href="#metricsbackend-install-ordering" title="Permanent link">&para;</a></h2>
+<p>When <code>metricsBackend.enabled</code> is true, the chart emits <code>ClusterRole</code>, <code>ClusterRoleBinding</code>, <code>Service</code>, and <code>Deployment</code> for metrics. Helm applies manifest groups in a deterministic <a href="https://github.com/helm/helm/blob/main/pkg/releaseutil/kind_sorter.go">kind order</a> so RBAC objects are reconciled before typical namespaced workload kinds. If the API server rejects creating or updating those cluster-scoped RBAC rules (for example the caller lacks permission), the release fails instead of only rolling out a broken metrics <code>Deployment</code>. <code>helm test</code> (optional) still targets the running Service after install; it does not replace RBAC admission checks.</p>
+<p>If <code>metricsBackend.enabled=true</code> and <code>metricsBackend.rbac.enabled=false</code>, this chart will not create the metrics ClusterRole/ClusterRoleBinding. In that mode, the deployer is responsible for ensuring the Skaha ServiceAccount (<code>deployment.skaha.serviceAccountName</code>) already has <code>get</code>/<code>list</code> permissions on the Kueue <code>ClusterQueue</code> API before installation.</p>
 
 
 
@@ -1191,7 +1368,7 @@ units.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 6, 2026 09:22:41 PST"><span class="timeago" datetime="2026-02-06T09:22:41-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 6, 2026 09:22:41 PST">2026-02-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 4, 2026 15:40:26 PDT"><span class="timeago" datetime="2026-06-04T15:40:26-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 4, 2026 15:40:26 PDT">2026-06-04</span>
   </span>
 
     

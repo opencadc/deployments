@@ -548,30 +548,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#user-allocations-with-special-access" class="md-nav__link">
-    <span class="md-ellipsis">
-      User Allocations with special access
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="User Allocations with special access">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#note" class="md-nav__link">
-    <span class="md-ellipsis">
-      Note
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -611,7 +587,7 @@
 provide the underlying storage for the Services and User Sessions.</p>
 <h3 id="from-source">From source<a class="headerlink" href="#from-source" title="Permanent link">&para;</a></h3>
 <p>Installation depends on a working Kubernetes cluster version 1.23 or greater.</p>
-<p>The base install also installs the Traefik proxy, which is needed by the Ingress when the Science Platform services are installed.</p>
+<p>Traefik must be installed before platform services; see the <a href="../deployment/#traefik-install">deployment guide</a>.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/science-platform.git
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>science-platform/deployment/helm
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>$<span class="w"> </span>helm<span class="w"> </span>install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>my-values-local.yaml<span class="w"> </span>&lt;name&gt;<span class="w"> </span>./cavern
@@ -705,19 +681,29 @@ check that the Skaha service has started properly.  It may take a few moments to
 <td><code>""</code></td>
 </tr>
 <tr>
-<td><code>deployment.cavern.adminAPIKeys</code></td>
-<td>API keys for client applications that can create new allocations</td>
-<td><code>{}</code></td>
+<td><code>deployment.cavern.allocations</code></td>
+<td>User allocation settings mapped to <code>cavern.properties</code> (default quota, parent folders, authorization)</td>
+<td>see <code>values.yaml</code></td>
 </tr>
 <tr>
 <td><code>deployment.cavern.allocations.defaultSizeGB</code></td>
-<td>Default size of user allocations in GB</td>
+<td>Default allocation size in GiB when no Quota VOSpace property is set (<code>org.opencadc.cavern.defaultQuotaGB</code>)</td>
 <td><code>10</code></td>
 </tr>
 <tr>
 <td><code>deployment.cavern.allocations.parentFolders</code></td>
-<td>List of parent folders to create for user allocations.  Best to leave this alone.</td>
+<td>Top-level folders for user allocations; each becomes <code>org.opencadc.cavern.allocationParent</code>. Must align with Skaha user-storage paths. At least one required.</td>
 <td><code>["/home", "/projects"]</code></td>
+</tr>
+<tr>
+<td><code>deployment.cavern.allocations.authorization.groupURIs</code></td>
+<td>IVOA GMS group URIs allowed to self-allocate; each becomes <code>org.opencadc.cavern.selfAllocateGroup</code></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>deployment.cavern.allocations.authorization.permissionsAPI</code></td>
+<td>SRCNet Permissions API (<code>org.opencadc.cavern.papi.*</code>). Leave <code>{}</code> to omit; when set, <code>baseURL</code> and <code>authAPIBaseURL</code> are required</td>
+<td><code>{}</code></td>
 </tr>
 <tr>
 <td><code>deployment.cavern.filesystem.dataDir</code></td>
@@ -747,7 +733,7 @@ check that the Skaha service has started properly.  It may take a few moments to
 <tr>
 <td><code>deployment.cavern.filesystem.rootOwner.adminUsername</code></td>
 <td>Admin username for the filesystem data (parent of allocations) directory</td>
-<td></td>
+<td><code>""</code></td>
 </tr>
 <tr>
 <td><code>deployment.cavern.identityManagerClass</code></td>
@@ -780,14 +766,14 @@ check that the Skaha service has started properly.  It may take a few moments to
 <td><code>jdbc:postgresql://cavern-uws-db:5432/uws</code></td>
 </tr>
 <tr>
-<td><code>deployment.cavern.uws.db.username</code></td>
-<td>Username for the UWS database</td>
-<td><code>uwsuser</code></td>
+<td><code>deployment.cavern.uws.db.auth.existingSecret</code></td>
+<td>Kubernetes <code>Secret</code> name (same namespace) with UWS DB username/password; not committed to Git</td>
+<td><code>""</code></td>
 </tr>
 <tr>
-<td><code>deployment.cavern.uws.db.password</code></td>
-<td>Password for the UWS database</td>
-<td><code>uwspwd</code></td>
+<td><code>deployment.cavern.uws.db.auth.secretKeys</code></td>
+<td>Keys in that Secret for username and password (defaults <code>username</code>, <code>password</code>)</td>
+<td>see <code>values.yaml</code></td>
 </tr>
 <tr>
 <td><code>deployment.cavern.uws.db.schema</code></td>
@@ -798,6 +784,11 @@ check that the Skaha service has started properly.  It may take a few moments to
 <td><code>deployment.cavern.uws.db.maxActive</code></td>
 <td>Maximum number of active connections to the UWS database</td>
 <td><code>2</code></td>
+</tr>
+<tr>
+<td><code>volumeInit</code></td>
+<td>Init container image used to merge UWS credentials into <code>catalina.properties</code></td>
+<td>BusyBox (see <code>values.yaml</code>)</td>
 </tr>
 <tr>
 <td><code>deployment.applicationName</code></td>
@@ -881,33 +872,6 @@ check that the Skaha service has started properly.  It may take a few moments to
 </tr>
 </tbody>
 </table>
-<h2 id="user-allocations-with-special-access">User Allocations with special access<a class="headerlink" href="#user-allocations-with-special-access" title="Permanent link">&para;</a></h2>
-<h3 id="note"><strong>Note</strong><a class="headerlink" href="#note" title="Permanent link">&para;</a></h3>
-<p>The <code>admin-api-key</code> has admin level permissions.  Rotate them regularly, or keep the values file safe.</p>
-<p>Cavern typically accepts user allocation requests from the Administrative user, but it can be configured to allow other users to request allocations as well. This is done by adding the user's API key to the <code>deployment.cavern.adminAPIKeys</code> configuration:
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">deployment</span><span class="p">:</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">cavern</span><span class="p">:</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">adminAPIKeys</span><span class="p">:</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">skaha</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;skahasecretkey1234567890&quot;</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">      </span><span class="nt">prepareData</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;preparedatasecretkey1234567890&quot;</span>
-</span></code></pre></div></p>
-<p>With this configuration, listed clients can request new user allocations using the <code>admin-api-key</code> challenge type in the <code>Authorization</code> header.  This <code>admin-api-key</code> represents a trusted client application to act on behalf of the Administrative user:
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$<span class="w"> </span>curl<span class="w"> </span>-Lv<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: admin-api-key prepareData:preparedatasecretkey1234567890&quot;</span><span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;content-type: text/xml&quot;</span><span class="w"> </span>--upload-file<span class="w"> </span>user-alloc-upload-jwt.xml<span class="w"> </span>https://example.org/cavern/nodes/home/new-user
-</span></code></pre></div></p>
-<p>Where the upload XML file would look like this:
-<div class="language-xml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nt">&lt;vos:node</span><span class="w"> </span><span class="na">xmlns:vos=</span><span class="s">&quot;http://www.ivoa.net/xml/VOSpace/v2.0&quot;</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">          </span><span class="na">xmlns:xsi=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">          </span><span class="na">uri=</span><span class="s">&quot;vos://exmaple.org~cavern/home/new-user&quot;</span><span class="w"> </span><span class="na">xsi:type=</span><span class="s">&quot;vos:ContainerNode&quot;</span><span class="nt">&gt;</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&lt;vos:properties&gt;</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="nt">&lt;vos:property</span><span class="w"> </span><span class="na">uri=</span><span class="s">&quot;ivo://opencadc.org/vospace/core#creatorJWT&quot;</span><span class="nt">&gt;</span>JWT_TOKEN_REPLACE_ME<span class="nt">&lt;/vos:property&gt;</span><span class="w"> </span><span class="cm">&lt;!-- JWT token of the new user --&gt;</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nt">&lt;vos:property</span><span class="w"> </span><span class="na">uri=</span><span class="s">&quot;ivo://cadc.nrc.ca/vospace/core#inheritPermissions&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/vos:property&gt;</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nt">&lt;vos:property</span><span class="w"> </span><span class="na">uri=</span><span class="s">&quot;ivo://ivoa.net/vospace/core#quota&quot;</span><span class="nt">&gt;</span>524288000<span class="nt">&lt;/vos:property&gt;</span>.<span class="w"> </span><span class="cm">&lt;!-- 500MB quota example, adjust as needed --&gt;</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="nt">&lt;/vos:properties&gt;</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nt">&lt;vos:nodes</span><span class="w"> </span><span class="nt">/&gt;</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="nt">&lt;/vos:node&gt;</span>
-</span></code></pre></div>
-Where <code>JWT_TOKEN_REPLACE_ME</code> is replaced with a valid JWT token of the new user (i.e. the one making the request to be added).  Don't forget to set the <code>vos:property:uri</code> to the correct value for your service and the path of the new user.</p>
 
 
 
@@ -930,7 +894,7 @@ Where <code>JWT_TOKEN_REPLACE_ME</code> is replaced with a valid JWT token of th
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 24, 2025 12:07:57 PST"><span class="timeago" datetime="2025-11-24T12:07:57-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 24, 2025 12:07:57 PST">2025-11-24</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 4, 2026 15:40:26 PDT"><span class="timeago" datetime="2026-06-04T15:40:26-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 4, 2026 15:40:26 PDT">2026-06-04</span>
   </span>
 
     

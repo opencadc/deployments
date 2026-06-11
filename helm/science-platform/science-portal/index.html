@@ -507,6 +507,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#new-vs-legacy-chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      New vs legacy chart
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       Dependencies
@@ -522,61 +531,9 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Install">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#minimum-helm-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Minimum Helm configuration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-with-configured-values" class="md-nav__link">
-    <span class="md-ellipsis">
-      Run with configured values
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Configuration
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#theme" class="md-nav__link">
-    <span class="md-ellipsis">
-      Theme
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#authentication-authorization" class="md-nav__link">
-    <span class="md-ellipsis">
-      Authentication &amp; Authorization
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#endpoints" class="md-nav__link">
     <span class="md-ellipsis">
       Endpoints
@@ -584,18 +541,31 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#values-reference" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
     <span class="md-ellipsis">
-      Values Reference
+      Authentication
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#legacy-chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Legacy chart
+    </span>
+  </a>
   
 </li>
       
@@ -632,248 +602,85 @@
 
 
 <h1 id="science-portal-helm-chart">Science Portal Helm Chart<a class="headerlink" href="#science-portal-helm-chart" title="Permanent link">&para;</a></h1>
+<p>The Science Portal is the web dashboard where users start and monitor interactive sessions (notebooks, CARTA, terminals, and similar workloads managed by Skaha).</p>
+<h2 id="new-vs-legacy-chart">New vs legacy chart<a class="headerlink" href="#new-vs-legacy-chart" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>science-portal</strong> (recommended)</th>
+<th><strong>science-portal legacy</strong> (<code>scienceportal</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Helm chart name</td>
+<td><code>science-portal</code></td>
+<td><code>scienceportal</code></td>
+</tr>
+<tr>
+<td>Application</td>
+<td>Next.js (Node.js)</td>
+<td>Java web app on Apache Tomcat</td>
+</tr>
+<tr>
+<td>UI technology</td>
+<td>Modern React pages rendered by Next.js</td>
+<td>Older server-generated JSP pages</td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td>Structured <code>app</code> block in values (maps to env vars)</td>
+<td><code>deployment.sciencePortal</code> + Tomcat ConfigMap</td>
+</tr>
+<tr>
+<td>Default image</td>
+<td><code>images.opencadc.org/platform/science-portal</code> (Node, port 3000)</td>
+<td><code>images.opencadc.org/platform/science-portal:1.4.0</code> (Tomcat, port 8080)</td>
+</tr>
+<tr>
+<td>Chart source</td>
+<td><a href="https://github.com/opencadc/science-portal"><code>opencadc/science-portal</code></a> <a href="https://github.com/opencadc/science-portal/tree/main/helm"><code>helm/</code></a></td>
+<td><a href="../../../helm/applications/archived/science-portal/">archived chart</a> in this repo</td>
+</tr>
+</tbody>
+</table>
+<p>In plain terms: the <strong>new</strong> portal is a current-style website (fast page loads, React UI, Next.js server). The <strong>legacy</strong> portal is the older Java/Tomcat stack that builds each page on the server with JSP—still supported for existing deployments, but new installs should use <code>science-portal</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Chart source</p>
+<p>The Helm chart source is in <a href="https://github.com/opencadc/science-portal"><code>opencadc/science-portal</code></a> under <a href="https://github.com/opencadc/science-portal/tree/main/helm"><code>helm/</code></a>. Releases are consumed as <code>science-platform/science-portal</code> from the platform chart repository.</p>
+</div>
+<p>Step-by-step install instructions, a full example values file, and the legacy chart are documented in the <a href="../deployment/#science-portal-nextjs">Deployment Guide</a>.</p>
 <h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h2>
 <ul>
-<li>An existing Kubernetes cluster (1.29+).</li>
-<li>An IVOA Registry (See the <a href="https://spsrc27.iaa.csic.es/reg">Current SKAO Registry</a>)</li>
-<li>A working <code>skaha</code> web service deployed and registered in the IVOA Registry.</li>
+<li>Kubernetes 1.29+.</li>
+<li><a href="../skaha/">Skaha</a> deployed and registered in the IVOA Registry (the portal calls the Skaha API).</li>
+<li>For OpenID Connect login: a registered OIDC client and Kubernetes Secret for the client secret and NextAuth signing key (see deployment guide).</li>
+<li>Traefik installed per the <a href="../deployment/#traefik-install">deployment guide</a> (<code>IngressRoute</code> / <code>Middleware</code> for sessions; <code>Ingress</code> for this chart).</li>
 </ul>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
-<p>The Science Portal is a Single Page Application (SPA) with a rich Javascript client and DOM manager.  It uses React to power the various Dashboard elements, and is configurable for different OpenID Providers (OIdP).</p>
-<h3 id="minimum-helm-configuration">Minimum Helm configuration<a class="headerlink" href="#minimum-helm-configuration" title="Permanent link">&para;</a></h3>
-<p>See the full set of options in the <a href="https://github.com/opencadc/science-platform/blob/SP-3544/deployment/helm/science-portal/values.yaml">values.yaml</a>.  The deployed Redirect URI (<code>redirect_uri</code>) is <code>/science-portal/oidc-callback</code>, which handles
-receiving the <code>code</code> as part of the authorization code flow, and obtaining a token to put into a cookie.</p>
-<h3 id="run-with-configured-values">Run with configured values<a class="headerlink" href="#run-with-configured-values" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>science-platform<span class="w"> </span>https://images.opencadc.org/chartrepo/science-platform
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>science-platform<span class="w"> </span>https://images.opencadc.org/chartrepo/platform
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>helm<span class="w"> </span>repo<span class="w"> </span>update
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span>science-portal<span class="w"> </span>science-platform/scienceportal
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>Release<span class="w"> </span><span class="s2">&quot;science-portal&quot;</span><span class="w"> </span>has<span class="w"> </span>been<span class="w"> </span>installed.<span class="w"> </span>Happy<span class="w"> </span>Helming!
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>NAME:<span class="w"> </span>science-portal
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>LAST<span class="w"> </span>DEPLOYED:<span class="w"> </span>Thu<span class="w"> </span>Oct<span class="w"> </span><span class="m">19</span><span class="w"> </span><span class="m">11</span>:59:15<span class="w"> </span><span class="m">2024</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>NAMESPACE:<span class="w"> </span>skaha-system
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>STATUS:<span class="w"> </span>deployed
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>REVISION:<span class="w"> </span><span class="m">7</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>TEST<span class="w"> </span>SUITE:<span class="w"> </span>None
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>science-portal<span class="w"> </span>science-platform/science-portal
 </span></code></pre></div>
-<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<h3 id="theme">Theme<a class="headerlink" href="#theme" title="Permanent link">&para;</a></h3>
-<p>The Science Portal supports minimal theming via configuration options.  The following options are available under the <code>deployment.sciencePortal.theme</code> object:
-- <code>name</code>: The name of the theme to use.  Options are <code>canfar</code> and <code>src</code>.  These simply modify the header menu options.
-- <code>logoURL</code>: A URL to a logo image to use in the header (far left).  This overrides the default logo for the selected theme.</p>
-<p>The previous <code>deployment.sciencePortal.themeName</code> is deprecated in favour of the new <code>theme</code> object.</p>
-<h3 id="authentication-authorization">Authentication &amp; Authorization<a class="headerlink" href="#authentication-authorization" title="Permanent link">&para;</a></h3>
-<p>A&amp;A is handle by caching the Token Set server side and issuing a cookie to the browser to enable secure retrieval.  See the <a href="../../../docs/authentication/">Application Authentication Documentation</a>.</p>
-<h3 id="endpoints">Endpoints<a class="headerlink" href="#endpoints" title="Permanent link">&para;</a></h3>
-<p>The system will be available at the <code>/science-portal</code> endpoint, (i.e. <a href="https://example.com/science-portal">https://example.com/science-portal</a>).  Authenticating to the system is mandatory.</p>
-<h3 id="values-reference">Values Reference<a class="headerlink" href="#values-reference" title="Permanent link">&para;</a></h3>
-<!--
-Include the generated README from the Helm chart for reference.
--->
-<h1 id="scienceportal">scienceportal<a class="headerlink" href="#scienceportal" title="Permanent link">&para;</a></h1>
-<p>A Helm chart to install the Science Portal UI</p>
-<table>
-<thead>
-<tr>
-<th style="text-align: center;">Chart</th>
-<th style="text-align: center;">AppVersion</th>
-<th style="text-align: center;">Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">1.2.0<!-- x-release-please-version --></td>
-<td style="text-align: center;">1.2.6</td>
-<td style="text-align: center;">application</td>
-</tr>
-</tbody>
-</table>
-<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Repository</th>
-<th>Name</th>
-<th>Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>file://../utils</td>
-<td>utils</td>
-<td>^0.1.0</td>
-</tr>
-<tr>
-<td>oci://registry-1.docker.io/bitnamicharts</td>
-<td>redis</td>
-<td>^18.19.0</td>
-</tr>
-</tbody>
-</table>
-<h2 id="values">Values<a class="headerlink" href="#values" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Key</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>deployment.hostname</td>
-<td>string</td>
-<td><code>"example.host.com"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.defaultProjectName</td>
-<td>string</td>
-<td><code>"skaha"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.gmsID</td>
-<td>string</td>
-<td><code>nil</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.identityManagerClass</td>
-<td>string</td>
-<td><code>"org.opencadc.auth.StandardIdentityManager"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.image</td>
-<td>string</td>
-<td><code>"images.opencadc.org/platform/science-portal:1.3.0"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.imagePullPolicy</td>
-<td>string</td>
-<td><code>"Always"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.resources.limits.cpu</td>
-<td>string</td>
-<td><code>"1"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.resources.limits.memory</td>
-<td>string</td>
-<td><code>"1000Mi"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.resources.requests.cpu</td>
-<td>string</td>
-<td><code>"500m"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.resources.requests.memory</td>
-<td>string</td>
-<td><code>"750Mi"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.skahaResourceID</td>
-<td>string</td>
-<td><code>nil</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.tabLabels[0]</td>
-<td>string</td>
-<td><code>"Standard"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.tabLabels[1]</td>
-<td>string</td>
-<td><code>"Advanced"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>deployment.sciencePortal.theme</td>
-<td>object</td>
-<td><code>{}</code></td>
-<td></td>
-</tr>
-<tr>
-<td>experimentalFeatures.enabled</td>
-<td>bool</td>
-<td><code>false</code></td>
-<td></td>
-</tr>
-<tr>
-<td>kubernetesClusterDomain</td>
-<td>string</td>
-<td><code>"cluster.local"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>podSecurityContext</td>
-<td>object</td>
-<td><code>{}</code></td>
-<td></td>
-</tr>
-<tr>
-<td>redis.architecture</td>
-<td>string</td>
-<td><code>"standalone"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>redis.auth.enabled</td>
-<td>bool</td>
-<td><code>false</code></td>
-<td></td>
-</tr>
-<tr>
-<td>redis.image.repository</td>
-<td>string</td>
-<td><code>"redis"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>redis.image.tag</td>
-<td>string</td>
-<td><code>"8.2.2-bookworm"</code></td>
-<td></td>
-</tr>
-<tr>
-<td>redis.master.persistence.enabled</td>
-<td>bool</td>
-<td><code>false</code></td>
-<td></td>
-</tr>
-<tr>
-<td>replicaCount</td>
-<td>int</td>
-<td><code>1</code></td>
-<td></td>
-</tr>
-<tr>
-<td>securityContext</td>
-<td>object</td>
-<td><code>{}</code></td>
-<td></td>
-</tr>
-<tr>
-<td>tolerations</td>
-<td>list</td>
-<td><code>[]</code></td>
-<td></td>
-</tr>
-</tbody>
-</table>
+<p>Use the <a href="../deployment/#example-values-file">example values</a> in the deployment guide as a starting point.</p>
+<h2 id="endpoints">Endpoints<a class="headerlink" href="#endpoints" title="Permanent link">&para;</a></h2>
+<p>With the default path prefix, the UI is served at <code>/science-portal</code> (for example <code>https://example.host.com/science-portal</code>). OIDC redirect URIs typically use <code>/science-portal/api/auth/callback/...</code> depending on auth mode; align these with your IdP registration and <code>app.oidc</code> / <code>app.auth</code> settings.</p>
+<h2 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h2>
+<p>Browser login uses OpenID Connect (authorization code flow) or CANFAR credentials, depending on how the container image was built. Sessions are handled with NextAuth on the server (BFF-style), not by storing API tokens in browser local storage. See <a href="../browser-authentication/">Browser Authentication</a> and the upstream <a href="https://github.com/opencadc/science-portal/blob/main/helm/DEPLOYMENT-MODES.md">authentication modes guide</a>.</p>
+<h2 id="configuration-reference">Configuration reference<a class="headerlink" href="#configuration-reference" title="Permanent link">&para;</a></h2>
+<p>The chart maps the structured <code>app</code> section in values to container environment variables (see <a href="https://github.com/opencadc/science-portal/blob/main/.env.example"><code>.env.example</code></a>). Many <code>NEXT_PUBLIC_*</code> settings are fixed at <strong>image build</strong> time; runtime Helm values mainly affect server-side URLs, OIDC, and NextAuth.</p>
+<p>The generated values table and chart options are maintained in the service repository (not copied into this docs site):</p>
+<ul>
+<li><a href="https://github.com/opencadc/science-portal/blob/main/helm/README.md">Helm chart README</a> — full <code>values.yaml</code> reference</li>
+<li><a href="https://github.com/opencadc/science-portal/blob/main/helm/values.yaml">Default <code>values.yaml</code></a> — starting point for overlays</li>
+<li><a href="https://github.com/opencadc/science-portal/tree/main/helm">Helm chart directory</a> — templates and deployment guides (<code>DEPLOYMENT-MODES.md</code>, and others)</li>
+</ul>
+<h2 id="legacy-chart">Legacy chart<a class="headerlink" href="#legacy-chart" title="Permanent link">&para;</a></h2>
+<p>To install the JSP/Tomcat chart (<code>science-platform/scienceportal</code>), see <a href="../deployment/#science-portal-legacy-jsp--tomcat">Science Portal legacy</a> in the deployment guide.</p>
 
 
 
@@ -896,7 +703,7 @@ Include the generated README from the Helm chart for reference.
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="January 14, 2026 12:17:04 PST"><span class="timeago" datetime="2026-01-14T12:17:04-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="January 14, 2026 12:17:04 PST">2026-01-14</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 4, 2026 15:40:26 PDT"><span class="timeago" datetime="2026-06-04T15:40:26-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 4, 2026 15:40:26 PDT">2026-06-04</span>
   </span>
 
     

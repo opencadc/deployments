@@ -632,11 +632,15 @@
 
 
 <h1 id="base-helm-chart">Base Helm Chart<a class="headerlink" href="#base-helm-chart" title="Permanent link">&para;</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Obsolete for new deployments</p>
+<p>The <code>base</code> chart is no longer required for new Science Platform installs. Install <a href="../deployment/#traefik-install">Traefik separately</a>, create <code>skaha-system</code> / <code>skaha-workload</code> namespaces yourself, and use RBAC from the <a href="../skaha/">Skaha</a> chart. <strong>Existing clusters</strong> may keep a <code>base</code> release unchanged.</p>
+</div>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h3>
 <p>Kubernetes 1.29 and up are supported.</p>
 <h3 id="from-source">From source<a class="headerlink" href="#from-source" title="Permanent link">&para;</a></h3>
-<p>The base install also installs the Traefik proxy, which is needed by the Ingress when the Science Platform services are installed.</p>
+<p>Historically, the base chart installed the Traefik proxy and core namespaces. New deployments should follow the <a href="../deployment/#traefik-install">Deployment Guide</a> instead.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/science-platform.git
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>science-platform/deployment/helm
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>$<span class="w"> </span>helm<span class="w"> </span>--namespace<span class="w"> </span>traefik<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>./base/values.yaml<span class="w"> </span>&lt;name&gt;<span class="w"> </span>./base
@@ -761,7 +765,7 @@ the values.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="January 14, 2026 10:26:11 PST"><span class="timeago" datetime="2026-01-14T10:26:11-08:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="January 14, 2026 10:26:11 PST">2026-01-14</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 4, 2026 15:40:26 PDT"><span class="timeago" datetime="2026-06-04T15:40:26-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 4, 2026 15:40:26 PDT">2026-06-04</span>
   </span>
 
     
