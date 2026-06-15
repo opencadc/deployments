@@ -30,8 +30,19 @@ securityContext: {}
 deployment:
   hostname: example.host.com    # Change this!
   storageUI:
-    image: images.opencadc.org/client/storage-ui:1.4.3
+    image: images.opencadc.org/client/storageui:1.4.4
     imagePullPolicy: IfNotPresent
+
+    # Undocumented, but applies to local deployments.
+    # Mount an RSA **public** key for cookie/signature verification as `/config/<path>` via Kubernetes Secret projection.
+    # The Secret **data** entry must always be **`RsaSignaturePub.key`** (e.g. `kubectl create secret generic ... --from-file=RsaSignaturePub.key=./your-public.pem`).
+    # Omit `existingSecret.name` (default empty) when this overlay is not required (typical collaborator installs using other auth stacks).
+    cookieSignaturePublicKey:
+      existingSecret:
+        # Secret name (release namespace).
+        name: ""
+        # Filename under `/config` in the pod; defaults to **`RsaSignaturePub.key`** (must match Secret data entry name).
+        path: ""
 
     # Optionally set the DEBUG port.
     # extraEnv:

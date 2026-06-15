@@ -20,6 +20,15 @@ spec:
       {{- $legacyPodFallback := and (empty $podSC) (not (empty $contSC)) }}
       {{- $effectivePodSC := ternary $contSC $podSC $legacyPodFallback }}
       {{- $oidcSecretName := get (.Values.deployment.storageUI.oidc | default dict) "existingSecretName" }}
+      {{- $cspkRoot := (.Values.deployment.storageUI.cookieSignaturePublicKey | default dict) }}
+      {{- $cspkRef := ($cspkRoot.existingSecret | default dict) }}
+      {{- $cookiePubSecretName := trim (($cspkRef.name | default "") | toString) }}
+      {{- $cookiePubMountPath := "" }}
+      {{- if trim (($cspkRef.path | default "") | toString) }}
+      {{- $cookiePubMountPath = trim (($cspkRef.path | default "") | toString) }}
+      {{- else }}
+      {{- $cookiePubMountPath = "RsaSignaturePub.key" }}
+      {{- end }}
       {{- with .Values.deployment.storageUI.nodeAffinity }}
       affinity:
         nodeAffinity:
@@ -103,15 +112,37 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+      {{- if $oidcSecretName }}
       - name: config-volume
-        {{- if $oidcSecretName }}
         emptyDir: {}
+      - name: config-template-volume
+        {{- if $cookiePubSecretName }}
+        projected:
+          sources:
+          - configMap:
+              name: storage-ui-config
+          - secret:
+              name: {{ $cookiePubSecretName }}
+              items:
+              - key: RsaSignaturePub.key
+                path: {{ $cookiePubMountPath }}
         {{- else }}
         configMap:
           name: storage-ui-config
         {{- end }}
-      {{- if $oidcSecretName }}
-      - name: config-template-volume
+      {{- else if $cookiePubSecretName }}
+      - name: config-volume
+        projected:
+          sources:
+          - configMap:
+              name: storage-ui-config
+          - secret:
+              name: {{ $cookiePubSecretName }}
+              items:
+              - key: RsaSignaturePub.key
+                path: {{ $cookiePubMountPath }}
+      {{- else }}
+      - name: config-volume
         configMap:
           name: storage-ui-config
       {{- end }}
