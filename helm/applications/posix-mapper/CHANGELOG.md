@@ -1,5 +1,21 @@
 # CHANGELOG for POSIX Mapper (0.5.0)
 
+## [0.7.0](https://github.com/opencadc/deployments/compare/posixmapper-0.6.0...posixmapper-0.7.0) (2026-06-15)
+
+
+### Features
+
+* posix mapper chart updates with backward compat fixes and version bump ([5639666](https://github.com/opencadc/deployments/commit/56396663fe35a0272f974601643a581386c81318))
+
+
+### Bug Fixes
+
+* add image pull secret to posix mapper chart ([52fe4e0](https://github.com/opencadc/deployments/commit/52fe4e058e3200cbe715036640ed23ddec3158c4))
+* correct image ([8224472](https://github.com/opencadc/deployments/commit/82244723a6e2d25847fc1173c9bd9aad26ecd3d1))
+* **lint:** helm docs ([2b386e5](https://github.com/opencadc/deployments/commit/2b386e541ea8749a4c24703d1bf1e13deb15de10))
+* merge main ([736886b](https://github.com/opencadc/deployments/commit/736886bf662a18078e7e3eb9466ceaab54edf6d7))
+* papi support ([fea0840](https://github.com/opencadc/deployments/commit/fea0840bb222d19969a45698142a69c10adc471e))
+
 ## [0.6.0](https://github.com/opencadc/deployments/compare/posixmapper-0.5.0...posixmapper-0.6.0) (2026-03-25)
 
 
