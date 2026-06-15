@@ -20,7 +20,8 @@ This section is automatically generated. Do not edit manually.
 | Chart | Description |
 | --- | --- |
 | [access](helm/applications/access) | A Helm chart for the Access web service, responsible for managing user cookie access CADC and CANFAR services and applications. |
-| [scienceportal](helm/applications/archived/science-portal) | A Helm chart to install the Science Portal UI |
+| [scienceportal](helm/applications/archived/science-portal) | A Helm chart to install the Science Portal UI (legacy) |
+| [science-portal](https://github.com/opencadc/science-portal/blob/main/helm) | The current version of the Science Portal UI |
 | [skaha](helm/applications/archived/skaha) | A Helm chart to install the Skaha web service of the CANFAR Science Platform |
 | [canfar-web-portal](helm/applications/canfar-web-portal) | A Helm chart for Kubernetes |
 | [canfar-web-root](helm/applications/canfar-web-root) | A Helm chart for Kubernetes |
