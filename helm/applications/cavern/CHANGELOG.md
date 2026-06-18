@@ -1,5 +1,45 @@
 # CHANGELOG for Cavern User Storage
 
+## [0.9.0](https://github.com/opencadc/deployments/compare/cavern-0.8.0...cavern-0.9.0) (2026-06-15)
+
+
+### Features
+
+* make storage spec configurable for sessions ([59ae459](https://github.com/opencadc/deployments/commit/59ae459e22343a8dfd759be3870df1d25b1c7917))
+* remove carta legacy and add scripting support ([b7128f5](https://github.com/opencadc/deployments/commit/b7128f5ee08b7620dbe2c666c44d7255662da692))
+* update docs and charts to put necessary items into secrets ([7fda82b](https://github.com/opencadc/deployments/commit/7fda82b35312fc21f3f39edf08beffe3fe305fef))
+
+
+### Bug Fixes
+
+* add cavern auth section ([d39ded7](https://github.com/opencadc/deployments/commit/d39ded71f5a85aa43ec29c4633ba65dcea9bbb39))
+* add permissions api auth section ([b99d6b7](https://github.com/opencadc/deployments/commit/b99d6b7ea6adc7f20860e3fe10812170eb89bac7))
+* allow image pull secrets ([b8bdf4e](https://github.com/opencadc/deployments/commit/b8bdf4eb544b2952b6ed3bf84097792a18f265da))
+* allow using secrets as admin api keys ([8d5dd81](https://github.com/opencadc/deployments/commit/8d5dd818ce4937a336528a3b6e846215cde80cc8))
+* cavern allow just username and update docs ([899b544](https://github.com/opencadc/deployments/commit/899b544f5841d272fe515238b0944b1dae7d26a0))
+* cavern rc chart ([901c709](https://github.com/opencadc/deployments/commit/901c70906a4c21cdca59d20c7426208340c3883c))
+* chart updates for backward compat and allow security context ([b897ed4](https://github.com/opencadc/deployments/commit/b897ed4b2f2665b72fcb18e137539f4937b9b4b1))
+* chart versions ([ad90b90](https://github.com/opencadc/deployments/commit/ad90b9058136bcf79bbbc60e0d129414f724f6c7))
+* chart versions ([d9c8052](https://github.com/opencadc/deployments/commit/d9c8052f00fc408442d506407c8c6c3d1fe96939))
+* current rc version ([be6e3d1](https://github.com/opencadc/deployments/commit/be6e3d1005447bfe11fa019c0b468827de2bd35e))
+* **docs:** fixed deployment docs ([4ce4c9d](https://github.com/opencadc/deployments/commit/4ce4c9d6dcba36b7e5fae47b073f2f75f26529ff))
+* first pass at chart changes to accommodate tools like argo ([0a37271](https://github.com/opencadc/deployments/commit/0a372718c929685b4eb1285bac394a020d3e1454))
+* fix configs ([d956dfd](https://github.com/opencadc/deployments/commit/d956dfdb2df37a09613d386a186781eb9e30fd55))
+* fix for adding service account ([395bc38](https://github.com/opencadc/deployments/commit/395bc38c679b57a778e78fe4b5358945481240e5))
+* fix for cavern charts to allow secrets for admin api keys ([137aed9](https://github.com/opencadc/deployments/commit/137aed9d9f61ded3b635172ca6231a005be4dab5))
+* fix for precommit ([a4fe413](https://github.com/opencadc/deployments/commit/a4fe4133f163eb44b2270b45b389554e7ff0c850))
+* fix pre commit ([fc24792](https://github.com/opencadc/deployments/commit/fc247922894c09d6343fa75a34fb3fb352ccf257))
+* merge main ([736886b](https://github.com/opencadc/deployments/commit/736886bf662a18078e7e3eb9466ceaab54edf6d7))
+* modify where papi properties are set ([21e0fde](https://github.com/opencadc/deployments/commit/21e0fdee61175cd506aa504b596ce6510aed42a9))
+* permissions api auth for cavern ([41c76fb](https://github.com/opencadc/deployments/commit/41c76fb70e5a703b1d8d78b92308eca309e90a5b))
+* remove api key support in cavern ([67fdf51](https://github.com/opencadc/deployments/commit/67fdf514084fab1c5dd3d24ea8529bee51968742))
+* remove damaging fsgroup setting ([793a4ac](https://github.com/opencadc/deployments/commit/793a4ac889a200f179f973d53f588bcad6a73066))
+* secret fix ([31ded6b](https://github.com/opencadc/deployments/commit/31ded6b262bb2490e35d52d1b14eba2674019808))
+* update documentation and bump cavern image ([7fbb6f8](https://github.com/opencadc/deployments/commit/7fbb6f8c3274ef7b4c6654e65240cdf2997216cc))
+* update image to current ([a6d4b0d](https://github.com/opencadc/deployments/commit/a6d4b0dbabdd0e6feef0151edb1988663fa265a6))
+* update to use rsa from secret ([f3fc296](https://github.com/opencadc/deployments/commit/f3fc2967632d9b496f5c3e298bd5f09a6269531c))
+* use release namespace ([131fc11](https://github.com/opencadc/deployments/commit/131fc11226fe66422e7c2048b755539b503df528))
+
 ## [0.8.0](https://github.com/opencadc/deployments/compare/cavern-0.7.1...cavern-0.8.0) (2025-11-05)
 
 
