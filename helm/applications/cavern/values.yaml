@@ -16,7 +16,7 @@ securityContext: {}
 deployment:
   hostname: example.org
   cavern:
-    image: images.opencadc.org/platform/cavern:0.10.0
+    image: images.opencadc.org/platform/cavern:0.10.2
     imagePullPolicy: IfNotPresent
 
     # Undocumented, but applies to local deployments.

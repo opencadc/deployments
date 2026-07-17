@@ -1,0 +1,26 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+apiVersion: v2
+appVersion: 1.0.23
+description: An IVAO TAP Helm chart
+name: argus
+type: application
+version: 0.1.0
+
+...
+files:
+  argus-0.1.0.tgz: sha256:032ce680531f950fb8f56cf4d4cb0e8fa850f812f34d34576b0c28955b128368
+-----BEGIN PGP SIGNATURE-----
+
+wsDcBAEBCgAQBQJqNFWPCRBq0sqFWPBBQgAAzpUMAIKUvrS3/5iuF98WufkMzNUJ
+BKh47zsGo6IIJodiazfRJT42zJijTZztb9XkyE5dXmF3cLdj74bmY3KkBehMP6Bh
+K4HPd5xxdNNH1alz42ysRxHjlszjD3DZmaWnb1L/QxD7qF/MgfAngXDAMby8FsUu
+Xf6SyrrxycxrWPOr2iw9jC46LeZ6dpiqNL9gY9tB11iwd/2d8iB3ISSU/PDGySlP
+DF3YchjAQlvVeogGQfjYz9/hxszKo8XZGAM2UhTi1G8DuE6K5s9az5pLiszjGTaQ
+P3/8rzfbnqMgcNQ+WzdhL3jgTzc10xvS7ntCucZe/DfBnrtvRiR7hbmIDPIF+s15
+q+n9LNOHOb1DAuzh8tOpdu4+kMraJ+dAsWpJAGByGzO7Dox/EtE7R4UD3bopLRZ8
+dOlA8j85F9GKKkCFZl6gmpD73PldQmHB4iJpTvFqw5aTGf19JyGgiacEu7LpZWkd
+PwOGP3kRT+HczItqpNPSEOkxOWVUFvsoWtor1JudRg==
+=wbPp
+-----END PGP SIGNATURE-----

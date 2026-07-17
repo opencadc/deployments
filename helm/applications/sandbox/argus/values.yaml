@@ -16,7 +16,17 @@ global:
   cdpID:
   gmsID:
   posixMapperID:
-  rsaPublicKey:
+
+  # Mount an RSA **public** key for cookie/signature verification as `/config/<path>` via Kubernetes Secret projection.
+  # The Secret **data** entry must always be **`RsaSignaturePub.key`** (e.g. `kubectl create secret generic ... --from-file=RsaSignaturePub.key=./your-public.pem`).
+  # Omit `existingSecret.name` (default empty) when this overlay is not required (typical collaborator installs using other auth stacks).
+  # **Runtime note:** Callback signing tokens also use workload Secret `pre-auth-token-skaha` (`public` / `private` keys) via application code paths; verify with your ops team whether your deployment consumes `/config/RsaSignaturePub.key`, WAR classpath material, both, or neither.
+  cookieSignaturePublicKey:
+    existingSecret:
+      # Secret name (release namespace).
+      name: ""
+      # Filename under `/config` in the pod; defaults to **`RsaSignaturePub.key`** (must match Secret data entry name).
+      path: "RsaSignaturePub.key"
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -27,7 +37,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.0.19"
+  tag: "1.0.23"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []

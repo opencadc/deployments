@@ -19,7 +19,7 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "1.2.1"
 
-# This section is for setting application specific parameters.
+# -- Begin application specific parameters. --
 application:
   # Mandatory service entries to point to specific URLs.  Keys are IVOA identifiers.
   # Example:
@@ -73,6 +73,8 @@ application:
   #  - id: "ivo://cadc.nrc.ca/ui/mycustomentry"
   #    url: "https://example.com/mylink"
   # userInterfaceEntries: []
+
+# -- End application specific parameters. --
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
