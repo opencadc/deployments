@@ -1,0 +1,28 @@
+# Example values for deploying the DOI service.
+#
+# Copy this file and replace the example values with your environment-specific
+# hostnames, registry IDs, VOSpace URI, DataCite account, and Secret names.
+
+deployment:
+  hostname: doi.example.org
+  doi:
+    image: images.opencadc.org/platform/doi:1.2.0
+
+    registryURL: https://doi.example.org/reg
+    gmsID: ivo://example.org/gms
+    oidcURI: https://iam.example.org/
+
+    config:
+      vospaceParentUri: vos://example.org~arc/doi
+      metaDataPrefix: doi
+      groupPrefix: doi
+      landingUrl: https://doi.example.org/doi
+      mdsUrl: https://mds.datacite.org
+      accountPrefix: "10.5072"
+
+    datacite:
+      auth:
+        existingSecret: doi-datacite
+
+    certificates:
+      existingSecret: doi-certs

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "doi.labels" . | nindent 4 }}
+data:
+{{ tpl (.Files.Glob "config/*").AsConfig . | indent 2 }}
+{{- include "utils.extraConfig" (dict "extraConfigData" .Values.deployment.doi.extraConfigData) -}}

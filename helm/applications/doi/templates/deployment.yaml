@@ -1,0 +1,154 @@
+{{- $containerPort := 8080 -}}
+{{- $auth := .Values.deployment.doi.datacite.auth | default dict -}}
+{{- $authKeys := $auth.secretKeys | default dict -}}
+{{- $usernameKey := $authKeys.username | default "username" -}}
+{{- $passwordKey := $authKeys.password | default "password" -}}
+{{- $certs := .Values.deployment.doi.certificates | default dict -}}
+{{- $certKeys := $certs.secretKeys | default dict -}}
+{{- $doiadminKey := $certKeys.doiadmin | default "doiadmin.pem" -}}
+{{- $cadcproxyKey := $certKeys.cadcproxy | default "cadcproxy.pem" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: {{ .Release.Name }}-tomcat
+    {{- include "doi.labels" . | nindent 4 }}
+  name: {{ .Release.Name }}-tomcat
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ default 1 .Values.replicaCount }}
+  selector:
+    matchLabels:
+      run: {{ .Release.Name }}-tomcat
+  template:
+    metadata:
+      labels:
+        run: {{ .Release.Name }}-tomcat
+        {{- include "doi.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.deployment.doi.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployment.doi.nodeAffinity }}
+      affinity:
+        nodeAffinity:
+          {{- toYaml . | nindent 10 }}
+      {{- end }}
+      {{- $podSC := merge (.Values.volumeInit.podSecurityContext | default dict) (.Values.podSecurityContext | default dict) }}
+      {{- if not (empty $podSC) }}
+      securityContext:
+        {{- toYaml $podSC | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: merge-doi-config
+          image: {{ .Values.volumeInit.image | quote }}
+          imagePullPolicy: {{ .Values.volumeInit.imagePullPolicy }}
+          command: ['sh', '-c']
+          args:
+            - |
+              set -e
+              cp -R /config-src/. /config-dst/
+              cp "/certs/${DOIADMIN_KEY}" /config-dst/doiadmin.pem
+              cp "/certs/${CADCPROXY_KEY}" /config-dst/cadcproxy.pem
+              USER=$(tr -d '\n' < "/datacite/${USERNAME_KEY}")
+              PASS=$(tr -d '\n' < "/datacite/${PASSWORD_KEY}")
+              printf '\nca.nrc.cadc.doi.datacite.username = %s\n' "$USER" >> /config-dst/doi.properties
+              printf 'ca.nrc.cadc.doi.datacite.password = %s\n' "$PASS" >> /config-dst/doi.properties
+          env:
+            - name: USERNAME_KEY
+              value: {{ $usernameKey | quote }}
+            - name: PASSWORD_KEY
+              value: {{ $passwordKey | quote }}
+            - name: DOIADMIN_KEY
+              value: {{ $doiadminKey | quote }}
+            - name: CADCPROXY_KEY
+              value: {{ $cadcproxyKey | quote }}
+          volumeMounts:
+            - name: config-source
+              mountPath: /config-src
+              readOnly: true
+            - name: datacite-secret
+              mountPath: /datacite
+              readOnly: true
+            - name: certificate-secret
+              mountPath: /certs
+              readOnly: true
+            - name: config-merged
+              mountPath: /config-dst
+          {{- with .Values.volumeInit.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      containers:
+        - image: {{ .Values.deployment.doi.image }}
+          imagePullPolicy: {{ .Values.deployment.doi.imagePullPolicy }}
+          name: {{ .Release.Name }}-tomcat
+          resources:
+            requests:
+              memory: {{ .Values.deployment.doi.resources.requests.memory }}
+              cpu: {{ .Values.deployment.doi.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.deployment.doi.resources.limits.memory }}
+              cpu: {{ .Values.deployment.doi.resources.limits.cpu }}
+          securityContext:
+            {{- $tomcatSC := merge (dict "allowPrivilegeEscalation" false) (.Values.securityContext | default dict) }}
+            {{- toYaml $tomcatSC | nindent 12 }}
+          {{- with .Values.deployment.doi.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ $containerPort }}
+              protocol: TCP
+          {{- with .Values.deployment.doi.extraPorts }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: "/config"
+              name: config-merged
+          {{- with .Values.deployment.doi.extraVolumeMounts }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.deployment.extraHosts }}
+      hostAliases:
+      {{- range $extraHost := . }}
+        - ip: {{ $extraHost.ip }}
+          hostnames:
+            - {{ $extraHost.hostname }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.serviceAccount.name }}
+      serviceAccountName: {{ . }}
+      {{- end }}
+      volumes:
+        - name: config-source
+          configMap:
+            name: {{ .Release.Name }}-config
+        - name: datacite-secret
+          secret:
+            secretName: {{ include "doi.dataciteAuthSecretName" . }}
+        - name: certificate-secret
+          secret:
+            secretName: {{ include "doi.certificateSecretName" . }}
+        - name: config-merged
+          emptyDir: {}
+      {{- with .Values.deployment.doi.extraVolumes }}
+      {{- toYaml . | nindent 8 }}
+      {{- end }}

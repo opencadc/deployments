@@ -1,0 +1,153 @@
+kubernetesClusterDomain: cluster.local
+
+replicaCount: 1
+
+podSecurityContext: {}
+
+securityContext: {}
+
+deployment:
+  hostname: example.org
+  doi:
+    image: images.opencadc.org/platform/doi:1.2.0
+    imagePullPolicy: IfNotPresent
+
+    # Optional rename of the application from the default "doi".
+    applicationName: "doi"
+
+    # The endpoint to serve this from. If applicationName is changed, this should match.
+    endpoint: "/doi"
+
+    # Set the Registry URL pointing to the desired registry (https:// URL).
+    # registryURL: https://example.org/reg
+
+    # ID (URI) of the GMS Service. Required for auth-related registry lookups.
+    # gmsID: ivo://example.org/gms
+
+    # URI or URL of the OIDC (IAM) server. Used to validate incoming tokens.
+    # oidcURI: https://example.org/oidc
+
+    # The IdentityManager class handling authentication.
+    identityManagerClass: org.opencadc.auth.StandardIdentityManager
+
+    config:
+      # VOSpace URI to the parent DOI folder.
+      vospaceParentUri: "vos://example.org~arc/doi"
+
+      # Prefix prepended to the DOI name for metadata stored in VOSpace.
+      metaDataPrefix: "doi"
+
+      # Prefix prepended to the DOI name to create the backing GMS group name.
+      groupPrefix: "doi"
+
+      # DOI landing page URL.
+      landingUrl: "https://example.org/doi"
+
+      # DataCite MDS REST endpoint.
+      mdsUrl: "https://mds.datacite.org"
+
+      # Registered prefix for the DataCite account.
+      accountPrefix: ""
+
+      # Optional DOI identifier prefix.
+      doiIdentifierPrefix: ""
+
+      # Optional publisher group URI for alternative DOI settings.
+      publisherGroupURI: ""
+
+      # Optional self-publish flag for alternative DOI settings.
+      selfPublish: ""
+
+      # Developer testing only.
+      randomTestID: false
+
+    datacite:
+      auth:
+        # Existing Secret containing DataCite credentials.
+        existingSecret: ""
+        secretKeys:
+          username: username
+          password: password
+
+    certificates:
+      # Existing Secret containing doiadmin.pem and cadcproxy.pem.
+      existingSecret: ""
+      secretKeys:
+        doiadmin: doiadmin.pem
+        cadcproxy: cadcproxy.pem
+
+    # Optionally set the DEBUG port.
+    # extraEnv:
+    # - name: CATALINA_OPTS
+    #   value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555"
+    # extraPorts:
+    # - containerPort: 5555
+    #   protocol: TCP
+
+    # This applies to the DOI service pod.
+    # nodeAffinity: {}
+
+    # Optionally mount additional config or certificates.
+    # extraVolumeMounts:
+    # - mountPath: "/config/cacerts"
+    #   name: cacert-volume
+    # extraVolumes:
+    # - name: cacert-volume
+    #   secret:
+    #     defaultMode: 420
+    #     secretName: doi-cacert-secret
+
+    # Additional non-secret config files or keys merged into the DOI ConfigMap.
+    extraConfigData: {}
+
+    # Groups that can alter logging. Empty array means nobody can alter it.
+    loggingGroups: []
+
+    resources:
+      requests:
+        memory: "500Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "750m"
+
+  # Specify extra hostnames that will be added to the Pod's /etc/hosts file.
+  # extraHosts:
+  #   - ip: 127.3.34.5
+  #     hostname: myhost.example.org
+  # extraHosts: []
+
+tolerations: []
+
+volumeInit:
+  image: busybox:1.36
+  imagePullPolicy: IfNotPresent
+  securityContext: {}
+  podSecurityContext: {}
+
+serviceAccount:
+  create: false
+  automount: true
+  annotations: {}
+  name: ""
+
+livenessProbe:
+  httpGet:
+    path: /doi/availability
+    port: 8080
+  periodSeconds: 30
+
+readinessProbe:
+  httpGet:
+    path: /doi/availability
+    port: 8080
+  periodSeconds: 15
+
+startupProbe:
+  httpGet:
+    path: /doi/availability
+    port: 8080
+  initialDelaySeconds: 10
+  timeoutSeconds: 30
+  periodSeconds: 10
+  failureThreshold: 30

@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "doi.labels" . | nindent 4 }}
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: {{ .Values.deployment.hostname }}
+      http:
+        paths:
+          - path: {{ .Values.deployment.doi.endpoint | default "/doi" }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-tomcat-svc
+                port:
+                  number: 8080

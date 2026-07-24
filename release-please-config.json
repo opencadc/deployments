@@ -19,6 +19,13 @@
       "monorepo-tags": true,
       "extra-files": ["README.md"]
     },
+    "helm/applications/doi": {
+      "package-name": "doi",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "extra-files": ["README.md"]
+    },
     "helm/applications/posix-mapper": {
       "package-name": "posixmapper",
       "release-type": "helm",
