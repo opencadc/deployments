@@ -6,20 +6,15 @@ metadata:
   labels:
     run: {{ .Release.Name }}-tomcat-svc
 spec:
+  {{- with .Values.service.type }}
+  type: {{ . }}
+  {{- end }}
   ports:
-  - port: 8080
+  - port: {{ .Values.service.port }}
     name: http-connection
     protocol: TCP
-  - port: 80
-    targetPort: 8080
-    name: http-connection-automatic
-    protocol: TCP
-  {{ with .Values.service }}
-    {{ with .skaha }}
-      {{ with .extraPorts }}
+  {{- with .Values.service.extraPorts }}
   {{- toYaml . | nindent 2 }}
-      {{- end }}
-    {{- end }}
   {{- end }}
   selector:
     run: {{ .Release.Name }}-tomcat

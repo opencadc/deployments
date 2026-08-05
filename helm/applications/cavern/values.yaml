@@ -254,13 +254,16 @@ secrets:
   # cavern-cacert-secret:
   #   ca.crt: <base64 encoded CA crt>
 
-# Exposed extra ports.  Uncomment the java-debug port to expose and debug issues.
-# service:
-#   cavern:
-#     extraPorts:
-  #   - port: 5555
-  #     protocol: TCP
-  #     name: java-debug
+# This sets the service type and port. More information:
+# https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # type: ClusterIP
+  port: 8080
+  # Exposed extra ports.  Uncomment the java-debug port to expose and debug issues.
+  # extraPorts:
+  # - port: 5555
+  #   protocol: TCP
+  #   name: java-debug
 
 # Set these appropriately to match your Persistent Volume Claim labels.
 storage:

@@ -119,6 +119,17 @@ tolerations: []
   #     hostname: myhost.example.org
   #
   # extraHosts: []
+# This sets the service type and port. More information:
+# https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # type: ClusterIP
+  port: 8080
+  # Exposed extra ports.  Uncomment the java-debug port to expose and debug issues.
+  # extraPorts:
+  # - port: 5555
+  #   protocol: TCP
+  #   name: java-debug
+
 secrets:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
   # posix-manager-cacert-secret:

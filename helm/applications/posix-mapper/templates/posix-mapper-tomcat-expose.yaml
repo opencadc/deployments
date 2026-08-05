@@ -6,16 +6,15 @@ metadata:
   labels:
     run: posix-mapper-tomcat-svc
 spec:
+  {{- with .Values.service.type }}
+  type: {{ . }}
+  {{- end }}
   ports:
-  - port: 8080
+  - port: {{ .Values.service.port }}
     name: http-connection
     protocol: TCP
-  {{ with .Values.service }}
-    {{ with .reg }}
-      {{ with .extraPorts }}
+  {{- with .Values.service.extraPorts }}
   {{- toYaml . | nindent 2 }}
-      {{- end }}
-    {{- end }}
   {{- end }}
   selector:
     run: posix-mapper-tomcat
