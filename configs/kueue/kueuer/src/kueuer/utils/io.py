@@ -1,6 +1,7 @@
 """Input/Output utilities for reading and writing files."""
 
 import csv
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Set
@@ -51,6 +52,8 @@ def save_performance_to_csv(results: List[Dict[str, Any]], filename: str) -> Non
             for key, value in result.items():
                 if isinstance(value, datetime):
                     row_data[key] = value.isoformat()
+                elif isinstance(value, (list, dict)):
+                    row_data[key] = json.dumps(value)
                 else:
                     row_data[key] = value
             writer.writerow(row_data)  # type: ignore

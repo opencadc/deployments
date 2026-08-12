@@ -290,7 +290,7 @@ def jobs(  # noqa: C901
         elif item.metadata.name in pending and job_reached_state(item, "Failed"):
             failed_count += 1
             pending[item.metadata.name] = False
-            logfire.warning("%s reached terminal state Failed.", item.metadata.name)
+            logfire.warning(f"{item.metadata.name} reached terminal state Failed.")
 
     logfire.info(f"{len(pending)} jobs need to be tracked.")
     logfire.info(f"Starting to track jobs to state {to_state}...")
@@ -323,7 +323,7 @@ def jobs(  # noqa: C901
             elif job_reached_state(item, "Failed"):
                 failed_count += 1
                 pending[name] = False
-                logfire.warning("%s reached terminal state Failed.", name)
+                logfire.warning(f"{name} reached terminal state Failed.")
 
             logfire.debug(f"Pending Jobs Left: {sum(pending.values())}")
 
@@ -338,8 +338,6 @@ def jobs(  # noqa: C901
                 break
     if failed_count:
         logfire.warning(
-            "%s jobs reached Failed state while tracking '%s'.",
-            failed_count,
-            prefix,
+            f"{failed_count} jobs reached Failed state while tracking '{prefix}'."
         )
     return done
