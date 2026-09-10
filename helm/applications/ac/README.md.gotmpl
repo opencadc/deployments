@@ -1,0 +1,23 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+| Chart | AppVersion | Type |
+|:-----:|:----------:|:----:|
+|{{ template "chart.version" . }}<!-- x-release-please-version --> | {{ template "chart.appVersion" . }} | {{ template "chart.type" . }} |
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Runtime configuration
+
+The chart generates non-sensitive runtime files in a ConfigMap and projects an
+existing Secret into the same `/config` directory. At minimum, the Secret must
+contain `ac-ldap-config.properties`. A deployment using the AC OIDC endpoints
+must also provide `ac-oidc-clients.properties`, `oidc-rsa256-pub.key`, and
+`oidc-rsa256-priv.key` in that Secret.
+
+The completed LDAP and OIDC files must not be stored in Git.
+
+{{ template "chart.valuesSection" . }}

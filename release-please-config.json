@@ -5,6 +5,13 @@
   "include-v-in-tag": false,
   "tag-separator": "-",
   "packages": {
+    "helm/applications/ac": {
+      "package-name": "ac",
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md",
+      "monorepo-tags": true,
+      "extra-files": ["README.md"]
+    },
     "helm/applications/base": {
       "package-name": "base",
       "release-type": "helm",

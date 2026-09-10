@@ -1,0 +1,102 @@
+replicaCount: 1
+
+image:
+  repository: bucket.canfar.net/ac
+  pullPolicy: IfNotPresent
+  tag: "1.5.0-20260127T224241"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+application:
+  endpoint: /ac
+  resourceID: ivo://cadc.nrc.ca/gms
+  registryURL: https://example.org/reg
+
+  # Repeatable X.509 DNs with privileged read access to all groups.
+  readUsers: []
+
+  # Space-separated in the generated ac-domains.properties file.
+  domains: []
+
+  # Reserved group-name prefix -> allowed HTTP user and optional admin Group URI.
+  # An empty value prevents anyone from creating groups with that prefix.
+  groupNameRules: {}
+
+  logging:
+    users: []
+    usernames: []
+    groups: []
+
+# Existing Secret projected into /config alongside the generated ConfigMap.
+# It must contain ac-ldap-config.properties. When OIDC is enabled it should also
+# contain ac-oidc-clients.properties, oidc-rsa256-pub.key, and
+# oidc-rsa256-priv.key. Do not duplicate ConfigMap filenames in this Secret.
+configuration:
+  existingSecret: ac-runtime-config
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /ac
+          pathType: Prefix
+  tls: []
+
+tomcat:
+  connector:
+    # Override with the public service hostname.
+    proxyName: hostname.example.com
+    scheme: https
+    proxyPort: "443"
+
+resources: {}
+
+livenessProbe:
+  httpGet:
+    path: /ac/availability
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /ac/availability
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+startupProbe:
+  httpGet:
+    path: /ac/availability
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 30
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

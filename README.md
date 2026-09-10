@@ -19,6 +19,7 @@ This section is automatically generated. Do not edit manually.
 
 | Chart | Description |
 | --- | --- |
+| [ac](helm/applications/ac) | A Helm chart for the OpenCADC Access Control and Group Management Service |
 | [access](helm/applications/access) | A Helm chart for the Access web service, responsible for managing user cookie access CADC and CANFAR services and applications. |
 | [scienceportal](helm/applications/archived/science-portal) | A Helm chart to install the Science Portal UI (legacy) |
 | [science-portal](https://github.com/opencadc/science-portal/blob/main/helm) | The current version of the Science Portal UI |
