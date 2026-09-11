@@ -10,7 +10,7 @@ A Helm chart for the OpenCADC Access Control and Group Management Service
 
 The chart generates non-sensitive runtime files in a ConfigMap and projects an
 existing Secret into the same `/config` directory. At minimum, the Secret must
-contain `ac-ldap-config.properties`. A deployment using the AC OIDC endpoints
+contain `ac-ldap-config.properties`. A deployment using the ac OIDC endpoints
 must also provide `ac-oidc-clients.properties`, `oidc-rsa256-pub.key`, and
 `oidc-rsa256-priv.key` in that Secret.
 
