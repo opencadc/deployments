@@ -140,7 +140,9 @@ secrets:
 # @param postgresql.url - JDBC URL of the PostgreSQL database.  Required.
 # @param postgresql.schema - Database schema to use. Required.
 # @param postgresql.auth.username - Database username.  Required.
-# @param postgresql.auth.password - Database password.  Required.
+# @param postgresql.auth.password - Database password.  Required unless postgresql.auth.existingSecret is set.
+# @param postgresql.auth.existingSecret - Optional. Name of an existing Secret that contains the database password. Use this instead of postgresql.auth.password so the password is not stored in the ConfigMap.
+# @param postgresql.auth.secretKey - Key in existingSecret that holds the password. Defaults to password.
 #
 # Example:
 # postgresql:
@@ -150,4 +152,6 @@ secrets:
 #   auth:
 #     username: posixmapperuser
 #     password: posixmapperpwd
+#     # existingSecret: posix-mapper-db
+#     # secretKey: password
 postgresql: {}

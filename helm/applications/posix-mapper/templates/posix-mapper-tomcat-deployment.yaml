@@ -1,3 +1,6 @@
+{{- $pgAuth := ((.Values.postgresql | default dict).auth | default dict) }}
+{{- $pgSecretName := $pgAuth.existingSecret | default "" }}
+{{- $pgSecretKey := $pgAuth.secretKey | default "password" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,6 +31,35 @@ spec:
       {{- with .Values.deployment.posixMapper.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $pgSecretName }}
+      initContainers:
+      - image: {{ .Values.deployment.posixMapper.image }}
+        imagePullPolicy: {{ .Values.deployment.posixMapper.imagePullPolicy }}
+        name: posix-mapper-config
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -eu
+          cp -R /config-template/. /config
+          printf '\norg.opencadc.posix.mapper.password=%s\n' "$PG_PASSWORD" >> /config/catalina.properties
+        env:
+        - name: PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $pgSecretName }}
+              key: {{ $pgSecretKey }}
+        volumeMounts:
+        - mountPath: "/config-template"
+          name: config-template-volume
+          readOnly: true
+        - mountPath: "/config"
+          name: config-volume
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       {{- end }}
       containers:
       - image: {{ .Values.deployment.posixMapper.image }}
@@ -73,9 +105,17 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+      {{- if $pgSecretName }}
+      - name: config-volume
+        emptyDir: {}
+      - name: config-template-volume
+        configMap:
+          name: posix-mapper-config
+      {{- else }}
       - name: config-volume
         configMap:
           name: posix-mapper-config
+      {{- end }}
       {{- with .Values.deployment.posixMapper.extraVolumes }}
       {{- toYaml . | nindent 6 }}
       {{- end }}

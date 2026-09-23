@@ -17,6 +17,9 @@ Checking auth here to pass linting.
 */ -}}
 {{- if .Values.postgresql.auth }}
 - Connecting as: {{ .Values.postgresql.auth.username }}
+{{- if .Values.postgresql.auth.existingSecret }}
+- Password from Secret: {{ .Values.postgresql.auth.existingSecret }} (key {{ .Values.postgresql.auth.secretKey | default "password" }})
+{{- end }}
 {{- end }}
 
 Quick checks:
