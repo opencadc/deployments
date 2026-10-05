@@ -109,6 +109,9 @@ spec:
           name: config-merged
         - mountPath: '{{ .Values.deployment.cavern.filesystem.dataDir | required ".deployment.cavern.filesystem.dataDir is required" }}'
           name: cavern-volume
+          {{- with .Values.storage.service.subPath }}
+          subPath: {{ . | quote }}
+          {{- end }}
         {{- with .Values.deployment.cavern.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

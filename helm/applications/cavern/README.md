@@ -58,6 +58,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | serviceAccount.create | bool | `false` |  |
 | serviceAccount.name | string | `""` |  |
 | storage.service.spec | string | `nil` |  |
+| storage.service.subPath | string | `"cavern"` | Subdirectory of the service volume to mount at filesystem.dataDir (`volumeMount.subPath` on `cavern-volume`). |
 | tolerations | list | `[]` |  |
 | volumeInit.image | string | `"busybox:1.36"` |  |
 | volumeInit.imagePullPolicy | string | `"IfNotPresent"` |  |

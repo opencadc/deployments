@@ -268,6 +268,8 @@ service:
 # Set these appropriately to match your Persistent Volume Claim labels.
 storage:
   service:
+    # -- Subdirectory of the service volume to mount at filesystem.dataDir (`volumeMount.subPath` on `cavern-volume`).
+    subPath: cavern
     spec:
       # YAML for service mounted storage.
       # Example is the persistentVolumeClaim below.  Do not uncomment this
