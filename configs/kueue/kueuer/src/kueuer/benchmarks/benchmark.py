@@ -261,6 +261,8 @@ def experiment(
     apply_chunk_size: int = 25,
     apply_retries: int = 2,
     apply_backoff: float = 2.0,
+    vm_memory_fraction: float = k8s.DEFAULT_STRESS_VM_MEMORY_FRACTION,
+    spawn_mechanism: str = "kubectl",
 ) -> Dict[str, Any]:
     """Run a single experiment with the specified configuration.
 
@@ -314,6 +316,8 @@ def experiment(
         apply_chunk_size=apply_chunk_size,
         apply_retries=apply_retries,
         apply_backoff=apply_backoff,
+        vm_memory_fraction=vm_memory_fraction,
+        spawn_mechanism=spawn_mechanism,
     )
 
     # Track jobs to completion and get timing statistics
@@ -395,6 +399,8 @@ def benchmark(
     apply_chunk_size: int,
     apply_retries: int,
     apply_backoff: float,
+    vm_memory_fraction: float,
+    spawn_mechanism: str,
 ) -> List[Dict[str, Any]]:
     """
     Run a complete benchmark comparing direct Kubernetes jobs vs Kueue jobs.
@@ -434,6 +440,8 @@ def benchmark(
             apply_chunk_size=apply_chunk_size,
             apply_retries=apply_retries,
             apply_backoff=apply_backoff,
+            vm_memory_fraction=vm_memory_fraction,
+            spawn_mechanism=spawn_mechanism,
         )
         results.append(result)
 
@@ -459,6 +467,8 @@ def benchmark(
             apply_chunk_size=apply_chunk_size,
             apply_retries=apply_retries,
             apply_backoff=apply_backoff,
+            vm_memory_fraction=vm_memory_fraction,
+            spawn_mechanism=spawn_mechanism,
         )
         results.append(kueue_result)
 
@@ -566,6 +576,21 @@ def performance(
         "--apply-backoff",
         help="Backoff base (seconds) between apply retries.",
     ),
+    spawn_mechanism: str = typer.Option(
+        "kubectl",
+        "--spawn-mechanism",
+        help="Job spawn mechanism to use: kubectl (apply) or api (client create).",
+    ),
+    vm_memory_fraction: float = typer.Option(
+        k8s.DEFAULT_STRESS_VM_MEMORY_FRACTION,
+        "--vm-memory-fraction",
+        min=0.1,
+        max=0.95,
+        help=(
+            "Fraction of per-job memory assigned to stress-ng --vm-bytes. "
+            "Lower values reduce OOM risk."
+        ),
+    ),
 ):
     """Compare native K8s job scheduling vs. Kueue."""
     profile = _normalize_profile_name(profile)
@@ -625,6 +650,8 @@ def performance(
         apply_retries,
         apply_backoff,
     )
+    logger.info("Spawn   : %s", spawn_mechanism)
+    logger.info("VM Frac  : %s", vm_memory_fraction)
 
     if not k8s.check(namespace, kueue, priority):
         logger.error("Please check your Kueue configuration.")
@@ -645,6 +672,8 @@ def performance(
         apply_chunk_size=apply_chunk_size,
         apply_retries=apply_retries,
         apply_backoff=apply_backoff,
+        vm_memory_fraction=vm_memory_fraction,
+        spawn_mechanism=spawn_mechanism,
     )
     logger.info("Benchmark completed successfully.")
     logger.info("Results saved to %s", output)
@@ -739,6 +768,11 @@ def eviction(
         "--apply-backoff",
         help="Backoff base (seconds) between apply retries.",
     ),
+    spawn_mechanism: str = typer.Option(
+        "kubectl",
+        "--spawn-mechanism",
+        help="Job spawn mechanism to use: kubectl (apply) or api (client create).",
+    ),
 ):
     """Run a benchmark to test eviction behavior of Kueue in a packed cluster queue."""
     profile = _normalize_profile_name(profile)
@@ -792,6 +826,7 @@ def eviction(
         apply_retries,
         apply_backoff,
     )
+    logger.info("Spawn       : %s", spawn_mechanism)
     logger.info("K8s Resource : %s", resource_id)
 
     for priority in priorities:
@@ -834,6 +869,7 @@ def eviction(
             apply_chunk_size=apply_chunk_size,
             apply_retries=apply_retries,
             apply_backoff=apply_backoff,
+            spawn_mechanism=spawn_mechanism,
         )
 
     logger.info("All jobs launched successfully.")
@@ -988,6 +1024,11 @@ def e2e(
         "--keep-artifacts/--no-keep-artifacts",
         help="Keep generated artifacts.",
     ),
+    spawn_mechanism: str = typer.Option(
+        "kubectl",
+        "--spawn-mechanism",
+        help="Job spawn mechanism to use: kubectl (apply) or api (client create).",
+    ),
 ) -> None:
     """Run the full benchmark workflow with automatic post-processing."""
     from kueuer.lifecycle import commands as lifecycle_commands
@@ -1024,6 +1065,7 @@ def e2e(
         observe_output_subdir=observe_output_subdir,
         skip_queue_apply=skip_queue_apply,
         skip_teardown=skip_teardown,
+        spawn_mechanism=spawn_mechanism,
     )
 
     typer.echo(f"e2e {'ok' if report['ok'] else 'failed'} for run {report['run_id']}")

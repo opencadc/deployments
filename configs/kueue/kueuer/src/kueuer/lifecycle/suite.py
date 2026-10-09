@@ -19,6 +19,7 @@ def _suite_commands(
     localqueue: str,
     priority: str,
     artifacts_dir: str,
+    spawn_mechanism: str = "kubectl",
 ) -> List[str]:
     """Build the command transcript recorded in lifecycle suite reports."""
     return [
@@ -31,6 +32,7 @@ def _suite_commands(
             f"--ram {performance_options['ram']} "
             f"--storage {performance_options['storage']} "
             f"--wait {performance_options['wait']} "
+            f"--spawn-mechanism {spawn_mechanism} "
             f"-n {namespace} -k {localqueue} -p {priority} "
             f"-o {artifacts_dir}"
         ),
@@ -42,6 +44,7 @@ def _suite_commands(
             f"--cores {eviction_options['cores']} "
             f"--ram {eviction_options['ram']} "
             f"--storage {eviction_options['storage']} "
+            f"--spawn-mechanism {spawn_mechanism} "
             f"-n {namespace} -k {localqueue} "
             "-p low -p medium -p high "
             f"-o {artifacts_dir}"
@@ -61,6 +64,7 @@ def run_benchmark_suite(
     observe: bool = False,
     observe_interval_seconds: float = 5.0,
     observe_output_subdir: str = "observe",
+    spawn_mechanism: str = "kubectl",
     collector_factory: Callable[..., Any] = ObservationCollector,
     scenario_apply_fn: Callable[..., Dict[str, Any]] = apply_scenario,
     scenario_restore_fn: Callable[..., Dict[str, Any]] = restore_scenario,
@@ -87,6 +91,7 @@ def run_benchmark_suite(
         localqueue=localqueue,
         priority=priority,
         artifacts_dir=artifacts_dir,
+        spawn_mechanism=spawn_mechanism,
     )
     with tempfile.TemporaryDirectory(prefix="kueuer-scenario-") as scenario_tmp:
         scenario_context = scenario_apply_fn(
@@ -145,6 +150,7 @@ def run_benchmark_suite(
                 apply_chunk_size=25,
                 apply_retries=2,
                 apply_backoff=2.0,
+                spawn_mechanism=spawn_mechanism,
             )
             eviction_runner(
                 filepath=DEFAULT_JOBSPEC_FILEPATH,
@@ -162,6 +168,7 @@ def run_benchmark_suite(
                 apply_chunk_size=25,
                 apply_retries=2,
                 apply_backoff=2.0,
+                spawn_mechanism=spawn_mechanism,
             )
         finally:
             if collector is not None:
