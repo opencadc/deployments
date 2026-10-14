@@ -1,5 +1,5 @@
 apiVersion: v2
-name: posixmapper
+name: posix-mapper
 description: "A Helm chart to install the UID/GID POSIX Mapper"
 
 maintainers:
