@@ -4,7 +4,7 @@ A Helm chart to install the UID/GID POSIX Mapper
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.6.0<!-- x-release-please-version --> | 0.4.0 | application |
+|0.7.0<!-- x-release-please-version --> | 0.4.0 | application |
 
 ## Values
 
