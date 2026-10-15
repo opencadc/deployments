@@ -66,10 +66,7 @@ Traefik must be running **before** you install Skaha. The Skaha chart renders `I
 Use Traefik **v2.11.0** or newer. The charts use API group `traefik.io` (not the older `traefik.containo.us` group).
 
 ```bash
-helm repo add traefik https://traefik.github.io/charts
-helm repo update
-
-helm upgrade --install traefik traefik/traefik \
+helm upgrade --install traefik oci://ghcr.io/traefik/helm/traefik \
   --namespace traefik --create-namespace \
   --set providers.kubernetesCRD.enabled=true \
   --set providers.kubernetesCRD.allowCrossNamespace=true \
