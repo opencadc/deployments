@@ -12,7 +12,7 @@ Before deploying the Skaha Helm chart, ensure that the following conditions are 
 - **Kubernetes Cluster**: A running Kubernetes cluster, version 1.29 or higher.
 - **Helm**: Helm package manager, version 3, installed on your machine. Refer to the [official Helm documentation](https://helm.sh/docs/) for installation instructions.
 - **Traefik**: Required before Skaha install (`IngressRoute`, `Middleware`). See the [deployment guide](deployment.md#traefik-install).
-- **Kueue**: Recommended; install and configure per the [deployment guide](deployment.md#kueue-recommended) before Skaha if you use session queueing.
+- **Kueue**: Required before Skaha install. See the [deployment guide](deployment.md#kueue).
 
 ## Installation
 To deploy the Skaha application, install the published OCI chart:
@@ -90,7 +90,7 @@ The `headless`, `notebook`, `desktop`, `contributed`, and `firefly` session type
 Ensure that `tolerations` and `nodeAffinity` are at the expected indentation!  These are YAML configurations passed directly to Kubernetes, and the base `.tolerations` and `.deployment.skaha.nodeAffinity` values apply to the `skaha` API **only**, whereas the `.deployment.skaha.sessions.tolerations` and `.deployment.skaha.sessions.nodeAffinity` apply to _all_ User Session Pods.
 
 ## Kueue
-Skaha leverages Kueue for efficient job queueing and management when properly installed and configured in your cluster. For detailed information on Kueue's features and setup, refer to the [Kueue documentation](https://kueue.sigs.k8s.io/docs/).
+Skaha requires Kueue for job queueing and management. Install it before Skaha. For detailed information on Kueue's features and setup, refer to the [Kueue documentation](https://kueue.sigs.k8s.io/docs/).
 
 ### Installation
 https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version

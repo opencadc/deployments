@@ -8,13 +8,14 @@ Install and configure these **before** the platform application charts.
 
 - A Kubernetes cluster (1.29+).
 - An [IVOA Service Registry](https://github.com/opencadc/reg/tree/master/reg) deployment.
-- **Traefik** v2.11 or newer with the Kubernetes CRD provider enabled. Skaha user sessions and several platform charts rely on Traefik `IngressRoute` and `Middleware` objects (`traefik.io/v1alpha1`). Standard `Ingress` resources (Cavern, POSIX Mapper, Science Portal, and others) also expect an ingress class of `traefik`. See [Traefik install](#traefik-install) below.
+- **Traefik** v2.11 or newer with the Kubernetes CRD provider enabled. Install it before the platform charts. Skaha user sessions and several platform charts rely on Traefik `IngressRoute` and `Middleware` objects (`traefik.io/v1alpha1`). Standard `Ingress` resources (Cavern, POSIX Mapper, Science Portal, and others) also expect an ingress class of `traefik`. See [Traefik install](#traefik-install) below.
+- **Kueue**, the job queue for user sessions. Install and configure it before the platform charts. See [Kueue](#kueue) below.
 - **Namespaces** `skaha-system` (APIs and UIs) and `skaha-workload` (user session pods). Create them yourself, or let the Skaha chart create `skaha-workload` when `deployment.skaha.sessions.namespace.create` is `true`.
 - **Shared storage** PersistentVolumes and PersistentVolumeClaims in both namespaces (see [Persistent Volumes and Persistent Volume Claims](#persistent-volumes-and-persistent-volume-claims)).
 
-### Kueue (recommended)
+### Kueue
 
-[Kueue](https://kueue.sigs.k8s.io/) is a Kubernetes-native job queue for user sessions. It is optional but strongly recommended for production.
+[Kueue](https://kueue.sigs.k8s.io/) is a Kubernetes-native job queue for user sessions. It is required, and must be installed before the platform application charts.
 
 See https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version for upstream details.
 
@@ -92,7 +93,7 @@ kubectl get ingressclass traefik
 
 ## Quick Start
 
-After [Traefik](#traefik-install), namespaces, storage, and optional Kueue are in place:
+After [Traefik](#traefik-install), [Kueue](#kueue), namespaces, and storage are in place:
 
 ```bash
 helm upgrade --install --namespace skaha-system --create-namespace --values my-posix-mapper-local-values-file.yaml posix-mapper oci://images.opencadc.org/posix-mapper
@@ -392,7 +393,7 @@ helm --namespace skaha-system upgrade --install --values my-cavern-local-values-
 
 ### Skaha install
 
-Install Skaha **after** Traefik, POSIX Mapper, and Cavern. The chart creates the Skaha service account RBAC (Jobs, Pods, `IngressRoute`, `Middleware` in the workload namespace, and related permissions) when `rbac.create` is `true` (default). Optional Kueue integration RBAC is configured under `deployment.skaha.sessions.kueue.rbac` or via the [Kueue RBAC](#kueue-rbac) manifests above.
+Install Skaha **after** Traefik, Kueue, POSIX Mapper, and Cavern. The chart creates the Skaha service account RBAC (Jobs, Pods, `IngressRoute`, `Middleware` in the workload namespace, and related permissions) when `rbac.create` is `true` (default). Kueue RBAC is configured under `deployment.skaha.sessions.kueue.rbac` or via the [Kueue RBAC](#kueue-rbac) manifests above.
 
 !!! note "Chart source"
 
