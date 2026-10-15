@@ -7,6 +7,12 @@ This `README` will focus on a basic install using a new `values-local.yaml` file
 A working Science Platform is not required, but the Persistent Volume Claims are needed.  Those PVs and PVCs will
 provide the underlying storage for the Services and User Sessions.
 
+### From the OCI registry
+
+```sh
+$ helm install --namespace skaha-system --values my-values-local.yaml cavern oci://images.opencadc.org/cavern
+```
+
 ### From source
 
 Installation depends on a working Kubernetes cluster version 1.23 or greater.
@@ -16,12 +22,12 @@ Traefik must be installed before platform services; see the [deployment guide](d
 ```sh
 $ git clone https://github.com/opencadc/science-platform.git
 $ cd science-platform/deployment/helm
-$ helm install -n skaha-system --dependency-update --values my-values-local.yaml <name> ./cavern
+$ helm install --namespace skaha-system --dependency-update --values my-values-local.yaml <name> ./cavern
 ```
 
 Where `<name>` is the name of this installation.  Example:
 ```sh
-$ helm install -n skaha-system --dependency-update --values my-values-local.yaml cavern ./cavern
+$ helm install --namespace skaha-system --dependency-update --values my-values-local.yaml cavern ./cavern
 ```
 This will install Skaha service dependency, as well as the Skaha webservice and any necessary Ingress.
 ```
@@ -37,7 +43,7 @@ TEST SUITE: None
 After the install, there should exist the necessary Service.  See the Namespaces:
 
 ```sh
-$ kubectl -n skaha-system get services
+$ kubectl --namespace skaha-system get services
 NAME                   STATUS   AGE
 ...
 skaha-system   cavern-tomcat-svc             ClusterIP      10.108.202.148   <none>        8080/TCP            1m

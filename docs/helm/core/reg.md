@@ -9,21 +9,10 @@ Before deploying the Registry Helm chart, ensure that the following conditions a
 - **Helm**: Helm package manager, version 3, installed on your machine. Refer to the [official Helm documentation](https://helm.sh/docs/) for installation instructions.
 
 ## Installation
-To deploy the Registry application using the Helm chart, follow these steps:
+To deploy the Registry application, install the published OCI chart:
 
-1. **Add the Registry Helm Repository**:
 ```bash
-helm repo add registry-repo https://images.opencadc.org/chartrepo/core
-```
-
-2. **Update Helm Repositories**:
-```bash
-helm repo update
-```
-
-3. **Install the Registry Chart**:
-```bash
-helm --namespace cadc-core upgrade --install --values <your-registry-values.yaml> registry-release registry-repo/reg
+helm --namespace cadc-core upgrade --install --values <your-registry-values.yaml> registry-release oci://images.opencadc.org/core/reg
 ```
 Replace `registry-release` with your desired release name.
 
@@ -35,7 +24,7 @@ To customize the installation:
 - **Create a `values.yaml` File**: Define your custom configurations in this file.
 - **Install the Chart with Custom Values**:
 ```bash
-helm --namespace cadc-core upgrade --install --values values.yaml registry-release registry-repo/reg
+helm --namespace cadc-core upgrade --install --values values.yaml registry-release oci://images.opencadc.org/core/reg
 ```
 
 This Helm Chart supports both Pod and Container level security contexts. You can enable or disable these features based on your cluster's security requirements.  The Registry service need not run as **root**, so it is recommended to enable these security contexts for enhanced security.
