@@ -4,7 +4,7 @@ The Skaha Helm chart facilitates the deployment of the Skaha application within 
 
 !!! note "Chart source"
 
-    The Skaha Helm chart is co-located with the Skaha service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) under [`helm/`](https://github.com/opencadc/science-platform/tree/main/helm). Install from the published chart `science-platform/skaha`. An archived copy of the former deployments-repo chart is under [`helm/applications/archived/skaha/`](https://github.com/opencadc/deployments/tree/main/helm/applications/archived/skaha) and is no longer released from this repository.
+    The Skaha Helm chart is co-located with the Skaha service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) under [`helm/`](https://github.com/opencadc/science-platform/tree/main/helm). Install from the published OCI chart `oci://images.opencadc.org/skaha`. An archived copy of the former deployments-repo chart is under [`helm/applications/archived/skaha/`](https://github.com/opencadc/deployments/tree/main/helm/applications/archived/skaha) and is no longer released from this repository.
 
 ## Prerequisites
 Before deploying the Skaha Helm chart, ensure that the following conditions are met:
@@ -15,21 +15,10 @@ Before deploying the Skaha Helm chart, ensure that the following conditions are 
 - **Kueue**: Recommended; install and configure per the [deployment guide](deployment.md#kueue-recommended) before Skaha if you use session queueing.
 
 ## Installation
-To deploy the Skaha application using the Helm chart, follow these steps:
+To deploy the Skaha application, install the published OCI chart:
 
-1. **Add the Skaha Helm Repository**:
 ```bash
-helm repo add skaha-repo https://images.opencadc.org/chartrepo/platform
-```
-
-2. **Update Helm Repositories**:
-```bash
-helm repo update
-```
-
-3. **Install the Skaha Chart**:
-```bash
-helm --namespace skaha-system upgrade --install --values <your-skaha-values.yaml> skaha-release skaha-repo/skaha
+helm --namespace skaha-system upgrade --install --values <your-skaha-values.yaml> skaha-release oci://images.opencadc.org/skaha
 ```
 Replace `skaha-release` with your desired release name.
 
@@ -41,7 +30,7 @@ To customize the installation:
 - **Create a `values.yaml` File**: Define your custom configurations in this file.
 - **Install the Chart with Custom Values**:
 ```bash
-helm --namespace skaha-system upgrade --install --values values.yaml skaha-release skaha-repo/skaha
+helm --namespace skaha-system upgrade --install --values values.yaml skaha-release oci://images.opencadc.org/skaha
 ```
 
 ### LimitRange
@@ -129,10 +118,10 @@ cd deployments/configs/kueue/kueuer
 export KUBECONFIG=/home/user/.kube/my-config
 
 # 60% of cluster resources
-uv run kr cluster resources -f allocatable -s 0.6
+uv run kr cluster resources --field allocatable --scale 0.6
 
 # 80% of cluster resources
-uv run kr cluster resources -f allocatable -s 0.8
+uv run kr cluster resources --field allocatable --scale 0.8
 ```
 
 ## Uninstallation

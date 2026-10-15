@@ -70,7 +70,7 @@ Ultimately, it will be up to the deployment to ensure that the PVC is bound to a
 
 ```bash
 # Version 12.12.10 is used as an example as it's the final release supporting PostgreSQL 15.x, which has been tested with the POSIX Mapper.
-helm -n postgresql upgrade --install --create-namespace posix-mapper-postgresql --version 12.12.10 oci://registry-1.docker.io/bitnamicharts/postgresql
+helm --namespace postgresql upgrade --install --create-namespace posix-mapper-postgresql --version 12.12.10 oci://registry-1.docker.io/bitnamicharts/postgresql
 ```
 
 Use a Helm Values file to customize the installation.  This will initialize the database schema and set up the required user credentials.  The schema should match what the POSIX Mapper expects in its configuration.
@@ -92,21 +92,14 @@ primary:
 
 Then run the following command to install PostgreSQL with the specified values:
 ```bash
-helm -n postgresql upgrade --install --create-namespace posix-mapper-postgresql --values my-postgresql-values.yaml --version 12.12.10 oci://registry-1.docker.io/bitnamicharts/postgresql
+helm --namespace postgresql upgrade --install --create-namespace posix-mapper-postgresql --values my-postgresql-values.yaml --version 12.12.10 oci://registry-1.docker.io/bitnamicharts/postgresql
 ```
 
 ## POSIX Mapper Installation
-To deploy the POSIX Mapper application using the Helm chart, follow these steps:
+To deploy the POSIX Mapper application, install the published OCI chart:
 
-1. **Add the Helm Repository**
 ```bash
-helm repo add science-platform-repo https://images.opencadc.org/chartrepo/platform
-helm repo update
-```
-
-2. **Install the POSIX Mapper Chart**:
-```bash
-helm -n skaha-system --values <myvalues.yaml> install posix-mapper science-platform-repo/posix-mapper
+helm --namespace skaha-system --values <myvalues.yaml> install posix-mapper oci://images.opencadc.org/posix-mapper
 ```
 
 ## Configuration
@@ -117,7 +110,7 @@ To customize the installation:
 - **Create a `local-values.yaml` File**: Define your custom configurations in this file.
 - **Install the Chart with Custom Values**:
 ```bash
-helm -n skaha-system upgrade --install --values local-values.yaml posix-mapper science-platform-repo/posix-mapper
+helm --namespace skaha-system upgrade --install --values local-values.yaml posix-mapper oci://images.opencadc.org/posix-mapper
 ```
 
 ### Supported Configuration Options

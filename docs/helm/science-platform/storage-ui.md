@@ -18,10 +18,7 @@ receiving the `code` as part of the authorization code flow, and obtaining a tok
 ### Run with configured values
 
 ```bash
-helm repo add science-platform-client https://images.opencadc.org/chartrepo/client
-helm repo update
-
-helm install -n skaha-system --values my-storage-ui-local-values-file.yaml storage-ui science-platform-client/storageui
+helm install --namespace skaha-system --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/storage-ui
 
 Release "storage-ui" has been installed. Happy Helming!
 NAME: storage-ui

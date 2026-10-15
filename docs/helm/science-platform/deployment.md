@@ -21,7 +21,7 @@ See https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version for 
 #### Install Kueue
 
 ```bash
-helm -n kueue-system install kueue oci://registry.k8s.io/kueue/charts/kueue --create-namespace
+helm --namespace kueue-system install kueue oci://registry.k8s.io/kueue/charts/kueue --create-namespace
 ```
 
 #### ClusterQueue
@@ -32,7 +32,7 @@ A `ClusterQueue` is a cluster-wide queue template. An example is in [Skaha Examp
 git clone https://github.com/opencadc/science-platform.git
 cp science-platform/helm/kueue/examples/clusterQueue.config.yaml ./
 # Edit as needed.
-kubectl apply -f ./clusterQueue.config.yaml
+kubectl apply --filename ./clusterQueue.config.yaml
 ```
 
 #### LocalQueue
@@ -43,7 +43,7 @@ A `LocalQueue` is namespace-scoped and must exist in the workload namespace (`sk
 git clone https://github.com/opencadc/science-platform.git
 cp science-platform/helm/kueue/examples/localQueue.config.yaml ./
 # Edit as needed.
-kubectl apply -f ./localQueue.config.yaml
+kubectl apply --filename ./localQueue.config.yaml
 ```
 
 #### Kueue RBAC
@@ -55,7 +55,7 @@ Example manifests: [Skaha Example Kueue RBAC](https://github.com/opencadc/scienc
 ```bash
 git clone https://github.com/opencadc/science-platform.git
 cp science-platform/helm/kueue/examples/rbac.yaml ./
-kubectl apply -f ./rbac.yaml
+kubectl apply --filename ./rbac.yaml
 ```
 
 ### Traefik install
@@ -69,7 +69,7 @@ helm repo add traefik https://traefik.github.io/charts
 helm repo update
 
 helm upgrade --install traefik traefik/traefik \
-  -n traefik --create-namespace \
+  --namespace traefik --create-namespace \
   --set providers.kubernetesCRD.enabled=true \
   --set providers.kubernetesCRD.allowCrossNamespace=true \
   --set providers.kubernetesIngress.enabled=true \
@@ -81,31 +81,13 @@ helm upgrade --install traefik traefik/traefik \
 
 !!! tip "TLS termination"
 
-    For HTTPS with your own certificate, create a TLS Secret in the `traefik` namespace and configure Traefik’s default certificate or per-route TLS. The obsolete [Base](base.md) chart documented this pattern under `secrets.default-certificate` and `traefik.tlsStore`; the same approach applies when Traefik is installed standalone.
+    For HTTPS with your own certificate, create a TLS Secret in the `traefik` namespace and configure Traefik’s default certificate or per-route TLS.
 
 Verify the controller is ready:
 
 ```bash
-kubectl -n traefik get pods
+kubectl --namespace traefik get pods
 kubectl get ingressclass traefik
-```
-
-## Base chart (obsolete)
-
-The [`base`](base.md) Helm chart (`science-platform/base`) is **obsolete for new deployments**. It previously bundled:
-
-- Traefik installation
-- `skaha-system` / `skaha-workload` namespace creation
-- RBAC for the Skaha service account
-
-**New installs** should use [Traefik install](#traefik-install), create namespaces explicitly (or via Skaha values), and rely on RBAC from the [Skaha](skaha.md) chart (`rbac.create`, enabled by default).
-
-**Existing deployments** may keep the `base` release to avoid churn. If you still use it, only the Traefik and namespace behaviour above is relevant; do not install `base` again on greenfield clusters.
-
-```bash
-# Legacy only — not required for new Science Platform installs
-helm upgrade --install -n traefik --create-namespace \
-  --values my-base-local-values-file.yaml base science-platform/base
 ```
 
 ## Quick Start
@@ -113,15 +95,11 @@ helm upgrade --install -n traefik --create-namespace \
 After [Traefik](#traefik-install), namespaces, storage, and optional Kueue are in place:
 
 ```bash
-helm repo add science-platform https://images.opencadc.org/chartrepo/platform
-helm repo add science-platform-client https://images.opencadc.org/chartrepo/client
-helm repo update
-
-helm upgrade --install -n skaha-system --create-namespace --values my-posix-mapper-local-values-file.yaml posix-mapper science-platform/posixmapper
-helm upgrade --install -n skaha-system --values my-cavern-local-values-file.yaml cavern science-platform/cavern
-helm upgrade --install -n skaha-system --values my-skaha-local-values-file.yaml skaha science-platform/skaha
-helm upgrade --install -n skaha-system --values my-science-portal-local-values-file.yaml science-portal science-platform/science-portal
-helm upgrade --install -n skaha-system --values my-storage-ui-local-values-file.yaml storage-ui science-platform-client/storageui
+helm upgrade --install --namespace skaha-system --create-namespace --values my-posix-mapper-local-values-file.yaml posix-mapper oci://images.opencadc.org/posix-mapper
+helm upgrade --install --namespace skaha-system --values my-cavern-local-values-file.yaml cavern oci://images.opencadc.org/cavern
+helm upgrade --install --namespace skaha-system --values my-skaha-local-values-file.yaml skaha oci://images.opencadc.org/skaha
+helm upgrade --install --namespace skaha-system --values my-science-portal-local-values-file.yaml science-portal oci://images.opencadc.org/science-portal
+helm upgrade --install --namespace skaha-system --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/storage-ui
 ```
 
 ## Persistent Volumes and Persistent Volume Claims
@@ -138,7 +116,7 @@ kubectl create namespace skaha-workload
 ```
 
 It is expected that the deployer, or an Administrator, will create the necessary Persistent Volumes (if needed), and the required Persistent Volume Claims at
-this point. Sample [local PersistentVolume manifests](https://github.com/opencadc/science-platform/tree/master/deployment/helm/base/volumes) are in the upstream `base/volumes` folder (historical reference from the obsolete base chart).
+this point. Sample [local PersistentVolume manifests](https://github.com/opencadc/science-platform/tree/master/deployment/helm/base/volumes) are in the upstream science-platform repository.
 
 Two (2) Persistent Volume Claims are required.  While both point to the same underlying storage, they are in different Namespaces.  This leads to somewhat duplicated effort, but it is necessary to ensure that both the `skaha-system` and `skaha-workload` namespaces have access to the required storage resources.
 See this [short explanation](https://youtu.be/NSO0HioWLiI) for more information.
@@ -228,7 +206,7 @@ postgresql:
 ```
 
 ```bash
-helm -n skaha-system upgrade --install  --values my-posix-mapper-local-values-file.yaml posix-mapper science-platform/posixmapper
+helm --namespace skaha-system upgrade --install --values my-posix-mapper-local-values-file.yaml posix-mapper oci://images.opencadc.org/posix-mapper
 
 NAME: posix-mapper
 LAST DEPLOYED: Thu Oct 28 07:28:45 2025
@@ -241,10 +219,10 @@ Test it.
 ```bash
 # See below for tokens
 export SKA_TOKEN=...
-curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com/posix-mapper/uid
+curl --silent --show-error --location --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com/posix-mapper/uid
 []%
 
-curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" "https://example.host.com/posix-mapper/uid?user=mynewuser"
+curl --silent --show-error --location --header "Authorization: Bearer ${SKA_TOKEN}" "https://example.host.com/posix-mapper/uid?user=mynewuser"
 mynewuser:x:10000:10000:::
 ```
 
@@ -408,13 +386,17 @@ storage:
       #   claimName: skaha-pvc
 ```
 
+```bash
+helm --namespace skaha-system upgrade --install --values my-cavern-local-values-file.yaml cavern oci://images.opencadc.org/cavern
+```
+
 ### Skaha install
 
 Install Skaha **after** Traefik, POSIX Mapper, and Cavern. The chart creates the Skaha service account RBAC (Jobs, Pods, `IngressRoute`, `Middleware` in the workload namespace, and related permissions) when `rbac.create` is `true` (default). Optional Kueue integration RBAC is configured under `deployment.skaha.sessions.kueue.rbac` or via the [Kueue RBAC](#kueue-rbac) manifests above.
 
 !!! note "Chart source"
 
-    The Skaha Helm chart lives alongside the service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) (`helm/`). Install from the published chart `science-platform/skaha`, or use that directory when developing the chart.
+    The Skaha Helm chart lives alongside the service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) (`helm/`). Install from the published OCI chart `oci://images.opencadc.org/skaha`, or use that directory when developing the chart.
 
 The Skaha service will manage User Sessions.  It relies on the POSIX Mapper being deployed, and available to be found
 via the IVOA Registry:
@@ -640,7 +622,7 @@ secrets:
 ```
 
 ```bash
-helm -n skaha-system upgrade --install --values my-skaha-local-values-file.yaml skaha science-platform/skaha
+helm --namespace skaha-system upgrade --install --values my-skaha-local-values-file.yaml skaha oci://images.opencadc.org/skaha
 
 NAME: skaha
 LAST DEPLOYED: Thu Oct 31 02:01:10 2025
@@ -653,11 +635,11 @@ Test it.
 ```bash
 # See below for tokens
 export SKA_TOKEN=...
-curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com/skaha/v1/session
+curl --silent --show-error --location --header "Authorization: Bearer ${SKA_TOKEN}" https://example.host.com/skaha/v1/session
 []%
 
 # xxxxxx is the returned session ID.
-curl -SsL --header "Authorization: Bearer ${SKA_TOKEN}" -d "ram=1" -d "cores=1" -d "image=images.canfar.net/canucs/canucs:1.2.5" -d "name=myjupyternotebook" "https://example.host.com/skaha/v1/session"
+curl --silent --show-error --location --header "Authorization: Bearer ${SKA_TOKEN}" --data "ram=1" --data "cores=1" --data "image=images.canfar.net/canucs/canucs:1.2.5" --data "name=myjupyternotebook" "https://example.host.com/skaha/v1/session"
 ```
 
 ### Science Portal (Next.js)
@@ -673,7 +655,7 @@ ivo://example.org/skaha = https://example.host.com/skaha/capabilities
 
 #### New stack vs legacy (plain language)
 
-| Topic | **science-portal** chart (`science-platform/science-portal`) | **science-portal legacy** chart (`science-platform/scienceportal`) |
+| Topic | **science-portal** chart (`oci://images.opencadc.org/science-portal`) | **science-portal legacy** chart (`oci://images.opencadc.org/scienceportal`) |
 |-------|----------------------------------------------------------------|----------------------------------------------------------------------|
 | What users see | A modern single-page style site: pages load quickly and update in place (React + Next.js). | A classic Java web application: each click often reloads a server-built page (JSP on Tomcat). |
 | How it runs in Kubernetes | A lightweight Node.js container (port 3000). | A Java/Tomcat container (port 8080) plus a bundled Redis chart for session storage. |
@@ -682,7 +664,7 @@ ivo://example.org/skaha = https://example.host.com/skaha/capabilities
 
 !!! note "Chart source"
 
-    The Science Portal Helm chart lives in [`opencadc/science-portal`](https://github.com/opencadc/science-portal) under [`helm/`](https://github.com/opencadc/science-portal/tree/main/helm). The same chart is published in the `science-platform` Helm repository as **`science-portal`** (note the hyphen). The older chart name in that repository is **`scienceportal`** (no hyphen).
+    The Science Portal Helm chart lives in [`opencadc/science-portal`](https://github.com/opencadc/science-portal) under [`helm/`](https://github.com/opencadc/science-portal/tree/main/helm). The chart is published as the OCI artifact **`oci://images.opencadc.org/science-portal`**. The older chart is published as **`oci://images.opencadc.org/scienceportal`** (no hyphen).
 
 #### Before you install
 
@@ -692,7 +674,7 @@ ivo://example.org/skaha = https://example.host.com/skaha/capabilities
 4. **Secrets** (OIDC + NextAuth):
 
 ```bash
-kubectl -n skaha-system create secret generic science-portal-secrets \
+kubectl --namespace skaha-system create secret generic science-portal-secrets \
   --from-literal=oidc-client-secret='REPLACE_WITH_IDP_CLIENT_SECRET' \
   --from-literal=auth-secret="$(openssl rand -base64 32)"
 ```
@@ -772,12 +754,12 @@ app:
 #### Install and verify
 
 ```bash
-helm upgrade --install -n skaha-system \
+helm upgrade --install --namespace skaha-system \
   --values my-science-portal-local-values-file.yaml \
-  science-portal science-platform/science-portal
+  science-portal oci://images.opencadc.org/science-portal
 
-kubectl -n skaha-system get pods -l app.kubernetes.io/name=science-portal
-kubectl -n skaha-system logs deploy/science-portal --tail=50
+kubectl --namespace skaha-system get pods --selector app.kubernetes.io/name=science-portal
+kubectl --namespace skaha-system logs deploy/science-portal --tail=50
 ```
 
 Open `https://example.host.com/science-portal` (substitute your host). Sign in with OIDC, then confirm that starting a test session reaches Skaha.
@@ -786,7 +768,7 @@ Further chart options: [Science Portal](science-portal.md) and [helm/README.md](
 
 ### Science Portal legacy (JSP / Tomcat)
 
-The legacy chart installs the 1.x Tomcat-based Science Portal (`science-platform/scienceportal`). Configuration uses `deployment.hostname` and `deployment.sciencePortal` (not the `app` block).
+The legacy chart installs the 1.x Tomcat-based Science Portal (`oci://images.opencadc.org/scienceportal`). Configuration uses `deployment.hostname` and `deployment.sciencePortal` (not the `app` block).
 
 `/reg/resource-caps` — same Skaha registration requirement as above.
 
@@ -820,9 +802,9 @@ experimentalFeatures:
 ```
 
 ```bash
-helm upgrade --install -n skaha-system \
+helm upgrade --install --namespace skaha-system \
   --values my-science-portal-legacy-local-values-file.yaml \
-  science-portal-legacy science-platform/scienceportal
+  science-portal-legacy oci://images.opencadc.org/scienceportal
 ```
 
 The legacy UI is served at `https://<hostname>/science-portal` via a Traefik Ingress created by the chart. Do not install **both** charts behind the same path unless you are deliberately migrating.
@@ -930,6 +912,10 @@ deployment:
   # Uncomment to enable local or self-signed CA certificates for your domain to be trusted.
   # storage-ui-cacert-secret:
     # ca.crt: <base64 encoded ca.crt blob>
+```
+
+```bash
+helm --namespace skaha-system upgrade --install --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/storage-ui
 ```
 
 ## Browser Authentication
