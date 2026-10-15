@@ -644,7 +644,7 @@
 <p>The Skaha Helm chart facilitates the deployment of the Skaha application within a Kubernetes cluster. This chart is designed to streamline the installation and management of Skaha, ensuring a seamless integration into your Kubernetes environment.</p>
 <div class="admonition note">
 <p class="admonition-title">Chart source</p>
-<p>The Skaha Helm chart is co-located with the Skaha service in <a href="https://github.com/opencadc/science-platform"><code>opencadc/science-platform</code></a> under <a href="https://github.com/opencadc/science-platform/tree/main/helm"><code>helm/</code></a>. Install from the published chart <code>science-platform/skaha</code>. An archived copy of the former deployments-repo chart is under <a href="https://github.com/opencadc/deployments/tree/main/helm/applications/archived/skaha"><code>helm/applications/archived/skaha/</code></a> and is no longer released from this repository.</p>
+<p>The Skaha Helm chart is co-located with the Skaha service in <a href="https://github.com/opencadc/science-platform"><code>opencadc/science-platform</code></a> under <a href="https://github.com/opencadc/science-platform/tree/main/helm"><code>helm/</code></a>. Install from the published OCI chart <code>oci://images.opencadc.org/skaha</code>. An archived copy of the former deployments-repo chart is under <a href="https://github.com/opencadc/deployments/tree/main/helm/applications/archived/skaha"><code>helm/applications/archived/skaha/</code></a> and is no longer released from this repository.</p>
 </div>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>Before deploying the Skaha Helm chart, ensure that the following conditions are met:</p>
@@ -652,35 +652,20 @@
 <li><strong>Kubernetes Cluster</strong>: A running Kubernetes cluster, version 1.29 or higher.</li>
 <li><strong>Helm</strong>: Helm package manager, version 3, installed on your machine. Refer to the <a href="https://helm.sh/docs/">official Helm documentation</a> for installation instructions.</li>
 <li><strong>Traefik</strong>: Required before Skaha install (<code>IngressRoute</code>, <code>Middleware</code>). See the <a href="../deployment/#traefik-install">deployment guide</a>.</li>
-<li><strong>Kueue</strong>: Recommended; install and configure per the <a href="../deployment/#kueue-recommended">deployment guide</a> before Skaha if you use session queueing.</li>
+<li><strong>Kueue</strong>: Required before Skaha install. See the <a href="../deployment/#kueue">deployment guide</a>.</li>
 </ul>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>To deploy the Skaha application using the Helm chart, follow these steps:</p>
-<ol>
-<li>
-<p><strong>Add the Skaha Helm Repository</strong>:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>skaha-repo<span class="w"> </span>https://images.opencadc.org/chartrepo/platform
-</span></code></pre></div></p>
-</li>
-<li>
-<p><strong>Update Helm Repositories</strong>:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>update
-</span></code></pre></div></p>
-</li>
-<li>
-<p><strong>Install the Skaha Chart</strong>:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>&lt;your-skaha-values.yaml&gt;<span class="w"> </span>skaha-release<span class="w"> </span>skaha-repo/skaha
+<p>To deploy the Skaha application, install the published OCI chart:</p>
+<p><div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>&lt;your-skaha-values.yaml&gt;<span class="w"> </span>skaha-release<span class="w"> </span>oci://images.opencadc.org/skaha
 </span></code></pre></div>
 Replace <code>skaha-release</code> with your desired release name.</p>
-</li>
-</ol>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <p>The Skaha Helm chart comes with a default configuration suitable for most deployments. However, you can customize the installation by providing your own <code>values.yaml</code> file. This allows you to override default settings such as resource allocations, environment variables, and other parameters.</p>
 <p>To customize the installation:</p>
 <ul>
 <li><strong>Create a <code>values.yaml</code> File</strong>: Define your custom configurations in this file.</li>
 <li><strong>Install the Chart with Custom Values</strong>:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>values.yaml<span class="w"> </span>skaha-release<span class="w"> </span>skaha-repo/skaha
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>values.yaml<span class="w"> </span>skaha-release<span class="w"> </span>oci://images.opencadc.org/skaha
 </span></code></pre></div></li>
 </ul>
 <h3 id="limitrange">LimitRange<a class="headerlink" href="#limitrange" title="Permanent link">&para;</a></h3>
@@ -688,75 +673,75 @@ Replace <code>skaha-release</code> with your desired release name.</p>
 units.</p>
 <p>When limit-range integration is enabled, the Skaha service uses the <strong>first</strong> <code>LimitRange</code> object returned for the workload namespace (not a specific name); the object name is therefore mostly irrelevant at runtime, though this chart uses a stable name when it creates the resource.</p>
 <p>The <code>rbac</code> section allows you to create the necessary Role and RoleBinding for the LimitRange object.  If your organization does not permit the creation of RBAC objects, you can set <code>create</code> to <code>false</code> and manage the RBAC externally.</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">deployment</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">limitRange</span><span class="p">:</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">rbac</span><span class="p">:</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">          </span><span class="nt">create</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">        </span><span class="nt">limitSpec</span><span class="p">:</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">          </span><span class="nt">max</span><span class="p">:</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">            </span><span class="c1"># maximum resource limit to grow to, also used by the UI to limit selectable resources</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;96Gi&quot;</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;12&quot;</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">          </span><span class="nt">default</span><span class="p">:</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">            </span><span class="c1"># actually refers to default limit</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;32Gi&quot;</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;8&quot;</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">          </span><span class="nt">defaultRequest</span><span class="p">:</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">            </span><span class="c1"># default resource requests</span>
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;4Gi&quot;</span>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">deployment</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">      </span><span class="nt">limitRange</span><span class="p">:</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">          </span><span class="nt">create</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="nt">limitSpec</span><span class="p">:</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">          </span><span class="nt">max</span><span class="p">:</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">            </span><span class="c1"># maximum resource limit to grow to, also used by the UI to limit selectable resources</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;96Gi&quot;</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;12&quot;</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">          </span><span class="nt">default</span><span class="p">:</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">            </span><span class="c1"># actually refers to default limit</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;32Gi&quot;</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;8&quot;</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">          </span><span class="nt">defaultRequest</span><span class="p">:</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">            </span><span class="c1"># default resource requests</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;4Gi&quot;</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
 </span></code></pre></div>
 <h3 id="flexible-session-pods">Flexible Session Pods<a class="headerlink" href="#flexible-session-pods" title="Permanent link">&para;</a></h3>
 <p>You can customize the User Session Pods by modifying the <code>deployment.skaha.sessions</code> section in your <code>values.yaml</code> file. This includes settings for resource requests, storage allocation, and more.</p>
 <p>Flexible User sessions are created with a small amount of CPU and memory by default and are allowed to grow to a specified limit in the <code>LimitRange</code> configuration. You can adjust these minimum (request) settings as needed:
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">deployment</span><span class="p">:</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">flexResourceRequests</span><span class="p">:</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="c1"># The headless session type resource requests get slightly more resources to start.</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">        </span><span class="nt">headless</span><span class="p">:</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">          </span><span class="nt">memoryInGB</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">          </span><span class="nt">cpuCores</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">        </span><span class="nt">notebook</span><span class="p">:</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">          </span><span class="nt">memoryInGB</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">          </span><span class="nt">cpuCores</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.5&quot;</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">deployment</span><span class="p">:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="nt">flexResourceRequests</span><span class="p">:</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="c1"># The headless session type resource requests get slightly more resources to start.</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="nt">headless</span><span class="p">:</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">          </span><span class="nt">memoryInGB</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">          </span><span class="nt">cpuCores</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">        </span><span class="nt">notebook</span><span class="p">:</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">          </span><span class="nt">memoryInGB</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">          </span><span class="nt">cpuCores</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.5&quot;</span>
 </span></code></pre></div></p>
 <p>The <code>headless</code>, <code>notebook</code>, <code>desktop</code>, <code>contributed</code>, and <code>firefly</code> session types can all be customized individually.  Any session type not specified will use the values defined in the <code>LimitRange</code> configuration.</p>
 <p><strong>Note</strong> that Kubernetes resource units are not supported in this configuration; only floating point or integer numbers as strings are valid.  For example, for 100m of CPU, use <code>"0.1"</code>.</p>
 <h4 id="notes-on-tolerations-and-nodeaffinity">Notes on tolerations and nodeAffinity<a class="headerlink" href="#notes-on-tolerations-and-nodeaffinity" title="Permanent link">&para;</a></h4>
 <p>Ensure that <code>tolerations</code> and <code>nodeAffinity</code> are at the expected indentation!  These are YAML configurations passed directly to Kubernetes, and the base <code>.tolerations</code> and <code>.deployment.skaha.nodeAffinity</code> values apply to the <code>skaha</code> API <strong>only</strong>, whereas the <code>.deployment.skaha.sessions.tolerations</code> and <code>.deployment.skaha.sessions.nodeAffinity</code> apply to <em>all</em> User Session Pods.</p>
 <h2 id="kueue">Kueue<a class="headerlink" href="#kueue" title="Permanent link">&para;</a></h2>
-<p>Skaha leverages Kueue for efficient job queueing and management when properly installed and configured in your cluster. For detailed information on Kueue's features and setup, refer to the <a href="https://kueue.sigs.k8s.io/docs/">Kueue documentation</a>.</p>
+<p>Skaha requires Kueue for job queueing and management. Install it before Skaha. For detailed information on Kueue's features and setup, refer to the <a href="https://kueue.sigs.k8s.io/docs/">Kueue documentation</a>.</p>
 <h3 id="installation_1">Installation<a class="headerlink" href="#installation_1" title="Permanent link">&para;</a></h3>
 <p><a href="https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version">https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version</a></p>
 <p>Will install the Kueue Chart, with a default <code>ClusterQueue</code>, and whatever defined <code>LocalQueues</code> were declared in the <code>deployment.skaha.sessions.kueue</code> section:
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">deployment</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span><span class="nt">kueue</span><span class="p">:</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="nt">notebook</span><span class="p">:</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">          </span><span class="nt">queueName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">some-local-queue</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">          </span><span class="nt">priorityClass</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">med</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">deployment</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">skaha</span><span class="p">:</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">sessions</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">kueue</span><span class="p">:</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">notebook</span><span class="p">:</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">          </span><span class="nt">queueName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">some-local-queue</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">          </span><span class="nt">priorityClass</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">med</span>
 </span></code></pre></div></p>
 <p>To determine your cluster's allocatable resources, checkout a small Python utility (requires <a href="https://github.com/astral-sh/uv?tab=readme-ov-file#installation"><code>uv</code></a>):
 <a href="https://github.com/opencadc/deployments/tree/main/configs/kueue/kueuer">https://github.com/opencadc/deployments/tree/main/configs/kueue/kueuer</a></p>
 <p>Then run:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/deployments.git
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nb">cd</span><span class="w"> </span>deployments/configs/kueue/kueuer
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># if not using the default ~/.kube/config</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span>/home/user/.kube/my-config
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># 60% of cluster resources</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>uv<span class="w"> </span>run<span class="w"> </span>kr<span class="w"> </span>cluster<span class="w"> </span>resources<span class="w"> </span>-f<span class="w"> </span>allocatable<span class="w"> </span>-s<span class="w"> </span><span class="m">0</span>.6
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="c1"># 80% of cluster resources</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>uv<span class="w"> </span>run<span class="w"> </span>kr<span class="w"> </span>cluster<span class="w"> </span>resources<span class="w"> </span>-f<span class="w"> </span>allocatable<span class="w"> </span>-s<span class="w"> </span><span class="m">0</span>.8
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/deployments.git
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">cd</span><span class="w"> </span>deployments/configs/kueue/kueuer
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># if not using the default ~/.kube/config</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span>/home/user/.kube/my-config
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># 60% of cluster resources</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>uv<span class="w"> </span>run<span class="w"> </span>kr<span class="w"> </span>cluster<span class="w"> </span>resources<span class="w"> </span>--field<span class="w"> </span>allocatable<span class="w"> </span>--scale<span class="w"> </span><span class="m">0</span>.6
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1"># 80% of cluster resources</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>uv<span class="w"> </span>run<span class="w"> </span>kr<span class="w"> </span>cluster<span class="w"> </span>resources<span class="w"> </span>--field<span class="w"> </span>allocatable<span class="w"> </span>--scale<span class="w"> </span><span class="m">0</span>.8
 </span></code></pre></div></p>
 <h2 id="uninstallation">Uninstallation<a class="headerlink" href="#uninstallation" title="Permanent link">&para;</a></h2>
 <p>To remove the Skaha application from your cluster:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>uninstall<span class="w"> </span>skaha-release
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>uninstall<span class="w"> </span>skaha-release
 </span></code></pre></div>
 <p>This command will delete all resources associated with the Skaha release.</p>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
@@ -1368,7 +1353,7 @@ units.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 4, 2026 15:40:26 PDT"><span class="timeago" datetime="2026-06-04T15:40:26-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 4, 2026 15:40:26 PDT">2026-06-04</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 15, 2026 15:03:10 PDT"><span class="timeago" datetime="2026-10-15T15:03:10-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 15, 2026 15:03:10 PDT">2026-10-15</span>
   </span>
 
     

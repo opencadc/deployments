@@ -517,9 +517,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#kueue-recommended" class="md-nav__link">
+  <a href="#kueue" class="md-nav__link">
     <span class="md-ellipsis">
-      Kueue (recommended)
+      Kueue
     </span>
   </a>
   
@@ -536,15 +536,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#base-chart-obsolete" class="md-nav__link">
-    <span class="md-ellipsis">
-      Base chart (obsolete)
-    </span>
-  </a>
   
 </li>
       
@@ -699,11 +690,10 @@
 <ul>
 <li><a href="#deployment-guide">Deployment Guide</a><ul>
 <li><a href="#dependencies">Dependencies</a><ul>
-<li><a href="#kueue-recommended">Kueue (recommended)</a></li>
+<li><a href="#kueue">Kueue</a></li>
 <li><a href="#traefik-install">Traefik install</a></li>
 </ul>
 </li>
-<li><a href="#base-chart-obsolete">Base chart (obsolete)</a></li>
 <li><a href="#quick-start">Quick Start</a></li>
 <li><a href="#persistent-volumes-and-persistent-volume-claims">Persistent Volumes and Persistent Volume Claims</a><ul>
 <li><a href="#posix-mapper-install">POSIX Mapper install</a></li>
@@ -727,96 +717,77 @@
 <ul>
 <li>A Kubernetes cluster (1.29+).</li>
 <li>An <a href="https://github.com/opencadc/reg/tree/master/reg">IVOA Service Registry</a> deployment.</li>
-<li><strong>Traefik</strong> v2.11 or newer with the Kubernetes CRD provider enabled. Skaha user sessions and several platform charts rely on Traefik <code>IngressRoute</code> and <code>Middleware</code> objects (<code>traefik.io/v1alpha1</code>). Standard <code>Ingress</code> resources (Cavern, POSIX Mapper, Science Portal, and others) also expect an ingress class of <code>traefik</code>. See <a href="#traefik-install">Traefik install</a> below.</li>
+<li><strong>Traefik</strong> v2.11 or newer with the Kubernetes CRD provider enabled. Install it before the platform charts. Skaha user sessions and several platform charts rely on Traefik <code>IngressRoute</code> and <code>Middleware</code> objects (<code>traefik.io/v1alpha1</code>). Standard <code>Ingress</code> resources (Cavern, POSIX Mapper, Science Portal, and others) also expect an ingress class of <code>traefik</code>. See <a href="#traefik-install">Traefik install</a> below.</li>
+<li><strong>Kueue</strong>, the job queue for user sessions. Install and configure it before the platform charts. See <a href="#kueue">Kueue</a> below.</li>
 <li><strong>Namespaces</strong> <code>skaha-system</code> (APIs and UIs) and <code>skaha-workload</code> (user session pods). Create them yourself, or let the Skaha chart create <code>skaha-workload</code> when <code>deployment.skaha.sessions.namespace.create</code> is <code>true</code>.</li>
 <li><strong>Shared storage</strong> PersistentVolumes and PersistentVolumeClaims in both namespaces (see <a href="#persistent-volumes-and-persistent-volume-claims">Persistent Volumes and Persistent Volume Claims</a>).</li>
 </ul>
-<h3 id="kueue-recommended">Kueue (recommended)<a class="headerlink" href="#kueue-recommended" title="Permanent link">&para;</a></h3>
-<p><a href="https://kueue.sigs.k8s.io/">Kueue</a> is a Kubernetes-native job queue for user sessions. It is optional but strongly recommended for production.</p>
+<h3 id="kueue">Kueue<a class="headerlink" href="#kueue" title="Permanent link">&para;</a></h3>
+<p><a href="https://kueue.sigs.k8s.io/">Kueue</a> is a Kubernetes-native job queue for user sessions. It is required, and must be installed before the platform application charts.</p>
 <p>See <a href="https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version">https://kueue.sigs.k8s.io/docs/installation/#install-a-released-version</a> for upstream details.</p>
 <h4 id="install-kueue">Install Kueue<a class="headerlink" href="#install-kueue" title="Permanent link">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>-n<span class="w"> </span>kueue-system<span class="w"> </span>install<span class="w"> </span>kueue<span class="w"> </span>oci://registry.k8s.io/kueue/charts/kueue<span class="w"> </span>--create-namespace
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>kueue-system<span class="w"> </span>install<span class="w"> </span>kueue<span class="w"> </span>oci://registry.k8s.io/kueue/charts/kueue<span class="w"> </span>--create-namespace
 </span></code></pre></div>
 <h4 id="clusterqueue">ClusterQueue<a class="headerlink" href="#clusterqueue" title="Permanent link">&para;</a></h4>
 <p>A <code>ClusterQueue</code> is a cluster-wide queue template. An example is in <a href="https://github.com/opencadc/science-platform/blob/main/helm/kueue/examples/clusterQueue.config.yaml">Skaha Example Kueue ClusterQueue</a>. Adjust for your cluster, then apply:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/science-platform.git
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>cp<span class="w"> </span>science-platform/helm/kueue/examples/clusterQueue.config.yaml<span class="w"> </span>./
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Edit as needed.</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./clusterQueue.config.yaml
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>--filename<span class="w"> </span>./clusterQueue.config.yaml
 </span></code></pre></div>
 <h4 id="localqueue">LocalQueue<a class="headerlink" href="#localqueue" title="Permanent link">&para;</a></h4>
 <p>A <code>LocalQueue</code> is namespace-scoped and must exist in the workload namespace (<code>skaha-workload</code> by default). See <a href="https://github.com/opencadc/science-platform/blob/main/helm/kueue/examples/localQueue.config.yaml">Skaha Example Kueue LocalQueue</a>.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/science-platform.git
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>cp<span class="w"> </span>science-platform/helm/kueue/examples/localQueue.config.yaml<span class="w"> </span>./
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Edit as needed.</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./localQueue.config.yaml
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>--filename<span class="w"> </span>./localQueue.config.yaml
 </span></code></pre></div>
 <h4 id="kueue-rbac">Kueue RBAC<a class="headerlink" href="#kueue-rbac" title="Permanent link">&para;</a></h4>
 <p>Additional RBAC lets Skaha and session workloads interact with Kueue. This is separate from the RBAC the <a href="../skaha/">Skaha</a> chart creates for session management (Jobs, Pods, <code>IngressRoute</code>, and <code>Middleware</code> in <code>skaha-workload</code>).</p>
 <p>Example manifests: <a href="https://github.com/opencadc/science-platform/blob/main/helm/kueue/examples/rbac.yaml">Skaha Example Kueue RBAC</a>.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/science-platform.git
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>cp<span class="w"> </span>science-platform/helm/kueue/examples/rbac.yaml<span class="w"> </span>./
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./rbac.yaml
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>--filename<span class="w"> </span>./rbac.yaml
 </span></code></pre></div>
 <h3 id="traefik-install">Traefik install<a class="headerlink" href="#traefik-install" title="Permanent link">&para;</a></h3>
 <p>Traefik must be running <strong>before</strong> you install Skaha. The Skaha chart renders <code>IngressRoute</code> and <code>Middleware</code> resources for interactive sessions (notebooks, CARTA, desktops, and similar). Platform <code>Ingress</code> objects use <code>ingressClassName: traefik</code>.</p>
 <p>Use Traefik <strong>v2.11.0</strong> or newer. The charts use API group <code>traefik.io</code> (not the older <code>traefik.containo.us</code> group).</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>traefik<span class="w"> </span>https://traefik.github.io/charts
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>helm<span class="w"> </span>repo<span class="w"> </span>update
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>traefik<span class="w"> </span>traefik/traefik<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>-n<span class="w"> </span>traefik<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span>--set<span class="w"> </span>providers.kubernetesCRD.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span>--set<span class="w"> </span>providers.kubernetesCRD.allowCrossNamespace<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span>--set<span class="w"> </span>providers.kubernetesIngress.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span>--set<span class="w"> </span>providers.kubernetesIngress.ingressClass<span class="o">=</span>traefik<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span>--set<span class="w"> </span>ingressClass.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span>--set<span class="w"> </span>ingressClass.isDefaultClass<span class="o">=</span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span>--set<span class="w"> </span>ingressClass.name<span class="o">=</span>traefik
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>traefik<span class="w"> </span>oci://ghcr.io/traefik/helm/traefik<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--namespace<span class="w"> </span>traefik<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--set<span class="w"> </span>providers.kubernetesCRD.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--set<span class="w"> </span>providers.kubernetesCRD.allowCrossNamespace<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>--set<span class="w"> </span>providers.kubernetesIngress.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span>--set<span class="w"> </span>providers.kubernetesIngress.ingressClass<span class="o">=</span>traefik<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span>--set<span class="w"> </span>ingressClass.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span>--set<span class="w"> </span>ingressClass.isDefaultClass<span class="o">=</span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span>--set<span class="w"> </span>ingressClass.name<span class="o">=</span>traefik
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">TLS termination</p>
-<p>For HTTPS with your own certificate, create a TLS Secret in the <code>traefik</code> namespace and configure Traefik’s default certificate or per-route TLS. The obsolete <a href="../base/">Base</a> chart documented this pattern under <code>secrets.default-certificate</code> and <code>traefik.tlsStore</code>; the same approach applies when Traefik is installed standalone.</p>
+<p>For HTTPS with your own certificate, create a TLS Secret in the <code>traefik</code> namespace and configure Traefik’s default certificate or per-route TLS.</p>
 </div>
 <p>Verify the controller is ready:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>traefik<span class="w"> </span>get<span class="w"> </span>pods
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>traefik<span class="w"> </span>get<span class="w"> </span>pods
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>ingressclass<span class="w"> </span>traefik
 </span></code></pre></div>
-<h2 id="base-chart-obsolete">Base chart (obsolete)<a class="headerlink" href="#base-chart-obsolete" title="Permanent link">&para;</a></h2>
-<p>The <a href="../base/"><code>base</code></a> Helm chart (<code>science-platform/base</code>) is <strong>obsolete for new deployments</strong>. It previously bundled:</p>
-<ul>
-<li>Traefik installation</li>
-<li><code>skaha-system</code> / <code>skaha-workload</code> namespace creation</li>
-<li>RBAC for the Skaha service account</li>
-</ul>
-<p><strong>New installs</strong> should use <a href="#traefik-install">Traefik install</a>, create namespaces explicitly (or via Skaha values), and rely on RBAC from the <a href="../skaha/">Skaha</a> chart (<code>rbac.create</code>, enabled by default).</p>
-<p><strong>Existing deployments</strong> may keep the <code>base</code> release to avoid churn. If you still use it, only the Traefik and namespace behaviour above is relevant; do not install <code>base</code> again on greenfield clusters.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Legacy only — not required for new Science Platform installs</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>traefik<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--values<span class="w"> </span>my-base-local-values-file.yaml<span class="w"> </span>base<span class="w"> </span>science-platform/base
-</span></code></pre></div>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
-<p>After <a href="#traefik-install">Traefik</a>, namespaces, storage, and optional Kueue are in place:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>science-platform<span class="w"> </span>https://images.opencadc.org/chartrepo/platform
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>science-platform-client<span class="w"> </span>https://images.opencadc.org/chartrepo/client
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>helm<span class="w"> </span>repo<span class="w"> </span>update
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>--create-namespace<span class="w"> </span>--values<span class="w"> </span>my-posix-mapper-local-values-file.yaml<span class="w"> </span>posix-mapper<span class="w"> </span>science-platform/posixmapper
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-cavern-local-values-file.yaml<span class="w"> </span>cavern<span class="w"> </span>science-platform/cavern
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-skaha-local-values-file.yaml<span class="w"> </span>skaha<span class="w"> </span>science-platform/skaha
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span>science-portal<span class="w"> </span>science-platform/science-portal
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-storage-ui-local-values-file.yaml<span class="w"> </span>storage-ui<span class="w"> </span>science-platform-client/storageui
+<p>After <a href="#traefik-install">Traefik</a>, <a href="#kueue">Kueue</a>, namespaces, and storage are in place:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--create-namespace<span class="w"> </span>--values<span class="w"> </span>my-posix-mapper-local-values-file.yaml<span class="w"> </span>posix-mapper<span class="w"> </span>oci://images.opencadc.org/posix-mapper
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-cavern-local-values-file.yaml<span class="w"> </span>cavern<span class="w"> </span>oci://images.opencadc.org/cavern
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-skaha-local-values-file.yaml<span class="w"> </span>skaha<span class="w"> </span>oci://images.opencadc.org/skaha
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span>science-portal<span class="w"> </span>oci://images.opencadc.org/science-portal
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-storage-ui-local-values-file.yaml<span class="w"> </span>storage-ui<span class="w"> </span>oci://images.opencadc.org/client/storage-ui
 </span></code></pre></div>
 <h2 id="persistent-volumes-and-persistent-volume-claims">Persistent Volumes and Persistent Volume Claims<a class="headerlink" href="#persistent-volumes-and-persistent-volume-claims" title="Permanent link">&para;</a></h2>
 <p>There are two (2) Persistent Volume Claims that are used in the system, due to the fact that there are two (2) Namespaces (<code>skaha-system</code> and <code>skaha-workload</code>).  These PVCs, while
 having potentially different configurations, <strong>must</strong> point to the same storage.  For example, if two <code>hostPath</code> PVCs are created, the <code>hostPath.path</code> <strong>must</strong> point to the same
 folder in order to have shared content between the Cavern Service (<code>cavern</code>) and the User Sessions (Notebooks, CARTA, etc.).</p>
 <p>Create the <code>skaha-system</code> and <code>skaha-workload</code> namespaces if they do not exist yet:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>skaha-system
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>skaha-workload
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>skaha-system
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>skaha-workload
 </span></code></pre></div>
 <p>It is expected that the deployer, or an Administrator, will create the necessary Persistent Volumes (if needed), and the required Persistent Volume Claims at
-this point. Sample <a href="https://github.com/opencadc/science-platform/tree/master/deployment/helm/base/volumes">local PersistentVolume manifests</a> are in the upstream <code>base/volumes</code> folder (historical reference from the obsolete base chart).</p>
+this point. Sample <a href="https://github.com/opencadc/science-platform/tree/master/deployment/helm/base/volumes">local PersistentVolume manifests</a> are in the upstream science-platform repository.</p>
 <p>Two (2) Persistent Volume Claims are required.  While both point to the same underlying storage, they are in different Namespaces.  This leads to somewhat duplicated effort, but it is necessary to ensure that both the <code>skaha-system</code> and <code>skaha-workload</code> namespaces have access to the required storage resources.
 See this <a href="https://youtu.be/NSO0HioWLiI">short explanation</a> for more information.</p>
 <h3 id="posix-mapper-install">POSIX Mapper install<a class="headerlink" href="#posix-mapper-install" title="Permanent link">&para;</a></h3>
@@ -824,255 +795,257 @@ See this <a href="https://youtu.be/NSO0HioWLiI">short explanation</a> for more i
 <p>This service is required to be installed <em>before</em> the Skaha service.</p>
 <p>Create a <code>my-posix-mapper-local-values-file.yaml</code> file to override Values from the main <a href="https://github.com/opencadc/deployments/tree/main/helm/applications/posix-mapper/values.yaml">template <code>values.yaml</code> file</a>.</p>
 <p><code>my-posix-mapper-local-values-file.yaml</code>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># POSIX Mapper web service deployment</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nt">deployment</span><span class="p">:</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.org</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">posixMapper</span><span class="p">:</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="c1"># Optionally set the DEBUG port.</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="c1"># extraEnv:</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="c1"># - name: CATALINA_OPTS</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="c1">#   value: &quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555&quot;</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="c1"># - name: JAVA_OPTS</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="c1">#   value: &quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555&quot;</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">    </span><span class="c1"># Uncomment to debug.  Requires options above as well as service port exposure below.</span>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">    </span><span class="c1"># extraPorts:</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">    </span><span class="c1"># - containerPort: 5555</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">    </span><span class="c1">#   protocol: TCP</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">    </span><span class="c1"># Resources provided to the Skaha service.</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span>
-</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">      </span><span class="nt">requests</span><span class="p">:</span>
-</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1Gi&quot;</span>
-</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;500m&quot;</span>
-</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">      </span><span class="nt">limits</span><span class="p">:</span>
-</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1Gi&quot;</span>
-</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;500m&quot;</span>
-</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>
-</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="w">    </span><span class="c1"># Used to set the minimum UID.  Useful to avoid conflicts.</span>
-</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="w">    </span><span class="nt">minUID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
-</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>
-</span><span id="__span-9-29"><a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a><span class="w">    </span><span class="c1"># Used to set the minimum GID.  Keep this much higher than the minUID so that default Groups can be set for new users.</span>
-</span><span id="__span-9-30"><a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a><span class="w">    </span><span class="nt">minGID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">900000</span>
-</span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>
-</span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a><span class="w">    </span><span class="c1"># The URL of the IVOA Registry</span>
-</span><span id="__span-9-33"><a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a><span class="w">    </span><span class="nt">registryURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/reg</span>
-</span><span id="__span-9-34"><a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>
-</span><span id="__span-9-35"><a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a><span class="w">    </span><span class="c1"># Optionally mount a custom CA certificate</span>
-</span><span id="__span-9-36"><a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a><span class="w">    </span><span class="c1"># extraVolumeMounts:</span>
-</span><span id="__span-9-37"><a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a><span class="w">    </span><span class="c1"># - mountPath: &quot;/config/cacerts&quot;</span>
-</span><span id="__span-9-38"><a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a><span class="w">    </span><span class="c1">#   name: cacert-volume</span>
-</span><span id="__span-9-39"><a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>
-</span><span id="__span-9-40"><a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a><span class="w">    </span><span class="c1"># Create the CA certificate volume to be mounted in extraVolumeMounts</span>
-</span><span id="__span-9-41"><a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a><span class="w">    </span><span class="c1"># extraVolumes:</span>
-</span><span id="__span-9-42"><a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a><span class="w">    </span><span class="c1"># - name: cacert-volume</span>
-</span><span id="__span-9-43"><a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a><span class="w">    </span><span class="c1">#   secret:</span>
-</span><span id="__span-9-44"><a id="__codelineno-9-44" name="__codelineno-9-44" href="#__codelineno-9-44"></a><span class="w">    </span><span class="c1">#     defaultMode: 420</span>
-</span><span id="__span-9-45"><a id="__codelineno-9-45" name="__codelineno-9-45" href="#__codelineno-9-45"></a><span class="w">    </span><span class="c1">#     secretName: posix-manager-cacert-secret</span>
-</span><span id="__span-9-46"><a id="__codelineno-9-46" name="__codelineno-9-46" href="#__codelineno-9-46"></a>
-</span><span id="__span-9-47"><a id="__codelineno-9-47" name="__codelineno-9-47" href="#__codelineno-9-47"></a><span class="w">  </span><span class="c1"># Specify extra hostnames that will be added to the Pod&#39;s /etc/hosts file.  Note that this is in the</span>
-</span><span id="__span-9-48"><a id="__codelineno-9-48" name="__codelineno-9-48" href="#__codelineno-9-48"></a><span class="w">  </span><span class="c1"># deployment object, not the posixMapper one.</span>
-</span><span id="__span-9-49"><a id="__codelineno-9-49" name="__codelineno-9-49" href="#__codelineno-9-49"></a><span class="w">  </span><span class="c1">#</span>
-</span><span id="__span-9-50"><a id="__codelineno-9-50" name="__codelineno-9-50" href="#__codelineno-9-50"></a><span class="w">  </span><span class="c1"># These entries get added as hostAliases entries to the Deployment.</span>
-</span><span id="__span-9-51"><a id="__codelineno-9-51" name="__codelineno-9-51" href="#__codelineno-9-51"></a><span class="w">  </span><span class="c1">#</span>
-</span><span id="__span-9-52"><a id="__codelineno-9-52" name="__codelineno-9-52" href="#__codelineno-9-52"></a><span class="w">  </span><span class="c1"># Example:</span>
-</span><span id="__span-9-53"><a id="__codelineno-9-53" name="__codelineno-9-53" href="#__codelineno-9-53"></a><span class="w">  </span><span class="c1"># extraHosts:</span>
-</span><span id="__span-9-54"><a id="__codelineno-9-54" name="__codelineno-9-54" href="#__codelineno-9-54"></a><span class="w">  </span><span class="c1">#   - ip: 127.3.34.5</span>
-</span><span id="__span-9-55"><a id="__codelineno-9-55" name="__codelineno-9-55" href="#__codelineno-9-55"></a><span class="w">  </span><span class="c1">#     hostname: myhost.example.org</span>
-</span><span id="__span-9-56"><a id="__codelineno-9-56" name="__codelineno-9-56" href="#__codelineno-9-56"></a><span class="w">  </span><span class="c1">#</span>
-</span><span id="__span-9-57"><a id="__codelineno-9-57" name="__codelineno-9-57" href="#__codelineno-9-57"></a><span class="w">  </span><span class="c1"># extraHosts: []</span>
-</span><span id="__span-9-58"><a id="__codelineno-9-58" name="__codelineno-9-58" href="#__codelineno-9-58"></a>
-</span><span id="__span-9-59"><a id="__codelineno-9-59" name="__codelineno-9-59" href="#__codelineno-9-59"></a><span class="nt">secrets</span><span class="p">:</span>
-</span><span id="__span-9-60"><a id="__codelineno-9-60" name="__codelineno-9-60" href="#__codelineno-9-60"></a><span class="w">  </span><span class="c1"># Uncomment to enable local or self-signed CA certificates for your domain to be trusted.</span>
-</span><span id="__span-9-61"><a id="__codelineno-9-61" name="__codelineno-9-61" href="#__codelineno-9-61"></a><span class="c1">#   posix-manager-cacert-secret:</span>
-</span><span id="__span-9-62"><a id="__codelineno-9-62" name="__codelineno-9-62" href="#__codelineno-9-62"></a><span class="c1">#     ca.crt: &lt;base64 encoded ca crt&gt;</span>
-</span><span id="__span-9-63"><a id="__codelineno-9-63" name="__codelineno-9-63" href="#__codelineno-9-63"></a>
-</span><span id="__span-9-64"><a id="__codelineno-9-64" name="__codelineno-9-64" href="#__codelineno-9-64"></a><span class="c1"># These values are preset in the catalina.properties, and this default database only exists beside this service.</span>
-</span><span id="__span-9-65"><a id="__codelineno-9-65" name="__codelineno-9-65" href="#__codelineno-9-65"></a><span class="nt">postgresql</span><span class="p">:</span>
-</span><span id="__span-9-66"><a id="__codelineno-9-66" name="__codelineno-9-66" href="#__codelineno-9-66"></a><span class="c1">#   maxActive: 4</span>
-</span><span id="__span-9-67"><a id="__codelineno-9-67" name="__codelineno-9-67" href="#__codelineno-9-67"></a><span class="c1">#   schema: mapping</span>
-</span><span id="__span-9-68"><a id="__codelineno-9-68" name="__codelineno-9-68" href="#__codelineno-9-68"></a><span class="c1">#   url: jdbc:postgresql://db.host:5432/mapping</span>
-</span><span id="__span-9-69"><a id="__codelineno-9-69" name="__codelineno-9-69" href="#__codelineno-9-69"></a><span class="c1">#   auth:</span>
-</span><span id="__span-9-70"><a id="__codelineno-9-70" name="__codelineno-9-70" href="#__codelineno-9-70"></a><span class="c1">#     username: posixmapperuser</span>
-</span><span id="__span-9-71"><a id="__codelineno-9-71" name="__codelineno-9-71" href="#__codelineno-9-71"></a><span class="c1">#     password: posixmapperpwd</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># POSIX Mapper web service deployment</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nt">deployment</span><span class="p">:</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.org</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">posixMapper</span><span class="p">:</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="c1"># Optionally set the DEBUG port.</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="c1"># extraEnv:</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="c1"># - name: CATALINA_OPTS</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">    </span><span class="c1">#   value: &quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555&quot;</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="c1"># - name: JAVA_OPTS</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">    </span><span class="c1">#   value: &quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555&quot;</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">    </span><span class="c1"># Uncomment to debug.  Requires options above as well as service port exposure below.</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">    </span><span class="c1"># extraPorts:</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">    </span><span class="c1"># - containerPort: 5555</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">    </span><span class="c1">#   protocol: TCP</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">    </span><span class="c1"># Resources provided to the Skaha service.</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">      </span><span class="nt">requests</span><span class="p">:</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1Gi&quot;</span>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;500m&quot;</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="w">      </span><span class="nt">limits</span><span class="p">:</span>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1Gi&quot;</span>
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;500m&quot;</span>
+</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>
+</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span class="w">    </span><span class="c1"># Used to set the minimum UID.  Useful to avoid conflicts.</span>
+</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="w">    </span><span class="nt">minUID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
+</span><span id="__span-8-28"><a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>
+</span><span id="__span-8-29"><a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a><span class="w">    </span><span class="c1"># Used to set the minimum GID.  Keep this much higher than the minUID so that default Groups can be set for new users.</span>
+</span><span id="__span-8-30"><a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a><span class="w">    </span><span class="nt">minGID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">900000</span>
+</span><span id="__span-8-31"><a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a>
+</span><span id="__span-8-32"><a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a><span class="w">    </span><span class="c1"># The URL of the IVOA Registry</span>
+</span><span id="__span-8-33"><a id="__codelineno-8-33" name="__codelineno-8-33" href="#__codelineno-8-33"></a><span class="w">    </span><span class="nt">registryURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/reg</span>
+</span><span id="__span-8-34"><a id="__codelineno-8-34" name="__codelineno-8-34" href="#__codelineno-8-34"></a>
+</span><span id="__span-8-35"><a id="__codelineno-8-35" name="__codelineno-8-35" href="#__codelineno-8-35"></a><span class="w">    </span><span class="c1"># Optionally mount a custom CA certificate</span>
+</span><span id="__span-8-36"><a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a><span class="w">    </span><span class="c1"># extraVolumeMounts:</span>
+</span><span id="__span-8-37"><a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a><span class="w">    </span><span class="c1"># - mountPath: &quot;/config/cacerts&quot;</span>
+</span><span id="__span-8-38"><a id="__codelineno-8-38" name="__codelineno-8-38" href="#__codelineno-8-38"></a><span class="w">    </span><span class="c1">#   name: cacert-volume</span>
+</span><span id="__span-8-39"><a id="__codelineno-8-39" name="__codelineno-8-39" href="#__codelineno-8-39"></a>
+</span><span id="__span-8-40"><a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a><span class="w">    </span><span class="c1"># Create the CA certificate volume to be mounted in extraVolumeMounts</span>
+</span><span id="__span-8-41"><a id="__codelineno-8-41" name="__codelineno-8-41" href="#__codelineno-8-41"></a><span class="w">    </span><span class="c1"># extraVolumes:</span>
+</span><span id="__span-8-42"><a id="__codelineno-8-42" name="__codelineno-8-42" href="#__codelineno-8-42"></a><span class="w">    </span><span class="c1"># - name: cacert-volume</span>
+</span><span id="__span-8-43"><a id="__codelineno-8-43" name="__codelineno-8-43" href="#__codelineno-8-43"></a><span class="w">    </span><span class="c1">#   secret:</span>
+</span><span id="__span-8-44"><a id="__codelineno-8-44" name="__codelineno-8-44" href="#__codelineno-8-44"></a><span class="w">    </span><span class="c1">#     defaultMode: 420</span>
+</span><span id="__span-8-45"><a id="__codelineno-8-45" name="__codelineno-8-45" href="#__codelineno-8-45"></a><span class="w">    </span><span class="c1">#     secretName: posix-manager-cacert-secret</span>
+</span><span id="__span-8-46"><a id="__codelineno-8-46" name="__codelineno-8-46" href="#__codelineno-8-46"></a>
+</span><span id="__span-8-47"><a id="__codelineno-8-47" name="__codelineno-8-47" href="#__codelineno-8-47"></a><span class="w">  </span><span class="c1"># Specify extra hostnames that will be added to the Pod&#39;s /etc/hosts file.  Note that this is in the</span>
+</span><span id="__span-8-48"><a id="__codelineno-8-48" name="__codelineno-8-48" href="#__codelineno-8-48"></a><span class="w">  </span><span class="c1"># deployment object, not the posixMapper one.</span>
+</span><span id="__span-8-49"><a id="__codelineno-8-49" name="__codelineno-8-49" href="#__codelineno-8-49"></a><span class="w">  </span><span class="c1">#</span>
+</span><span id="__span-8-50"><a id="__codelineno-8-50" name="__codelineno-8-50" href="#__codelineno-8-50"></a><span class="w">  </span><span class="c1"># These entries get added as hostAliases entries to the Deployment.</span>
+</span><span id="__span-8-51"><a id="__codelineno-8-51" name="__codelineno-8-51" href="#__codelineno-8-51"></a><span class="w">  </span><span class="c1">#</span>
+</span><span id="__span-8-52"><a id="__codelineno-8-52" name="__codelineno-8-52" href="#__codelineno-8-52"></a><span class="w">  </span><span class="c1"># Example:</span>
+</span><span id="__span-8-53"><a id="__codelineno-8-53" name="__codelineno-8-53" href="#__codelineno-8-53"></a><span class="w">  </span><span class="c1"># extraHosts:</span>
+</span><span id="__span-8-54"><a id="__codelineno-8-54" name="__codelineno-8-54" href="#__codelineno-8-54"></a><span class="w">  </span><span class="c1">#   - ip: 127.3.34.5</span>
+</span><span id="__span-8-55"><a id="__codelineno-8-55" name="__codelineno-8-55" href="#__codelineno-8-55"></a><span class="w">  </span><span class="c1">#     hostname: myhost.example.org</span>
+</span><span id="__span-8-56"><a id="__codelineno-8-56" name="__codelineno-8-56" href="#__codelineno-8-56"></a><span class="w">  </span><span class="c1">#</span>
+</span><span id="__span-8-57"><a id="__codelineno-8-57" name="__codelineno-8-57" href="#__codelineno-8-57"></a><span class="w">  </span><span class="c1"># extraHosts: []</span>
+</span><span id="__span-8-58"><a id="__codelineno-8-58" name="__codelineno-8-58" href="#__codelineno-8-58"></a>
+</span><span id="__span-8-59"><a id="__codelineno-8-59" name="__codelineno-8-59" href="#__codelineno-8-59"></a><span class="nt">secrets</span><span class="p">:</span>
+</span><span id="__span-8-60"><a id="__codelineno-8-60" name="__codelineno-8-60" href="#__codelineno-8-60"></a><span class="w">  </span><span class="c1"># Uncomment to enable local or self-signed CA certificates for your domain to be trusted.</span>
+</span><span id="__span-8-61"><a id="__codelineno-8-61" name="__codelineno-8-61" href="#__codelineno-8-61"></a><span class="c1">#   posix-manager-cacert-secret:</span>
+</span><span id="__span-8-62"><a id="__codelineno-8-62" name="__codelineno-8-62" href="#__codelineno-8-62"></a><span class="c1">#     ca.crt: &lt;base64 encoded ca crt&gt;</span>
+</span><span id="__span-8-63"><a id="__codelineno-8-63" name="__codelineno-8-63" href="#__codelineno-8-63"></a>
+</span><span id="__span-8-64"><a id="__codelineno-8-64" name="__codelineno-8-64" href="#__codelineno-8-64"></a><span class="c1"># These values are preset in the catalina.properties, and this default database only exists beside this service.</span>
+</span><span id="__span-8-65"><a id="__codelineno-8-65" name="__codelineno-8-65" href="#__codelineno-8-65"></a><span class="nt">postgresql</span><span class="p">:</span>
+</span><span id="__span-8-66"><a id="__codelineno-8-66" name="__codelineno-8-66" href="#__codelineno-8-66"></a><span class="c1">#   maxActive: 4</span>
+</span><span id="__span-8-67"><a id="__codelineno-8-67" name="__codelineno-8-67" href="#__codelineno-8-67"></a><span class="c1">#   schema: mapping</span>
+</span><span id="__span-8-68"><a id="__codelineno-8-68" name="__codelineno-8-68" href="#__codelineno-8-68"></a><span class="c1">#   url: jdbc:postgresql://db.host:5432/mapping</span>
+</span><span id="__span-8-69"><a id="__codelineno-8-69" name="__codelineno-8-69" href="#__codelineno-8-69"></a><span class="c1">#   auth:</span>
+</span><span id="__span-8-70"><a id="__codelineno-8-70" name="__codelineno-8-70" href="#__codelineno-8-70"></a><span class="c1">#     username: posixmapperuser</span>
+</span><span id="__span-8-71"><a id="__codelineno-8-71" name="__codelineno-8-71" href="#__codelineno-8-71"></a><span class="c1">#     password: posixmapperpwd</span>
 </span></code></pre></div></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>helm<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w">  </span>--values<span class="w"> </span>my-posix-mapper-local-values-file.yaml<span class="w"> </span>posix-mapper<span class="w"> </span>science-platform/posixmapper
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>NAME:<span class="w"> </span>posix-mapper
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>LAST<span class="w"> </span>DEPLOYED:<span class="w"> </span>Thu<span class="w"> </span>Oct<span class="w"> </span><span class="m">28</span><span class="w"> </span><span class="m">07</span>:28:45<span class="w"> </span><span class="m">2025</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>NAMESPACE:<span class="w"> </span>skaha-system
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>STATUS:<span class="w"> </span>deployed
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>REVISION:<span class="w"> </span><span class="m">1</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-posix-mapper-local-values-file.yaml<span class="w"> </span>posix-mapper<span class="w"> </span>oci://images.opencadc.org/posix-mapper
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>NAME:<span class="w"> </span>posix-mapper
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>LAST<span class="w"> </span>DEPLOYED:<span class="w"> </span>Thu<span class="w"> </span>Oct<span class="w"> </span><span class="m">28</span><span class="w"> </span><span class="m">07</span>:28:45<span class="w"> </span><span class="m">2025</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>NAMESPACE:<span class="w"> </span>skaha-system
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>STATUS:<span class="w"> </span>deployed
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>REVISION:<span class="w"> </span><span class="m">1</span>
 </span></code></pre></div>
 <p>Test it.
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># See below for tokens</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SKA_TOKEN</span><span class="o">=</span>...
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>curl<span class="w"> </span>-SsL<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="si">${</span><span class="nv">SKA_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>https://example.host.com/posix-mapper/uid
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="o">[]</span>%
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>curl<span class="w"> </span>-SsL<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="si">${</span><span class="nv">SKA_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;https://example.host.com/posix-mapper/uid?user=mynewuser&quot;</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>mynewuser:x:10000:10000:::
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># See below for tokens</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SKA_TOKEN</span><span class="o">=</span>...
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>curl<span class="w"> </span>--silent<span class="w"> </span>--show-error<span class="w"> </span>--location<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="si">${</span><span class="nv">SKA_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>https://example.host.com/posix-mapper/uid
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="o">[]</span>%
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>curl<span class="w"> </span>--silent<span class="w"> </span>--show-error<span class="w"> </span>--location<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="si">${</span><span class="nv">SKA_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;https://example.host.com/posix-mapper/uid?user=mynewuser&quot;</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>mynewuser:x:10000:10000:::
 </span></code></pre></div></p>
 <h3 id="cavern-user-storage-api-install">Cavern (User Storage API) install<a class="headerlink" href="#cavern-user-storage-api-install" title="Permanent link">&para;</a></h3>
 <p>The Cavern API provides access to the User Storage which is shared between Skaha and all of the User Sessions.  A <a href="#obtaining-a-bearer-token">Bearer token</a> is required when trying to read
 private access, or any writing.</p>
 <p>Create a <code>my-cavern-local-values-file.yaml</code> file to override Values from the main <a href="https://github.com/opencadc/deployments/tree/main/helm/applications/cavern/values.yaml">template <code>values.yaml</code> file</a>.</p>
 <p><code>my-cavern-local-values-file.yaml</code>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Cavern web service deployment</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nt">deployment</span><span class="p">:</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.org</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span><span class="nt">cavern</span><span class="p">:</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="c1"># How cavern identifies itself.  Required.</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="nt">resourceID</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ivo://example.org/cavern&quot;</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="c1"># Set the Registry URL pointing to the desired registry.  Required</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span><span class="nt">registryURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://example.org/reg&quot;</span>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">    </span><span class="c1"># How to find the POSIX Mapper API.  URI (ivo://) or URL (https://).  Required.</span>
-</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">    </span><span class="nt">posixMapperResourceID</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ivo://example.org/posix-mapper&quot;</span>
-</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
-</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">    </span><span class="c1"># User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.</span>
-</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">    </span><span class="nt">allocations</span><span class="p">:</span>
-</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">      </span><span class="c1"># Required.  The default size, in GB, of an allocation.  This is used in the absence of the Quota VOSpace property.  Can be a floating point number.</span>
-</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="w">      </span><span class="c1"># Provided value is 10 (10 GiB) by default.</span>
-</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="w">      </span><span class="c1"># Example:</span>
-</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="w">      </span><span class="c1">#   defaultSizeGB: 25.5</span>
-</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="w">      </span><span class="nt">defaultSizeGB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span>
-</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>
-</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="w">    </span><span class="nt">filesystem</span><span class="p">:</span>
-</span><span id="__span-12-23"><a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="w">      </span><span class="c1"># persistent data directory in container</span>
-</span><span id="__span-12-24"><a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a><span class="w">      </span><span class="nt">dataDir</span><span class="p">:</span><span class="w"> </span><span class="c1"># e.g. &quot;/data&quot;</span>
-</span><span id="__span-12-25"><a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>
-</span><span id="__span-12-26"><a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="w">      </span><span class="c1"># RELATIVE path to the node/file content that could be mounted in other containers</span>
-</span><span id="__span-12-27"><a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a><span class="w">      </span><span class="nt">subPath</span><span class="p">:</span><span class="w"> </span><span class="c1"># e.g. &quot;cavern&quot;</span>
-</span><span id="__span-12-28"><a id="__codelineno-12-28" name="__codelineno-12-28" href="#__codelineno-12-28"></a>
-</span><span id="__span-12-29"><a id="__codelineno-12-29" name="__codelineno-12-29" href="#__codelineno-12-29"></a><span class="w">      </span><span class="c1"># See https://github.com/opencadc/vos/tree/master/cavern for documentation.  For deployments using OpenID Connect,</span>
-</span><span id="__span-12-30"><a id="__codelineno-12-30" name="__codelineno-12-30" href="#__codelineno-12-30"></a><span class="w">      </span><span class="c1"># the rootOwner MUST be an object with the following properties set.</span>
-</span><span id="__span-12-31"><a id="__codelineno-12-31" name="__codelineno-12-31" href="#__codelineno-12-31"></a><span class="w">      </span><span class="nt">rootOwner</span><span class="p">:</span>
-</span><span id="__span-12-32"><a id="__codelineno-12-32" name="__codelineno-12-32" href="#__codelineno-12-32"></a><span class="w">        </span><span class="c1"># The adminUsername is required to be set whomever has admin access over the filesystem.dataDir above.</span>
-</span><span id="__span-12-33"><a id="__codelineno-12-33" name="__codelineno-12-33" href="#__codelineno-12-33"></a><span class="w">        </span><span class="nt">adminUsername</span><span class="p">:</span>
-</span><span id="__span-12-34"><a id="__codelineno-12-34" name="__codelineno-12-34" href="#__codelineno-12-34"></a>
-</span><span id="__span-12-35"><a id="__codelineno-12-35" name="__codelineno-12-35" href="#__codelineno-12-35"></a><span class="w">        </span><span class="c1"># The username of the root owner.</span>
-</span><span id="__span-12-36"><a id="__codelineno-12-36" name="__codelineno-12-36" href="#__codelineno-12-36"></a><span class="w">        </span><span class="nt">username</span><span class="p">:</span>
-</span><span id="__span-12-37"><a id="__codelineno-12-37" name="__codelineno-12-37" href="#__codelineno-12-37"></a>
-</span><span id="__span-12-38"><a id="__codelineno-12-38" name="__codelineno-12-38" href="#__codelineno-12-38"></a><span class="w">        </span><span class="c1"># The UID of the root owner.</span>
-</span><span id="__span-12-39"><a id="__codelineno-12-39" name="__codelineno-12-39" href="#__codelineno-12-39"></a><span class="w">        </span><span class="nt">uid</span><span class="p">:</span>
-</span><span id="__span-12-40"><a id="__codelineno-12-40" name="__codelineno-12-40" href="#__codelineno-12-40"></a>
-</span><span id="__span-12-41"><a id="__codelineno-12-41" name="__codelineno-12-41" href="#__codelineno-12-41"></a><span class="w">        </span><span class="c1"># The GID of the root owner.</span>
-</span><span id="__span-12-42"><a id="__codelineno-12-42" name="__codelineno-12-42" href="#__codelineno-12-42"></a><span class="w">        </span><span class="nt">gid</span><span class="p">:</span>
-</span><span id="__span-12-43"><a id="__codelineno-12-43" name="__codelineno-12-43" href="#__codelineno-12-43"></a>
-</span><span id="__span-12-44"><a id="__codelineno-12-44" name="__codelineno-12-44" href="#__codelineno-12-44"></a><span class="w">    </span><span class="c1"># Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set uws.db.url, with uws.db.auth.existingSecret for credentials (not in Git).</span>
-</span><span id="__span-12-45"><a id="__codelineno-12-45" name="__codelineno-12-45" href="#__codelineno-12-45"></a><span class="w">    </span><span class="nt">uws</span><span class="p">:</span>
-</span><span id="__span-12-46"><a id="__codelineno-12-46" name="__codelineno-12-46" href="#__codelineno-12-46"></a><span class="w">      </span><span class="nt">db</span><span class="p">:</span>
-</span><span id="__span-12-47"><a id="__codelineno-12-47" name="__codelineno-12-47" href="#__codelineno-12-47"></a><span class="w">        </span><span class="nt">install</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-12-48"><a id="__codelineno-12-48" name="__codelineno-12-48" href="#__codelineno-12-48"></a><span class="w">        </span><span class="nt">schema</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uws</span>
-</span><span id="__span-12-49"><a id="__codelineno-12-49" name="__codelineno-12-49" href="#__codelineno-12-49"></a><span class="w">        </span><span class="nt">maxActive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-</span><span id="__span-12-50"><a id="__codelineno-12-50" name="__codelineno-12-50" href="#__codelineno-12-50"></a><span class="w">        </span><span class="nt">auth</span><span class="p">:</span>
-</span><span id="__span-12-51"><a id="__codelineno-12-51" name="__codelineno-12-51" href="#__codelineno-12-51"></a><span class="w">          </span><span class="nt">existingSecret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cavern-uws-db</span>
-</span><span id="__span-12-52"><a id="__codelineno-12-52" name="__codelineno-12-52" href="#__codelineno-12-52"></a>
-</span><span id="__span-12-53"><a id="__codelineno-12-53" name="__codelineno-12-53" href="#__codelineno-12-53"></a><span class="w">    </span><span class="c1"># Optional rename of the application from the default &quot;cavern&quot;</span>
-</span><span id="__span-12-54"><a id="__codelineno-12-54" name="__codelineno-12-54" href="#__codelineno-12-54"></a><span class="w">    </span><span class="c1"># applicationName: &quot;cavern&quot;</span>
-</span><span id="__span-12-55"><a id="__codelineno-12-55" name="__codelineno-12-55" href="#__codelineno-12-55"></a>
-</span><span id="__span-12-56"><a id="__codelineno-12-56" name="__codelineno-12-56" href="#__codelineno-12-56"></a><span class="w">    </span><span class="c1"># The endpoint to serve this from.  Defaults to /cavern.  If the applicationName is changed, then this should match.</span>
-</span><span id="__span-12-57"><a id="__codelineno-12-57" name="__codelineno-12-57" href="#__codelineno-12-57"></a><span class="w">    </span><span class="c1"># Don&#39;t forget to update your registry entries!</span>
-</span><span id="__span-12-58"><a id="__codelineno-12-58" name="__codelineno-12-58" href="#__codelineno-12-58"></a><span class="w">    </span><span class="c1">#</span>
-</span><span id="__span-12-59"><a id="__codelineno-12-59" name="__codelineno-12-59" href="#__codelineno-12-59"></a><span class="w">    </span><span class="c1"># endpoint: &quot;/cavern&quot;</span>
-</span><span id="__span-12-60"><a id="__codelineno-12-60" name="__codelineno-12-60" href="#__codelineno-12-60"></a>
-</span><span id="__span-12-61"><a id="__codelineno-12-61" name="__codelineno-12-61" href="#__codelineno-12-61"></a><span class="w">    </span><span class="c1"># Simple Class name of the QuotaPlugin to use.  This is used to request quota and folder size information</span>
-</span><span id="__span-12-62"><a id="__codelineno-12-62" name="__codelineno-12-62" href="#__codelineno-12-62"></a><span class="w">    </span><span class="c1"># from the underlying storage system.  Optional, defaults to NoQuotaPlugin.</span>
-</span><span id="__span-12-63"><a id="__codelineno-12-63" name="__codelineno-12-63" href="#__codelineno-12-63"></a><span class="w">    </span><span class="c1">#</span>
-</span><span id="__span-12-64"><a id="__codelineno-12-64" name="__codelineno-12-64" href="#__codelineno-12-64"></a><span class="w">    </span><span class="c1"># - For CephFS deployments: CephFSQuotaPlugin</span>
-</span><span id="__span-12-65"><a id="__codelineno-12-65" name="__codelineno-12-65" href="#__codelineno-12-65"></a><span class="w">    </span><span class="c1"># - Default: NoQuotaPlugin</span>
-</span><span id="__span-12-66"><a id="__codelineno-12-66" name="__codelineno-12-66" href="#__codelineno-12-66"></a><span class="w">    </span><span class="c1">#</span>
-</span><span id="__span-12-67"><a id="__codelineno-12-67" name="__codelineno-12-67" href="#__codelineno-12-67"></a><span class="w">    </span><span class="c1"># quotaPlugin: {NoQuotaPlugin | CephFSQuotaPlug}</span>
-</span><span id="__span-12-68"><a id="__codelineno-12-68" name="__codelineno-12-68" href="#__codelineno-12-68"></a>
-</span><span id="__span-12-69"><a id="__codelineno-12-69" name="__codelineno-12-69" href="#__codelineno-12-69"></a><span class="w">    </span><span class="c1"># Optionally set the DEBUG port.</span>
-</span><span id="__span-12-70"><a id="__codelineno-12-70" name="__codelineno-12-70" href="#__codelineno-12-70"></a><span class="w">    </span><span class="c1">#</span>
-</span><span id="__span-12-71"><a id="__codelineno-12-71" name="__codelineno-12-71" href="#__codelineno-12-71"></a><span class="w">    </span><span class="c1"># Example:</span>
-</span><span id="__span-12-72"><a id="__codelineno-12-72" name="__codelineno-12-72" href="#__codelineno-12-72"></a><span class="w">    </span><span class="c1"># extraEnv:</span>
-</span><span id="__span-12-73"><a id="__codelineno-12-73" name="__codelineno-12-73" href="#__codelineno-12-73"></a><span class="w">    </span><span class="c1"># - name: CATALINA_OPTS</span>
-</span><span id="__span-12-74"><a id="__codelineno-12-74" name="__codelineno-12-74" href="#__codelineno-12-74"></a><span class="w">    </span><span class="c1">#   value: &quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555&quot;</span>
-</span><span id="__span-12-75"><a id="__codelineno-12-75" name="__codelineno-12-75" href="#__codelineno-12-75"></a><span class="w">    </span><span class="c1"># - name: JAVA_OPTS</span>
-</span><span id="__span-12-76"><a id="__codelineno-12-76" name="__codelineno-12-76" href="#__codelineno-12-76"></a><span class="w">    </span><span class="c1">#   value: &quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555&quot;</span>
-</span><span id="__span-12-77"><a id="__codelineno-12-77" name="__codelineno-12-77" href="#__codelineno-12-77"></a><span class="w">    </span><span class="c1">#</span>
-</span><span id="__span-12-78"><a id="__codelineno-12-78" name="__codelineno-12-78" href="#__codelineno-12-78"></a><span class="w">    </span><span class="c1"># extraEnv:</span>
-</span><span id="__span-12-79"><a id="__codelineno-12-79" name="__codelineno-12-79" href="#__codelineno-12-79"></a>
-</span><span id="__span-12-80"><a id="__codelineno-12-80" name="__codelineno-12-80" href="#__codelineno-12-80"></a><span class="w">    </span><span class="c1"># Optionally mount a custom CA certificate</span>
-</span><span id="__span-12-81"><a id="__codelineno-12-81" name="__codelineno-12-81" href="#__codelineno-12-81"></a><span class="w">    </span><span class="c1"># Example:</span>
-</span><span id="__span-12-82"><a id="__codelineno-12-82" name="__codelineno-12-82" href="#__codelineno-12-82"></a><span class="w">    </span><span class="c1"># extraVolumeMounts:</span>
-</span><span id="__span-12-83"><a id="__codelineno-12-83" name="__codelineno-12-83" href="#__codelineno-12-83"></a><span class="w">    </span><span class="c1"># - mountPath: &quot;/config/cacerts&quot;</span>
-</span><span id="__span-12-84"><a id="__codelineno-12-84" name="__codelineno-12-84" href="#__codelineno-12-84"></a><span class="w">    </span><span class="c1">#   name: cacert-volume</span>
-</span><span id="__span-12-85"><a id="__codelineno-12-85" name="__codelineno-12-85" href="#__codelineno-12-85"></a><span class="w">    </span><span class="c1">#</span>
-</span><span id="__span-12-86"><a id="__codelineno-12-86" name="__codelineno-12-86" href="#__codelineno-12-86"></a><span class="w">    </span><span class="c1"># extraVolumeMounts:</span>
-</span><span id="__span-12-87"><a id="__codelineno-12-87" name="__codelineno-12-87" href="#__codelineno-12-87"></a>
-</span><span id="__span-12-88"><a id="__codelineno-12-88" name="__codelineno-12-88" href="#__codelineno-12-88"></a><span class="w">    </span><span class="c1"># Create the CA certificate volume to be mounted in extraVolumeMounts</span>
-</span><span id="__span-12-89"><a id="__codelineno-12-89" name="__codelineno-12-89" href="#__codelineno-12-89"></a><span class="w">    </span><span class="c1"># Example:</span>
-</span><span id="__span-12-90"><a id="__codelineno-12-90" name="__codelineno-12-90" href="#__codelineno-12-90"></a><span class="w">    </span><span class="c1"># extraVolumes:</span>
-</span><span id="__span-12-91"><a id="__codelineno-12-91" name="__codelineno-12-91" href="#__codelineno-12-91"></a><span class="w">    </span><span class="c1"># - name: cacert-volume</span>
-</span><span id="__span-12-92"><a id="__codelineno-12-92" name="__codelineno-12-92" href="#__codelineno-12-92"></a><span class="w">    </span><span class="c1">#   secret:</span>
-</span><span id="__span-12-93"><a id="__codelineno-12-93" name="__codelineno-12-93" href="#__codelineno-12-93"></a><span class="w">    </span><span class="c1">#     defaultMode: 420</span>
-</span><span id="__span-12-94"><a id="__codelineno-12-94" name="__codelineno-12-94" href="#__codelineno-12-94"></a><span class="w">    </span><span class="c1">#     secretName: cavern-cacert-secret</span>
-</span><span id="__span-12-95"><a id="__codelineno-12-95" name="__codelineno-12-95" href="#__codelineno-12-95"></a><span class="w">    </span><span class="c1">#</span>
-</span><span id="__span-12-96"><a id="__codelineno-12-96" name="__codelineno-12-96" href="#__codelineno-12-96"></a><span class="w">    </span><span class="c1"># extraVolumes:</span>
-</span><span id="__span-12-97"><a id="__codelineno-12-97" name="__codelineno-12-97" href="#__codelineno-12-97"></a>
-</span><span id="__span-12-98"><a id="__codelineno-12-98" name="__codelineno-12-98" href="#__codelineno-12-98"></a><span class="w">    </span><span class="c1"># Other data to be included in the main ConfigMap of this deployment.</span>
-</span><span id="__span-12-99"><a id="__codelineno-12-99" name="__codelineno-12-99" href="#__codelineno-12-99"></a><span class="w">    </span><span class="c1"># Of note, files that end in .key are special and base64 decoded.</span>
-</span><span id="__span-12-100"><a id="__codelineno-12-100" name="__codelineno-12-100" href="#__codelineno-12-100"></a><span class="w">    </span><span class="c1">#</span>
-</span><span id="__span-12-101"><a id="__codelineno-12-101" name="__codelineno-12-101" href="#__codelineno-12-101"></a><span class="w">    </span><span class="c1"># extraConfigData:</span>
-</span><span id="__span-12-102"><a id="__codelineno-12-102" name="__codelineno-12-102" href="#__codelineno-12-102"></a>
-</span><span id="__span-12-103"><a id="__codelineno-12-103" name="__codelineno-12-103" href="#__codelineno-12-103"></a><span class="w">    </span><span class="c1"># Resources provided to the Cavern service.</span>
-</span><span id="__span-12-104"><a id="__codelineno-12-104" name="__codelineno-12-104" href="#__codelineno-12-104"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span>
-</span><span id="__span-12-105"><a id="__codelineno-12-105" name="__codelineno-12-105" href="#__codelineno-12-105"></a><span class="w">      </span><span class="nt">requests</span><span class="p">:</span>
-</span><span id="__span-12-106"><a id="__codelineno-12-106" name="__codelineno-12-106" href="#__codelineno-12-106"></a><span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1Gi&quot;</span>
-</span><span id="__span-12-107"><a id="__codelineno-12-107" name="__codelineno-12-107" href="#__codelineno-12-107"></a><span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;500m&quot;</span>
-</span><span id="__span-12-108"><a id="__codelineno-12-108" name="__codelineno-12-108" href="#__codelineno-12-108"></a><span class="w">      </span><span class="nt">limits</span><span class="p">:</span>
-</span><span id="__span-12-109"><a id="__codelineno-12-109" name="__codelineno-12-109" href="#__codelineno-12-109"></a><span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1Gi&quot;</span>
-</span><span id="__span-12-110"><a id="__codelineno-12-110" name="__codelineno-12-110" href="#__codelineno-12-110"></a><span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;500m&quot;</span>
-</span><span id="__span-12-111"><a id="__codelineno-12-111" name="__codelineno-12-111" href="#__codelineno-12-111"></a>
-</span><span id="__span-12-112"><a id="__codelineno-12-112" name="__codelineno-12-112" href="#__codelineno-12-112"></a><span class="w">    </span><span class="c1"># Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Cavern.</span>
-</span><span id="__span-12-113"><a id="__codelineno-12-113" name="__codelineno-12-113" href="#__codelineno-12-113"></a><span class="w">    </span><span class="c1"># See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/</span>
-</span><span id="__span-12-114"><a id="__codelineno-12-114" name="__codelineno-12-114" href="#__codelineno-12-114"></a><span class="w">    </span><span class="c1"># Example:</span>
-</span><span id="__span-12-115"><a id="__codelineno-12-115" name="__codelineno-12-115" href="#__codelineno-12-115"></a><span class="w">    </span><span class="nt">nodeAffinity</span><span class="p">:</span>
-</span><span id="__span-12-116"><a id="__codelineno-12-116" name="__codelineno-12-116" href="#__codelineno-12-116"></a><span class="w">      </span><span class="c1"># Only allow Cavern to run on specific Nodes.</span>
-</span><span id="__span-12-117"><a id="__codelineno-12-117" name="__codelineno-12-117" href="#__codelineno-12-117"></a><span class="w">      </span><span class="nt">requiredDuringSchedulingIgnoredDuringExecution</span><span class="p">:</span>
-</span><span id="__span-12-118"><a id="__codelineno-12-118" name="__codelineno-12-118" href="#__codelineno-12-118"></a><span class="w">        </span><span class="nt">nodeSelectorTerms</span><span class="p">:</span>
-</span><span id="__span-12-119"><a id="__codelineno-12-119" name="__codelineno-12-119" href="#__codelineno-12-119"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">matchExpressions</span><span class="p">:</span>
-</span><span id="__span-12-120"><a id="__codelineno-12-120" name="__codelineno-12-120" href="#__codelineno-12-120"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/hostname</span>
-</span><span id="__span-12-121"><a id="__codelineno-12-121" name="__codelineno-12-121" href="#__codelineno-12-121"></a><span class="w">            </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">In</span>
-</span><span id="__span-12-122"><a id="__codelineno-12-122" name="__codelineno-12-122" href="#__codelineno-12-122"></a><span class="w">            </span><span class="nt">values</span><span class="p">:</span>
-</span><span id="__span-12-123"><a id="__codelineno-12-123" name="__codelineno-12-123" href="#__codelineno-12-123"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-special-api-host</span>
-</span><span id="__span-12-124"><a id="__codelineno-12-124" name="__codelineno-12-124" href="#__codelineno-12-124"></a>
-</span><span id="__span-12-125"><a id="__codelineno-12-125" name="__codelineno-12-125" href="#__codelineno-12-125"></a><span class="w">  </span><span class="c1"># Specify extra hostnames that will be added to the Pod&#39;s /etc/hosts file.  Note that this is in the</span>
-</span><span id="__span-12-126"><a id="__codelineno-12-126" name="__codelineno-12-126" href="#__codelineno-12-126"></a><span class="w">  </span><span class="c1"># deployment object, not the cavern one.</span>
-</span><span id="__span-12-127"><a id="__codelineno-12-127" name="__codelineno-12-127" href="#__codelineno-12-127"></a><span class="w">  </span><span class="c1">#</span>
-</span><span id="__span-12-128"><a id="__codelineno-12-128" name="__codelineno-12-128" href="#__codelineno-12-128"></a><span class="w">  </span><span class="c1"># These entries get added as hostAliases entries to the Deployment.</span>
-</span><span id="__span-12-129"><a id="__codelineno-12-129" name="__codelineno-12-129" href="#__codelineno-12-129"></a><span class="w">  </span><span class="c1">#</span>
-</span><span id="__span-12-130"><a id="__codelineno-12-130" name="__codelineno-12-130" href="#__codelineno-12-130"></a><span class="w">  </span><span class="c1"># Example:</span>
-</span><span id="__span-12-131"><a id="__codelineno-12-131" name="__codelineno-12-131" href="#__codelineno-12-131"></a><span class="w">  </span><span class="c1"># extraHosts:</span>
-</span><span id="__span-12-132"><a id="__codelineno-12-132" name="__codelineno-12-132" href="#__codelineno-12-132"></a><span class="w">  </span><span class="c1">#   - ip: 127.3.34.5</span>
-</span><span id="__span-12-133"><a id="__codelineno-12-133" name="__codelineno-12-133" href="#__codelineno-12-133"></a><span class="w">  </span><span class="c1">#     hostname: myhost.example.org</span>
-</span><span id="__span-12-134"><a id="__codelineno-12-134" name="__codelineno-12-134" href="#__codelineno-12-134"></a><span class="w">  </span><span class="c1">#</span>
-</span><span id="__span-12-135"><a id="__codelineno-12-135" name="__codelineno-12-135" href="#__codelineno-12-135"></a><span class="w">  </span><span class="c1"># extraHosts: []</span>
-</span><span id="__span-12-136"><a id="__codelineno-12-136" name="__codelineno-12-136" href="#__codelineno-12-136"></a>
-</span><span id="__span-12-137"><a id="__codelineno-12-137" name="__codelineno-12-137" href="#__codelineno-12-137"></a><span class="c1"># secrets:</span>
-</span><span id="__span-12-138"><a id="__codelineno-12-138" name="__codelineno-12-138" href="#__codelineno-12-138"></a><span class="w">  </span><span class="c1"># Uncomment to enable local or self-signed CA certificates for your domain to be trusted.</span>
-</span><span id="__span-12-139"><a id="__codelineno-12-139" name="__codelineno-12-139" href="#__codelineno-12-139"></a><span class="w">  </span><span class="c1"># cavern-cacert-secret:</span>
-</span><span id="__span-12-140"><a id="__codelineno-12-140" name="__codelineno-12-140" href="#__codelineno-12-140"></a><span class="w">  </span><span class="c1">#   ca.crt: &lt;base64 encoded CA crt&gt;</span>
-</span><span id="__span-12-141"><a id="__codelineno-12-141" name="__codelineno-12-141" href="#__codelineno-12-141"></a>
-</span><span id="__span-12-142"><a id="__codelineno-12-142" name="__codelineno-12-142" href="#__codelineno-12-142"></a><span class="c1"># Set these appropriately to match your Persistent Volume Claim labels.</span>
-</span><span id="__span-12-143"><a id="__codelineno-12-143" name="__codelineno-12-143" href="#__codelineno-12-143"></a><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-12-144"><a id="__codelineno-12-144" name="__codelineno-12-144" href="#__codelineno-12-144"></a><span class="w">  </span><span class="nt">service</span><span class="p">:</span>
-</span><span id="__span-12-145"><a id="__codelineno-12-145" name="__codelineno-12-145" href="#__codelineno-12-145"></a><span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-12-146"><a id="__codelineno-12-146" name="__codelineno-12-146" href="#__codelineno-12-146"></a><span class="w">      </span><span class="c1"># YAML for service mounted storage.</span>
-</span><span id="__span-12-147"><a id="__codelineno-12-147" name="__codelineno-12-147" href="#__codelineno-12-147"></a><span class="w">      </span><span class="c1"># Example is the persistentVolumeClaim below.  This should match whatever Skaha used.</span>
-</span><span id="__span-12-148"><a id="__codelineno-12-148" name="__codelineno-12-148" href="#__codelineno-12-148"></a><span class="w">      </span><span class="c1"># persistentVolumeClaim:</span>
-</span><span id="__span-12-149"><a id="__codelineno-12-149" name="__codelineno-12-149" href="#__codelineno-12-149"></a><span class="w">      </span><span class="c1">#   claimName: skaha-pvc</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Cavern web service deployment</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nt">deployment</span><span class="p">:</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example.org</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">cavern</span><span class="p">:</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="c1"># How cavern identifies itself.  Required.</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">resourceID</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ivo://example.org/cavern&quot;</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="c1"># Set the Registry URL pointing to the desired registry.  Required</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">    </span><span class="nt">registryURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://example.org/reg&quot;</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="c1"># How to find the POSIX Mapper API.  URI (ivo://) or URL (https://).  Required.</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nt">posixMapperResourceID</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ivo://example.org/posix-mapper&quot;</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">    </span><span class="c1"># User Allocation settings.  This is used to create new folders under the main root allocation folders, namely /home and /projects.</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">    </span><span class="nt">allocations</span><span class="p">:</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">      </span><span class="c1"># Required.  The default size, in GB, of an allocation.  This is used in the absence of the Quota VOSpace property.  Can be a floating point number.</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">      </span><span class="c1"># Provided value is 10 (10 GiB) by default.</span>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">      </span><span class="c1"># Example:</span>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">      </span><span class="c1">#   defaultSizeGB: 25.5</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="w">      </span><span class="nt">defaultSizeGB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span>
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="w">    </span><span class="nt">filesystem</span><span class="p">:</span>
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="w">      </span><span class="c1"># persistent data directory in container</span>
+</span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="w">      </span><span class="nt">dataDir</span><span class="p">:</span><span class="w"> </span><span class="c1"># e.g. &quot;/data&quot;</span>
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span class="w">      </span><span class="c1"># RELATIVE path to the node/file content that could be mounted in other containers</span>
+</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="w">      </span><span class="nt">subPath</span><span class="p">:</span><span class="w"> </span><span class="c1"># e.g. &quot;cavern&quot;</span>
+</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a>
+</span><span id="__span-11-29"><a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a><span class="w">      </span><span class="c1"># See https://github.com/opencadc/vos/tree/master/cavern for documentation.  For deployments using OpenID Connect,</span>
+</span><span id="__span-11-30"><a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span class="w">      </span><span class="c1"># the rootOwner MUST be an object with the following properties set.</span>
+</span><span id="__span-11-31"><a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span class="w">      </span><span class="nt">rootOwner</span><span class="p">:</span>
+</span><span id="__span-11-32"><a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a><span class="w">        </span><span class="c1"># The adminUsername is required to be set whomever has admin access over the filesystem.dataDir above.</span>
+</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="w">        </span><span class="nt">adminUsername</span><span class="p">:</span>
+</span><span id="__span-11-34"><a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a>
+</span><span id="__span-11-35"><a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span class="w">        </span><span class="c1"># The username of the root owner.</span>
+</span><span id="__span-11-36"><a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span class="w">        </span><span class="nt">username</span><span class="p">:</span>
+</span><span id="__span-11-37"><a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a>
+</span><span id="__span-11-38"><a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span class="w">        </span><span class="c1"># The UID of the root owner.</span>
+</span><span id="__span-11-39"><a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a><span class="w">        </span><span class="nt">uid</span><span class="p">:</span>
+</span><span id="__span-11-40"><a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a>
+</span><span id="__span-11-41"><a id="__codelineno-11-41" name="__codelineno-11-41" href="#__codelineno-11-41"></a><span class="w">        </span><span class="c1"># The GID of the root owner.</span>
+</span><span id="__span-11-42"><a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span class="w">        </span><span class="nt">gid</span><span class="p">:</span>
+</span><span id="__span-11-43"><a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a>
+</span><span id="__span-11-44"><a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a><span class="w">    </span><span class="c1"># Further UWS settings for the Tomcat Pool setup.  Set uws.db.install to false and set uws.db.url, with uws.db.auth.existingSecret for credentials (not in Git).</span>
+</span><span id="__span-11-45"><a id="__codelineno-11-45" name="__codelineno-11-45" href="#__codelineno-11-45"></a><span class="w">    </span><span class="nt">uws</span><span class="p">:</span>
+</span><span id="__span-11-46"><a id="__codelineno-11-46" name="__codelineno-11-46" href="#__codelineno-11-46"></a><span class="w">      </span><span class="nt">db</span><span class="p">:</span>
+</span><span id="__span-11-47"><a id="__codelineno-11-47" name="__codelineno-11-47" href="#__codelineno-11-47"></a><span class="w">        </span><span class="nt">install</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-11-48"><a id="__codelineno-11-48" name="__codelineno-11-48" href="#__codelineno-11-48"></a><span class="w">        </span><span class="nt">schema</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uws</span>
+</span><span id="__span-11-49"><a id="__codelineno-11-49" name="__codelineno-11-49" href="#__codelineno-11-49"></a><span class="w">        </span><span class="nt">maxActive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+</span><span id="__span-11-50"><a id="__codelineno-11-50" name="__codelineno-11-50" href="#__codelineno-11-50"></a><span class="w">        </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-11-51"><a id="__codelineno-11-51" name="__codelineno-11-51" href="#__codelineno-11-51"></a><span class="w">          </span><span class="nt">existingSecret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cavern-uws-db</span>
+</span><span id="__span-11-52"><a id="__codelineno-11-52" name="__codelineno-11-52" href="#__codelineno-11-52"></a>
+</span><span id="__span-11-53"><a id="__codelineno-11-53" name="__codelineno-11-53" href="#__codelineno-11-53"></a><span class="w">    </span><span class="c1"># Optional rename of the application from the default &quot;cavern&quot;</span>
+</span><span id="__span-11-54"><a id="__codelineno-11-54" name="__codelineno-11-54" href="#__codelineno-11-54"></a><span class="w">    </span><span class="c1"># applicationName: &quot;cavern&quot;</span>
+</span><span id="__span-11-55"><a id="__codelineno-11-55" name="__codelineno-11-55" href="#__codelineno-11-55"></a>
+</span><span id="__span-11-56"><a id="__codelineno-11-56" name="__codelineno-11-56" href="#__codelineno-11-56"></a><span class="w">    </span><span class="c1"># The endpoint to serve this from.  Defaults to /cavern.  If the applicationName is changed, then this should match.</span>
+</span><span id="__span-11-57"><a id="__codelineno-11-57" name="__codelineno-11-57" href="#__codelineno-11-57"></a><span class="w">    </span><span class="c1"># Don&#39;t forget to update your registry entries!</span>
+</span><span id="__span-11-58"><a id="__codelineno-11-58" name="__codelineno-11-58" href="#__codelineno-11-58"></a><span class="w">    </span><span class="c1">#</span>
+</span><span id="__span-11-59"><a id="__codelineno-11-59" name="__codelineno-11-59" href="#__codelineno-11-59"></a><span class="w">    </span><span class="c1"># endpoint: &quot;/cavern&quot;</span>
+</span><span id="__span-11-60"><a id="__codelineno-11-60" name="__codelineno-11-60" href="#__codelineno-11-60"></a>
+</span><span id="__span-11-61"><a id="__codelineno-11-61" name="__codelineno-11-61" href="#__codelineno-11-61"></a><span class="w">    </span><span class="c1"># Simple Class name of the QuotaPlugin to use.  This is used to request quota and folder size information</span>
+</span><span id="__span-11-62"><a id="__codelineno-11-62" name="__codelineno-11-62" href="#__codelineno-11-62"></a><span class="w">    </span><span class="c1"># from the underlying storage system.  Optional, defaults to NoQuotaPlugin.</span>
+</span><span id="__span-11-63"><a id="__codelineno-11-63" name="__codelineno-11-63" href="#__codelineno-11-63"></a><span class="w">    </span><span class="c1">#</span>
+</span><span id="__span-11-64"><a id="__codelineno-11-64" name="__codelineno-11-64" href="#__codelineno-11-64"></a><span class="w">    </span><span class="c1"># - For CephFS deployments: CephFSQuotaPlugin</span>
+</span><span id="__span-11-65"><a id="__codelineno-11-65" name="__codelineno-11-65" href="#__codelineno-11-65"></a><span class="w">    </span><span class="c1"># - Default: NoQuotaPlugin</span>
+</span><span id="__span-11-66"><a id="__codelineno-11-66" name="__codelineno-11-66" href="#__codelineno-11-66"></a><span class="w">    </span><span class="c1">#</span>
+</span><span id="__span-11-67"><a id="__codelineno-11-67" name="__codelineno-11-67" href="#__codelineno-11-67"></a><span class="w">    </span><span class="c1"># quotaPlugin: {NoQuotaPlugin | CephFSQuotaPlug}</span>
+</span><span id="__span-11-68"><a id="__codelineno-11-68" name="__codelineno-11-68" href="#__codelineno-11-68"></a>
+</span><span id="__span-11-69"><a id="__codelineno-11-69" name="__codelineno-11-69" href="#__codelineno-11-69"></a><span class="w">    </span><span class="c1"># Optionally set the DEBUG port.</span>
+</span><span id="__span-11-70"><a id="__codelineno-11-70" name="__codelineno-11-70" href="#__codelineno-11-70"></a><span class="w">    </span><span class="c1">#</span>
+</span><span id="__span-11-71"><a id="__codelineno-11-71" name="__codelineno-11-71" href="#__codelineno-11-71"></a><span class="w">    </span><span class="c1"># Example:</span>
+</span><span id="__span-11-72"><a id="__codelineno-11-72" name="__codelineno-11-72" href="#__codelineno-11-72"></a><span class="w">    </span><span class="c1"># extraEnv:</span>
+</span><span id="__span-11-73"><a id="__codelineno-11-73" name="__codelineno-11-73" href="#__codelineno-11-73"></a><span class="w">    </span><span class="c1"># - name: CATALINA_OPTS</span>
+</span><span id="__span-11-74"><a id="__codelineno-11-74" name="__codelineno-11-74" href="#__codelineno-11-74"></a><span class="w">    </span><span class="c1">#   value: &quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555&quot;</span>
+</span><span id="__span-11-75"><a id="__codelineno-11-75" name="__codelineno-11-75" href="#__codelineno-11-75"></a><span class="w">    </span><span class="c1"># - name: JAVA_OPTS</span>
+</span><span id="__span-11-76"><a id="__codelineno-11-76" name="__codelineno-11-76" href="#__codelineno-11-76"></a><span class="w">    </span><span class="c1">#   value: &quot;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5555&quot;</span>
+</span><span id="__span-11-77"><a id="__codelineno-11-77" name="__codelineno-11-77" href="#__codelineno-11-77"></a><span class="w">    </span><span class="c1">#</span>
+</span><span id="__span-11-78"><a id="__codelineno-11-78" name="__codelineno-11-78" href="#__codelineno-11-78"></a><span class="w">    </span><span class="c1"># extraEnv:</span>
+</span><span id="__span-11-79"><a id="__codelineno-11-79" name="__codelineno-11-79" href="#__codelineno-11-79"></a>
+</span><span id="__span-11-80"><a id="__codelineno-11-80" name="__codelineno-11-80" href="#__codelineno-11-80"></a><span class="w">    </span><span class="c1"># Optionally mount a custom CA certificate</span>
+</span><span id="__span-11-81"><a id="__codelineno-11-81" name="__codelineno-11-81" href="#__codelineno-11-81"></a><span class="w">    </span><span class="c1"># Example:</span>
+</span><span id="__span-11-82"><a id="__codelineno-11-82" name="__codelineno-11-82" href="#__codelineno-11-82"></a><span class="w">    </span><span class="c1"># extraVolumeMounts:</span>
+</span><span id="__span-11-83"><a id="__codelineno-11-83" name="__codelineno-11-83" href="#__codelineno-11-83"></a><span class="w">    </span><span class="c1"># - mountPath: &quot;/config/cacerts&quot;</span>
+</span><span id="__span-11-84"><a id="__codelineno-11-84" name="__codelineno-11-84" href="#__codelineno-11-84"></a><span class="w">    </span><span class="c1">#   name: cacert-volume</span>
+</span><span id="__span-11-85"><a id="__codelineno-11-85" name="__codelineno-11-85" href="#__codelineno-11-85"></a><span class="w">    </span><span class="c1">#</span>
+</span><span id="__span-11-86"><a id="__codelineno-11-86" name="__codelineno-11-86" href="#__codelineno-11-86"></a><span class="w">    </span><span class="c1"># extraVolumeMounts:</span>
+</span><span id="__span-11-87"><a id="__codelineno-11-87" name="__codelineno-11-87" href="#__codelineno-11-87"></a>
+</span><span id="__span-11-88"><a id="__codelineno-11-88" name="__codelineno-11-88" href="#__codelineno-11-88"></a><span class="w">    </span><span class="c1"># Create the CA certificate volume to be mounted in extraVolumeMounts</span>
+</span><span id="__span-11-89"><a id="__codelineno-11-89" name="__codelineno-11-89" href="#__codelineno-11-89"></a><span class="w">    </span><span class="c1"># Example:</span>
+</span><span id="__span-11-90"><a id="__codelineno-11-90" name="__codelineno-11-90" href="#__codelineno-11-90"></a><span class="w">    </span><span class="c1"># extraVolumes:</span>
+</span><span id="__span-11-91"><a id="__codelineno-11-91" name="__codelineno-11-91" href="#__codelineno-11-91"></a><span class="w">    </span><span class="c1"># - name: cacert-volume</span>
+</span><span id="__span-11-92"><a id="__codelineno-11-92" name="__codelineno-11-92" href="#__codelineno-11-92"></a><span class="w">    </span><span class="c1">#   secret:</span>
+</span><span id="__span-11-93"><a id="__codelineno-11-93" name="__codelineno-11-93" href="#__codelineno-11-93"></a><span class="w">    </span><span class="c1">#     defaultMode: 420</span>
+</span><span id="__span-11-94"><a id="__codelineno-11-94" name="__codelineno-11-94" href="#__codelineno-11-94"></a><span class="w">    </span><span class="c1">#     secretName: cavern-cacert-secret</span>
+</span><span id="__span-11-95"><a id="__codelineno-11-95" name="__codelineno-11-95" href="#__codelineno-11-95"></a><span class="w">    </span><span class="c1">#</span>
+</span><span id="__span-11-96"><a id="__codelineno-11-96" name="__codelineno-11-96" href="#__codelineno-11-96"></a><span class="w">    </span><span class="c1"># extraVolumes:</span>
+</span><span id="__span-11-97"><a id="__codelineno-11-97" name="__codelineno-11-97" href="#__codelineno-11-97"></a>
+</span><span id="__span-11-98"><a id="__codelineno-11-98" name="__codelineno-11-98" href="#__codelineno-11-98"></a><span class="w">    </span><span class="c1"># Other data to be included in the main ConfigMap of this deployment.</span>
+</span><span id="__span-11-99"><a id="__codelineno-11-99" name="__codelineno-11-99" href="#__codelineno-11-99"></a><span class="w">    </span><span class="c1"># Of note, files that end in .key are special and base64 decoded.</span>
+</span><span id="__span-11-100"><a id="__codelineno-11-100" name="__codelineno-11-100" href="#__codelineno-11-100"></a><span class="w">    </span><span class="c1">#</span>
+</span><span id="__span-11-101"><a id="__codelineno-11-101" name="__codelineno-11-101" href="#__codelineno-11-101"></a><span class="w">    </span><span class="c1"># extraConfigData:</span>
+</span><span id="__span-11-102"><a id="__codelineno-11-102" name="__codelineno-11-102" href="#__codelineno-11-102"></a>
+</span><span id="__span-11-103"><a id="__codelineno-11-103" name="__codelineno-11-103" href="#__codelineno-11-103"></a><span class="w">    </span><span class="c1"># Resources provided to the Cavern service.</span>
+</span><span id="__span-11-104"><a id="__codelineno-11-104" name="__codelineno-11-104" href="#__codelineno-11-104"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span>
+</span><span id="__span-11-105"><a id="__codelineno-11-105" name="__codelineno-11-105" href="#__codelineno-11-105"></a><span class="w">      </span><span class="nt">requests</span><span class="p">:</span>
+</span><span id="__span-11-106"><a id="__codelineno-11-106" name="__codelineno-11-106" href="#__codelineno-11-106"></a><span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1Gi&quot;</span>
+</span><span id="__span-11-107"><a id="__codelineno-11-107" name="__codelineno-11-107" href="#__codelineno-11-107"></a><span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;500m&quot;</span>
+</span><span id="__span-11-108"><a id="__codelineno-11-108" name="__codelineno-11-108" href="#__codelineno-11-108"></a><span class="w">      </span><span class="nt">limits</span><span class="p">:</span>
+</span><span id="__span-11-109"><a id="__codelineno-11-109" name="__codelineno-11-109" href="#__codelineno-11-109"></a><span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1Gi&quot;</span>
+</span><span id="__span-11-110"><a id="__codelineno-11-110" name="__codelineno-11-110" href="#__codelineno-11-110"></a><span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;500m&quot;</span>
+</span><span id="__span-11-111"><a id="__codelineno-11-111" name="__codelineno-11-111" href="#__codelineno-11-111"></a>
+</span><span id="__span-11-112"><a id="__codelineno-11-112" name="__codelineno-11-112" href="#__codelineno-11-112"></a><span class="w">    </span><span class="c1"># Optionally describe how this Pod will be scheduled using the nodeAffinity clause. This applies to Cavern.</span>
+</span><span id="__span-11-113"><a id="__codelineno-11-113" name="__codelineno-11-113" href="#__codelineno-11-113"></a><span class="w">    </span><span class="c1"># See https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/</span>
+</span><span id="__span-11-114"><a id="__codelineno-11-114" name="__codelineno-11-114" href="#__codelineno-11-114"></a><span class="w">    </span><span class="c1"># Example:</span>
+</span><span id="__span-11-115"><a id="__codelineno-11-115" name="__codelineno-11-115" href="#__codelineno-11-115"></a><span class="w">    </span><span class="nt">nodeAffinity</span><span class="p">:</span>
+</span><span id="__span-11-116"><a id="__codelineno-11-116" name="__codelineno-11-116" href="#__codelineno-11-116"></a><span class="w">      </span><span class="c1"># Only allow Cavern to run on specific Nodes.</span>
+</span><span id="__span-11-117"><a id="__codelineno-11-117" name="__codelineno-11-117" href="#__codelineno-11-117"></a><span class="w">      </span><span class="nt">requiredDuringSchedulingIgnoredDuringExecution</span><span class="p">:</span>
+</span><span id="__span-11-118"><a id="__codelineno-11-118" name="__codelineno-11-118" href="#__codelineno-11-118"></a><span class="w">        </span><span class="nt">nodeSelectorTerms</span><span class="p">:</span>
+</span><span id="__span-11-119"><a id="__codelineno-11-119" name="__codelineno-11-119" href="#__codelineno-11-119"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">matchExpressions</span><span class="p">:</span>
+</span><span id="__span-11-120"><a id="__codelineno-11-120" name="__codelineno-11-120" href="#__codelineno-11-120"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/hostname</span>
+</span><span id="__span-11-121"><a id="__codelineno-11-121" name="__codelineno-11-121" href="#__codelineno-11-121"></a><span class="w">            </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">In</span>
+</span><span id="__span-11-122"><a id="__codelineno-11-122" name="__codelineno-11-122" href="#__codelineno-11-122"></a><span class="w">            </span><span class="nt">values</span><span class="p">:</span>
+</span><span id="__span-11-123"><a id="__codelineno-11-123" name="__codelineno-11-123" href="#__codelineno-11-123"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-special-api-host</span>
+</span><span id="__span-11-124"><a id="__codelineno-11-124" name="__codelineno-11-124" href="#__codelineno-11-124"></a>
+</span><span id="__span-11-125"><a id="__codelineno-11-125" name="__codelineno-11-125" href="#__codelineno-11-125"></a><span class="w">  </span><span class="c1"># Specify extra hostnames that will be added to the Pod&#39;s /etc/hosts file.  Note that this is in the</span>
+</span><span id="__span-11-126"><a id="__codelineno-11-126" name="__codelineno-11-126" href="#__codelineno-11-126"></a><span class="w">  </span><span class="c1"># deployment object, not the cavern one.</span>
+</span><span id="__span-11-127"><a id="__codelineno-11-127" name="__codelineno-11-127" href="#__codelineno-11-127"></a><span class="w">  </span><span class="c1">#</span>
+</span><span id="__span-11-128"><a id="__codelineno-11-128" name="__codelineno-11-128" href="#__codelineno-11-128"></a><span class="w">  </span><span class="c1"># These entries get added as hostAliases entries to the Deployment.</span>
+</span><span id="__span-11-129"><a id="__codelineno-11-129" name="__codelineno-11-129" href="#__codelineno-11-129"></a><span class="w">  </span><span class="c1">#</span>
+</span><span id="__span-11-130"><a id="__codelineno-11-130" name="__codelineno-11-130" href="#__codelineno-11-130"></a><span class="w">  </span><span class="c1"># Example:</span>
+</span><span id="__span-11-131"><a id="__codelineno-11-131" name="__codelineno-11-131" href="#__codelineno-11-131"></a><span class="w">  </span><span class="c1"># extraHosts:</span>
+</span><span id="__span-11-132"><a id="__codelineno-11-132" name="__codelineno-11-132" href="#__codelineno-11-132"></a><span class="w">  </span><span class="c1">#   - ip: 127.3.34.5</span>
+</span><span id="__span-11-133"><a id="__codelineno-11-133" name="__codelineno-11-133" href="#__codelineno-11-133"></a><span class="w">  </span><span class="c1">#     hostname: myhost.example.org</span>
+</span><span id="__span-11-134"><a id="__codelineno-11-134" name="__codelineno-11-134" href="#__codelineno-11-134"></a><span class="w">  </span><span class="c1">#</span>
+</span><span id="__span-11-135"><a id="__codelineno-11-135" name="__codelineno-11-135" href="#__codelineno-11-135"></a><span class="w">  </span><span class="c1"># extraHosts: []</span>
+</span><span id="__span-11-136"><a id="__codelineno-11-136" name="__codelineno-11-136" href="#__codelineno-11-136"></a>
+</span><span id="__span-11-137"><a id="__codelineno-11-137" name="__codelineno-11-137" href="#__codelineno-11-137"></a><span class="c1"># secrets:</span>
+</span><span id="__span-11-138"><a id="__codelineno-11-138" name="__codelineno-11-138" href="#__codelineno-11-138"></a><span class="w">  </span><span class="c1"># Uncomment to enable local or self-signed CA certificates for your domain to be trusted.</span>
+</span><span id="__span-11-139"><a id="__codelineno-11-139" name="__codelineno-11-139" href="#__codelineno-11-139"></a><span class="w">  </span><span class="c1"># cavern-cacert-secret:</span>
+</span><span id="__span-11-140"><a id="__codelineno-11-140" name="__codelineno-11-140" href="#__codelineno-11-140"></a><span class="w">  </span><span class="c1">#   ca.crt: &lt;base64 encoded CA crt&gt;</span>
+</span><span id="__span-11-141"><a id="__codelineno-11-141" name="__codelineno-11-141" href="#__codelineno-11-141"></a>
+</span><span id="__span-11-142"><a id="__codelineno-11-142" name="__codelineno-11-142" href="#__codelineno-11-142"></a><span class="c1"># Set these appropriately to match your Persistent Volume Claim labels.</span>
+</span><span id="__span-11-143"><a id="__codelineno-11-143" name="__codelineno-11-143" href="#__codelineno-11-143"></a><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-11-144"><a id="__codelineno-11-144" name="__codelineno-11-144" href="#__codelineno-11-144"></a><span class="w">  </span><span class="nt">service</span><span class="p">:</span>
+</span><span id="__span-11-145"><a id="__codelineno-11-145" name="__codelineno-11-145" href="#__codelineno-11-145"></a><span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-11-146"><a id="__codelineno-11-146" name="__codelineno-11-146" href="#__codelineno-11-146"></a><span class="w">      </span><span class="c1"># YAML for service mounted storage.</span>
+</span><span id="__span-11-147"><a id="__codelineno-11-147" name="__codelineno-11-147" href="#__codelineno-11-147"></a><span class="w">      </span><span class="c1"># Example is the persistentVolumeClaim below.  This should match whatever Skaha used.</span>
+</span><span id="__span-11-148"><a id="__codelineno-11-148" name="__codelineno-11-148" href="#__codelineno-11-148"></a><span class="w">      </span><span class="c1"># persistentVolumeClaim:</span>
+</span><span id="__span-11-149"><a id="__codelineno-11-149" name="__codelineno-11-149" href="#__codelineno-11-149"></a><span class="w">      </span><span class="c1">#   claimName: skaha-pvc</span>
 </span></code></pre></div></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-cavern-local-values-file.yaml<span class="w"> </span>cavern<span class="w"> </span>oci://images.opencadc.org/cavern
+</span></code></pre></div>
 <h3 id="skaha-install">Skaha install<a class="headerlink" href="#skaha-install" title="Permanent link">&para;</a></h3>
-<p>Install Skaha <strong>after</strong> Traefik, POSIX Mapper, and Cavern. The chart creates the Skaha service account RBAC (Jobs, Pods, <code>IngressRoute</code>, <code>Middleware</code> in the workload namespace, and related permissions) when <code>rbac.create</code> is <code>true</code> (default). Optional Kueue integration RBAC is configured under <code>deployment.skaha.sessions.kueue.rbac</code> or via the <a href="#kueue-rbac">Kueue RBAC</a> manifests above.</p>
+<p>Install Skaha <strong>after</strong> Traefik, Kueue, POSIX Mapper, and Cavern. The chart creates the Skaha service account RBAC (Jobs, Pods, <code>IngressRoute</code>, <code>Middleware</code> in the workload namespace, and related permissions) when <code>rbac.create</code> is <code>true</code> (default). Kueue RBAC is configured under <code>deployment.skaha.sessions.kueue.rbac</code> or via the <a href="#kueue-rbac">Kueue RBAC</a> manifests above.</p>
 <div class="admonition note">
 <p class="admonition-title">Chart source</p>
-<p>The Skaha Helm chart lives alongside the service in <a href="https://github.com/opencadc/science-platform"><code>opencadc/science-platform</code></a> (<code>helm/</code>). Install from the published chart <code>science-platform/skaha</code>, or use that directory when developing the chart.</p>
+<p>The Skaha Helm chart lives alongside the service in <a href="https://github.com/opencadc/science-platform"><code>opencadc/science-platform</code></a> (<code>helm/</code>). Install from the published OCI chart <code>oci://images.opencadc.org/skaha</code>, or use that directory when developing the chart.</p>
 </div>
 <p>The Skaha service will manage User Sessions.  It relies on the POSIX Mapper being deployed, and available to be found
 via the IVOA Registry:</p>
@@ -1291,7 +1264,7 @@ via the IVOA Registry:</p>
 </span><span id="__span-14-205"><a id="__codelineno-14-205" name="__codelineno-14-205" href="#__codelineno-14-205"></a><span class="c1">#   skaha-cacert-secret:</span>
 </span><span id="__span-14-206"><a id="__codelineno-14-206" name="__codelineno-14-206" href="#__codelineno-14-206"></a><span class="c1">#     ca.crt: &lt;base64 encoded ca crt&gt;</span>
 </span></code></pre></div></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>helm<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-skaha-local-values-file.yaml<span class="w"> </span>skaha<span class="w"> </span>science-platform/skaha
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-skaha-local-values-file.yaml<span class="w"> </span>skaha<span class="w"> </span>oci://images.opencadc.org/skaha
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>NAME:<span class="w"> </span>skaha
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>LAST<span class="w"> </span>DEPLOYED:<span class="w"> </span>Thu<span class="w"> </span>Oct<span class="w"> </span><span class="m">31</span><span class="w"> </span><span class="m">02</span>:01:10<span class="w"> </span><span class="m">2025</span>
@@ -1302,11 +1275,11 @@ via the IVOA Registry:</p>
 <p>Test it.
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># See below for tokens</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SKA_TOKEN</span><span class="o">=</span>...
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>curl<span class="w"> </span>-SsL<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="si">${</span><span class="nv">SKA_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>https://example.host.com/skaha/v1/session
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>curl<span class="w"> </span>--silent<span class="w"> </span>--show-error<span class="w"> </span>--location<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="si">${</span><span class="nv">SKA_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>https://example.host.com/skaha/v1/session
 </span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="o">[]</span>%
 </span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
 </span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="c1"># xxxxxx is the returned session ID.</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>curl<span class="w"> </span>-SsL<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="si">${</span><span class="nv">SKA_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">&quot;ram=1&quot;</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">&quot;cores=1&quot;</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">&quot;image=images.canfar.net/canucs/canucs:1.2.5&quot;</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">&quot;name=myjupyternotebook&quot;</span><span class="w"> </span><span class="s2">&quot;https://example.host.com/skaha/v1/session&quot;</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>curl<span class="w"> </span>--silent<span class="w"> </span>--show-error<span class="w"> </span>--location<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="si">${</span><span class="nv">SKA_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>--data<span class="w"> </span><span class="s2">&quot;ram=1&quot;</span><span class="w"> </span>--data<span class="w"> </span><span class="s2">&quot;cores=1&quot;</span><span class="w"> </span>--data<span class="w"> </span><span class="s2">&quot;image=images.canfar.net/canucs/canucs:1.2.5&quot;</span><span class="w"> </span>--data<span class="w"> </span><span class="s2">&quot;name=myjupyternotebook&quot;</span><span class="w"> </span><span class="s2">&quot;https://example.host.com/skaha/v1/session&quot;</span>
 </span></code></pre></div></p>
 <h3 id="science-portal-nextjs">Science Portal (Next.js)<a class="headerlink" href="#science-portal-nextjs" title="Permanent link">&para;</a></h3>
 <p>The Science Portal is the browser UI for launching and monitoring Skaha sessions. Install it <strong>after</strong> Skaha is running and registered in the IVOA Registry.</p>
@@ -1320,8 +1293,8 @@ via the IVOA Registry:</p>
 <thead>
 <tr>
 <th>Topic</th>
-<th><strong>science-portal</strong> chart (<code>science-platform/science-portal</code>)</th>
-<th><strong>science-portal legacy</strong> chart (<code>science-platform/scienceportal</code>)</th>
+<th><strong>science-portal</strong> chart (<code>oci://images.opencadc.org/science-portal</code>)</th>
+<th><strong>science-portal legacy</strong> chart (<code>oci://images.opencadc.org/scienceportal</code>)</th>
 </tr>
 </thead>
 <tbody>
@@ -1349,7 +1322,7 @@ via the IVOA Registry:</p>
 </table>
 <div class="admonition note">
 <p class="admonition-title">Chart source</p>
-<p>The Science Portal Helm chart lives in <a href="https://github.com/opencadc/science-portal"><code>opencadc/science-portal</code></a> under <a href="https://github.com/opencadc/science-portal/tree/main/helm"><code>helm/</code></a>. The same chart is published in the <code>science-platform</code> Helm repository as <strong><code>science-portal</code></strong> (note the hyphen). The older chart name in that repository is <strong><code>scienceportal</code></strong> (no hyphen).</p>
+<p>The Science Portal Helm chart lives in <a href="https://github.com/opencadc/science-portal"><code>opencadc/science-portal</code></a> under <a href="https://github.com/opencadc/science-portal/tree/main/helm"><code>helm/</code></a>. The chart is published as the OCI artifact <strong><code>oci://images.opencadc.org/science-portal</code></strong>. The older chart is published as <strong><code>oci://images.opencadc.org/scienceportal</code></strong> (no hyphen).</p>
 </div>
 <h4 id="before-you-install">Before you install<a class="headerlink" href="#before-you-install" title="Permanent link">&para;</a></h4>
 <ol>
@@ -1358,7 +1331,7 @@ via the IVOA Registry:</p>
 <li><strong>SKA IAM</strong>: Register your client redirect URI with the OpenID Provider (for example <a href="https://ska-iam.stfc.ac.uk/">SKA IAM</a>) before go-live.</li>
 <li><strong>Secrets</strong> (OIDC + NextAuth):</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>science-portal-secrets<span class="w"> </span><span class="se">\</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>science-portal-secrets<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>oidc-client-secret<span class="o">=</span><span class="s1">&#39;REPLACE_WITH_IDP_CLIENT_SECRET&#39;</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span>--from-literal<span class="o">=</span>auth-secret<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="s2">&quot;</span>
 </span></code></pre></div>
@@ -1430,17 +1403,17 @@ via the IVOA Registry:</p>
 </span><span id="__span-19-62"><a id="__codelineno-19-62" name="__codelineno-19-62" href="#__codelineno-19-62"></a><span class="w">      </span><span class="nt">secretKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auth-secret</span>
 </span></code></pre></div></p>
 <h4 id="install-and-verify">Install and verify<a class="headerlink" href="#install-and-verify" title="Permanent link">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span><span class="se">\</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>science-portal<span class="w"> </span>science-platform/science-portal
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>science-portal<span class="w"> </span>oci://images.opencadc.org/science-portal
 </span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>
-</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>science-portal
-</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>logs<span class="w"> </span>deploy/science-portal<span class="w"> </span>--tail<span class="o">=</span><span class="m">50</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>--selector<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>science-portal
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>logs<span class="w"> </span>deploy/science-portal<span class="w"> </span>--tail<span class="o">=</span><span class="m">50</span>
 </span></code></pre></div>
 <p>Open <code>https://example.host.com/science-portal</code> (substitute your host). Sign in with OIDC, then confirm that starting a test session reaches Skaha.</p>
 <p>Further chart options: <a href="../science-portal/">Science Portal</a> and <a href="https://github.com/opencadc/science-portal/blob/main/helm/README.md">helm/README.md</a>.</p>
 <h3 id="science-portal-legacy-jsp-tomcat">Science Portal legacy (JSP / Tomcat)<a class="headerlink" href="#science-portal-legacy-jsp-tomcat" title="Permanent link">&para;</a></h3>
-<p>The legacy chart installs the 1.x Tomcat-based Science Portal (<code>science-platform/scienceportal</code>). Configuration uses <code>deployment.hostname</code> and <code>deployment.sciencePortal</code> (not the <code>app</code> block).</p>
+<p>The legacy chart installs the 1.x Tomcat-based Science Portal (<code>oci://images.opencadc.org/scienceportal</code>). Configuration uses <code>deployment.hostname</code> and <code>deployment.sciencePortal</code> (not the <code>app</code> block).</p>
 <p><code>/reg/resource-caps</code> — same Skaha registration requirement as above.</p>
 <p>Create <code>my-science-portal-legacy-local-values-file.yaml</code> from the <a href="https://github.com/opencadc/deployments/tree/main/helm/applications/archived/science-portal/values.yaml">archived template <code>values.yaml</code></a>.</p>
 <p><code>my-science-portal-legacy-local-values-file.yaml</code>
@@ -1468,9 +1441,9 @@ via the IVOA Registry:</p>
 </span><span id="__span-21-22"><a id="__codelineno-21-22" name="__codelineno-21-22" href="#__codelineno-21-22"></a><span class="nt">experimentalFeatures</span><span class="p">:</span>
 </span><span id="__span-21-23"><a id="__codelineno-21-23" name="__codelineno-21-23" href="#__codelineno-21-23"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </span></code></pre></div></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span><span class="se">\</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">  </span>--values<span class="w"> </span>my-science-portal-legacy-local-values-file.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">  </span>science-portal-legacy<span class="w"> </span>science-platform/scienceportal
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">  </span>science-portal-legacy<span class="w"> </span>oci://images.opencadc.org/scienceportal
 </span></code></pre></div>
 <p>The legacy UI is served at <code>https://&lt;hostname&gt;/science-portal</code> via a Traefik Ingress created by the chart. Do not install <strong>both</strong> charts behind the same path unless you are deliberately migrating.</p>
 <h3 id="user-storage-ui-installation">User Storage UI installation<a class="headerlink" href="#user-storage-ui-installation" title="Permanent link">&para;</a></h3>
@@ -1574,6 +1547,8 @@ via the IVOA Registry:</p>
 </span><span id="__span-23-96"><a id="__codelineno-23-96" name="__codelineno-23-96" href="#__codelineno-23-96"></a><span class="w">  </span><span class="c1"># storage-ui-cacert-secret:</span>
 </span><span id="__span-23-97"><a id="__codelineno-23-97" name="__codelineno-23-97" href="#__codelineno-23-97"></a><span class="w">    </span><span class="c1"># ca.crt: &lt;base64 encoded ca.crt blob&gt;</span>
 </span></code></pre></div></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-storage-ui-local-values-file.yaml<span class="w"> </span>storage-ui<span class="w"> </span>oci://images.opencadc.org/client/storage-ui
+</span></code></pre></div>
 <h2 id="browser-authentication">Browser Authentication<a class="headerlink" href="#browser-authentication" title="Permanent link">&para;</a></h2>
 <p>Encrypted cookies are used to gain access to a Bearer Token for API access.  These cookies are managed by the browser based applications (Storage UI and Science Portal).  See the <a href="../browser-authentication/">Browser Authentication</a> documentation for details.</p>
 <h2 id="obtaining-a-bearer-token">Obtaining a Bearer Token<a class="headerlink" href="#obtaining-a-bearer-token" title="Permanent link">&para;</a></h2>
@@ -1605,7 +1580,7 @@ via the IVOA Registry:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 4, 2026 15:40:26 PDT"><span class="timeago" datetime="2026-06-04T15:40:26-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 4, 2026 15:40:26 PDT">2026-06-04</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 15, 2026 15:07:50 PDT"><span class="timeago" datetime="2026-10-15T15:07:50-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 15, 2026 15:07:50 PDT">2026-10-15</span>
   </span>
 
     

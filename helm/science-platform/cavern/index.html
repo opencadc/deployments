@@ -517,6 +517,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#from-the-oci-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      From the OCI registry
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#from-source" class="md-nav__link">
     <span class="md-ellipsis">
       From source
@@ -585,40 +594,43 @@
 <p>This <code>README</code> will focus on a basic install using a new <code>values-local.yaml</code> file.</p>
 <p>A working Science Platform is not required, but the Persistent Volume Claims are needed.  Those PVs and PVCs will
 provide the underlying storage for the Services and User Sessions.</p>
+<h3 id="from-the-oci-registry">From the OCI registry<a class="headerlink" href="#from-the-oci-registry" title="Permanent link">&para;</a></h3>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>helm<span class="w"> </span>install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-values-local.yaml<span class="w"> </span>cavern<span class="w"> </span>oci://images.opencadc.org/cavern
+</span></code></pre></div>
 <h3 id="from-source">From source<a class="headerlink" href="#from-source" title="Permanent link">&para;</a></h3>
 <p>Installation depends on a working Kubernetes cluster version 1.23 or greater.</p>
 <p>Traefik must be installed before platform services; see the <a href="../deployment/#traefik-install">deployment guide</a>.</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/science-platform.git
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>science-platform/deployment/helm
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>$<span class="w"> </span>helm<span class="w"> </span>install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>my-values-local.yaml<span class="w"> </span>&lt;name&gt;<span class="w"> </span>./cavern
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opencadc/science-platform.git
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>science-platform/deployment/helm
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>$<span class="w"> </span>helm<span class="w"> </span>install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>my-values-local.yaml<span class="w"> </span>&lt;name&gt;<span class="w"> </span>./cavern
 </span></code></pre></div>
 <p>Where <code>&lt;name&gt;</code> is the name of this installation.  Example:
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>helm<span class="w"> </span>install<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>my-values-local.yaml<span class="w"> </span>cavern<span class="w"> </span>./cavern
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>helm<span class="w"> </span>install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--dependency-update<span class="w"> </span>--values<span class="w"> </span>my-values-local.yaml<span class="w"> </span>cavern<span class="w"> </span>./cavern
 </span></code></pre></div>
 This will install Skaha service dependency, as well as the Skaha webservice and any necessary Ingress.
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>NAME: cavern
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>LAST DEPLOYED: &lt;Timestamp e.g. Tue Nov 25 04:19:04 2025&gt;
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>STATUS: deployed
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>REVISION: 1
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>TEST SUITE: None
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>NAME: cavern
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>LAST DEPLOYED: &lt;Timestamp e.g. Tue Nov 25 04:19:04 2025&gt;
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>STATUS: deployed
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>REVISION: 1
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>TEST SUITE: None
 </span></code></pre></div></p>
 <h2 id="verification">Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h2>
 <p>After the install, there should exist the necessary Service.  See the Namespaces:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$<span class="w"> </span>kubectl<span class="w"> </span>-n<span class="w"> </span>skaha-system<span class="w"> </span>get<span class="w"> </span>services
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>NAME<span class="w">                   </span>STATUS<span class="w">   </span>AGE
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>...
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>skaha-system<span class="w">   </span>cavern-tomcat-svc<span class="w">             </span>ClusterIP<span class="w">      </span><span class="m">10</span>.108.202.148<span class="w">   </span>&lt;none&gt;<span class="w">        </span><span class="m">8080</span>/TCP<span class="w">            </span>1m
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$<span class="w"> </span>kubectl<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>get<span class="w"> </span>services
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>NAME<span class="w">                   </span>STATUS<span class="w">   </span>AGE
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>...
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>skaha-system<span class="w">   </span>cavern-tomcat-svc<span class="w">             </span>ClusterIP<span class="w">      </span><span class="m">10</span>.108.202.148<span class="w">   </span>&lt;none&gt;<span class="w">        </span><span class="m">8080</span>/TCP<span class="w">            </span>1m
 </span></code></pre></div>
 <p>The <a href="https://www.ivoa.net/documents/VOSI/20170524/REC-VOSI-1.1.html#tth_sEc5.5">IVOA VOSI availability</a> endpoint can be used to
 check that the Skaha service has started properly.  It may take a few moments to start up.</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$<span class="w"> </span>curl<span class="w"> </span>https://myhost.example.com/cavern/availability
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>&lt;?xml<span class="w"> </span><span class="nv">version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="nv">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span>?&gt;
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>&lt;vosi:availability<span class="w"> </span>xmlns:vosi<span class="o">=</span><span class="s2">&quot;http://www.ivoa.net/xml/VOSIAvailability/v1.0&quot;</span>&gt;
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>&lt;vosi:available&gt;true&lt;/vosi:available&gt;
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span>&lt;vosi:note&gt;service<span class="w"> </span>is<span class="w"> </span>accepting<span class="w"> </span>requests.&lt;/vosi:note&gt;
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span>&lt;!--&lt;clientip&gt;192.1.1.4&lt;/clientip&gt;--&gt;
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>&lt;/vosi:availability&gt;
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$<span class="w"> </span>curl<span class="w"> </span>https://myhost.example.com/cavern/availability
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>&lt;?xml<span class="w"> </span><span class="nv">version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span><span class="w"> </span><span class="nv">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span>?&gt;
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>&lt;vosi:availability<span class="w"> </span>xmlns:vosi<span class="o">=</span><span class="s2">&quot;http://www.ivoa.net/xml/VOSIAvailability/v1.0&quot;</span>&gt;
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span>&lt;vosi:available&gt;true&lt;/vosi:available&gt;
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span>&lt;vosi:note&gt;service<span class="w"> </span>is<span class="w"> </span>accepting<span class="w"> </span>requests.&lt;/vosi:note&gt;
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span>&lt;!--&lt;clientip&gt;192.1.1.4&lt;/clientip&gt;--&gt;
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>&lt;/vosi:availability&gt;
 </span></code></pre></div>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <table>
@@ -894,7 +906,7 @@ check that the Skaha service has started properly.  It may take a few moments to
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 4, 2026 15:40:26 PDT"><span class="timeago" datetime="2026-06-04T15:40:26-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 4, 2026 15:40:26 PDT">2026-06-04</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 15, 2026 15:00:09 PDT"><span class="timeago" datetime="2026-10-15T15:00:09-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 15, 2026 15:00:09 PDT">2026-10-15</span>
   </span>
 
     
