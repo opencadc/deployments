@@ -1,10 +1,10 @@
-# posixmapper
+# posix-mapper
 
 A Helm chart to install the UID/GID POSIX Mapper
 
 | Chart | AppVersion | Type |
 |:-----:|:----------:|:----:|
-|0.6.0<!-- x-release-please-version --> | 0.4.0 | application |
+|0.6.2<!-- x-release-please-version --> | 0.4.0 | application |
 
 ## Values
 
@@ -30,4 +30,5 @@ A Helm chart to install the UID/GID POSIX Mapper
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
 | securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| service.port | int | `8080` |  |
 | tolerations | list | `[]` |  |
