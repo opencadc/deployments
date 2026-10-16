@@ -1,7 +1,9 @@
+import json
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import typer
@@ -69,6 +71,28 @@ def _finalize_plot(
     plt.close(fig)
 
 
+def _parse_chunk_spawn_seconds(raw: Any) -> List[float]:
+    """Parse submission_chunk_spawn_seconds from CSV (JSON string or list)."""
+    if raw is None:
+        return []
+    if isinstance(raw, float) and pd.isna(raw):
+        return []
+    if isinstance(raw, list):
+        return [float(x) for x in raw]
+    if isinstance(raw, str):
+        text = raw.strip()
+        if not text:
+            return []
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            return []
+        if isinstance(parsed, list):
+            return [float(x) for x in parsed]
+        return []
+    return []
+
+
 def _annotate_empty(ax: plt.Axes, message: str) -> None:
     ax.text(
         0.5,
@@ -93,14 +117,49 @@ def _style_axis(ax: plt.Axes, title: str, ylabel: str) -> None:
         ax.spines[spine].set_visible(False)
 
 
+def _maybe_rotate_job_count_xlabels(ax: plt.Axes, n_distinct: int) -> None:
+    """Tilt labels when many distinct job counts would overlap on the X axis."""
+    if n_distinct > 12:
+        ax.tick_params(axis="x", labelrotation=42, labelsize=9)
+        for lbl in ax.get_xticklabels():
+            lbl.set_horizontalalignment("right")
+    elif n_distinct > 8:
+        ax.tick_params(axis="x", labelrotation=22, labelsize=10)
+        for lbl in ax.get_xticklabels():
+            lbl.set_horizontalalignment("right")
+
+
+def _format_job_count_k(value: float, _pos: int | None = None) -> str:
+    """Compact linear-scale labels: 500, 1k, 2k, 3.5k, 10k."""
+    if not np.isfinite(value):
+        return ""
+    v = float(value)
+    if abs(v) >= 1000:
+        k = v / 1000.0
+        if abs(k - round(k)) < 1e-9:
+            return f"{int(round(k))}k"
+        text = f"{k:.2f}".rstrip("0").rstrip(".")
+        return f"{text}k"
+    return f"{int(round(v))}"
+
+
 def _job_count_ticks(ax: plt.Axes, values: pd.Series) -> None:
+    """Linear X axis for job counts: bounded tick count and compact k-style labels."""
     unique = sorted({int(value) for value in values.dropna().tolist()})
     if not unique:
         return
-    if len(unique) >= 4 and max(unique) / min(unique) >= 4:
-        ax.set_xscale("log")
-    ax.set_xticks(unique)
-    ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+    lo_f, hi_f = float(min(unique)), float(max(unique))
+    span = hi_f - lo_f if hi_f > lo_f else max(hi_f * 0.05, 1.0)
+    pad = max(span * 0.02, 1.0)
+    ax.set_xlim(lo_f - pad, hi_f + pad)
+
+    ax.set_xscale("linear")
+    ax.xaxis.set_major_locator(
+        ticker.MaxNLocator(nbins=7, min_n_ticks=4, integer=True, prune="both")
+    )
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(_format_job_count_k))
+
+    _maybe_rotate_job_count_xlabels(ax, len(unique))
 
 
 def _summary_by_count(df: pd.DataFrame, metric: str) -> pd.DataFrame:
@@ -232,7 +291,8 @@ def _plot_performance_overview(
     output_dir: Optional[str],
     show: bool,
 ) -> None:
-    fig, axes = plt.subplots(2, 2, figsize=(15, 10), sharex=False)
+    n_counts = len({int(x) for x in df["job_count"].dropna().unique().tolist()})
+    fig, axes = plt.subplots(2, 2, figsize=(16, 10.2), sharex=False)
     _overview_panel(
         axes[0, 0],
         df,
@@ -278,7 +338,67 @@ def _plot_performance_overview(
         fontweight="bold",
     )
     fig.tight_layout()
+    if n_counts > 8:
+        fig.subplots_adjust(bottom=0.12, hspace=0.28, wspace=0.22)
     _finalize_plot(fig, "performance_overview.png", output_dir, show)
+
+
+def _plot_spawn_time_by_job_count(
+    df: pd.DataFrame,
+    output_dir: Optional[str],
+    show: bool,
+) -> None:
+    """Single chart: job count on X, spawn time on Y, grouped bars for Direct vs Kueue."""
+    col_total = "submission_manifest_apply_seconds"
+    if col_total not in df.columns:
+        return
+
+    counts = sorted({int(x) for x in df["job_count"].dropna().unique().tolist()})
+    if not counts:
+        return
+
+    fig_w = max(9.0, 0.85 * len(counts) + 5.0)
+    fig, ax = plt.subplots(figsize=(fig_w, 5.2))
+    x = np.arange(len(counts), dtype=float)
+    width = min(0.36, 0.8 / 2.2)
+
+    for use_kueue in (False, True):
+        heights: List[float] = []
+        for jc in counts:
+            sub = df[(df["job_count"] == jc) & (df["use_kueue"] == use_kueue)][col_total].dropna()
+            if sub.empty:
+                heights.append(float("nan"))
+            else:
+                heights.append(float(sub.astype(float).median()))
+        offset = -width / 2 if use_kueue is False else width / 2
+        ax.bar(
+            x + offset,
+            heights,
+            width,
+            label=MODE_LABELS[use_kueue],
+            color=PALETTE[use_kueue],
+            edgecolor="white",
+            linewidth=0.6,
+            zorder=2,
+        )
+
+    ax.set_xticks(x)
+    ax.set_xticklabels([_format_job_count_k(float(c)) for c in counts])
+    _maybe_rotate_job_count_xlabels(ax, len(counts))
+    _style_axis(
+        ax,
+        title="Spawn time by requested job count",
+        ylabel="Time to spawn all jobs (s)",
+    )
+    ax.set_xlabel("Requested job count")
+    ax.legend(loc="upper left", frameon=True)
+    ax.grid(axis="y", alpha=0.45)
+    ax.grid(axis="x", alpha=0.12)
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+    fig.tight_layout()
+    fig.subplots_adjust(bottom=0.22 if len(counts) > 8 else 0.14)
+    _finalize_plot(fig, "spawn_time_by_job_count.png", output_dir, show)
 
 
 def _plot_eviction_pressure(
@@ -543,6 +663,7 @@ def render_performance_plots(
     comparative_df = compute_comparative_metrics(df)
 
     _plot_performance_overview(df, output_dir, show)
+    _plot_spawn_time_by_job_count(df, output_dir, show)
     _plot_metric_trend(
         df,
         "throughput",
