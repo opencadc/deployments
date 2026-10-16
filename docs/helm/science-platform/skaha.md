@@ -4,7 +4,7 @@ The Skaha Helm chart facilitates the deployment of the Skaha application within 
 
 !!! note "Chart source"
 
-    The Skaha Helm chart is co-located with the Skaha service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) under [`helm/`](https://github.com/opencadc/science-platform/tree/main/helm). Install from the published OCI chart `oci://images.opencadc.org/skaha`. An archived copy of the former deployments-repo chart is under [`helm/applications/archived/skaha/`](https://github.com/opencadc/deployments/tree/main/helm/applications/archived/skaha) and is no longer released from this repository.
+    The Skaha Helm chart is co-located with the Skaha service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) under [`helm/`](https://github.com/opencadc/science-platform/tree/main/helm). Install from the published OCI chart `oci://images.opencadc.org/platform/charts/skaha`. An archived copy of the former deployments-repo chart is under [`helm/applications/archived/skaha/`](https://github.com/opencadc/deployments/tree/main/helm/applications/archived/skaha) and is no longer released from this repository.
 
 ## Prerequisites
 Before deploying the Skaha Helm chart, ensure that the following conditions are met:
@@ -18,7 +18,7 @@ Before deploying the Skaha Helm chart, ensure that the following conditions are 
 To deploy the Skaha application, install the published OCI chart:
 
 ```bash
-helm --namespace skaha-system upgrade --install --values <your-skaha-values.yaml> skaha-release oci://images.opencadc.org/skaha
+helm --namespace skaha-system upgrade --install --values <your-skaha-values.yaml> skaha-release oci://images.opencadc.org/platform/charts/skaha
 ```
 Replace `skaha-release` with your desired release name.
 
@@ -30,7 +30,7 @@ To customize the installation:
 - **Create a `values.yaml` File**: Define your custom configurations in this file.
 - **Install the Chart with Custom Values**:
 ```bash
-helm --namespace skaha-system upgrade --install --values values.yaml skaha-release oci://images.opencadc.org/skaha
+helm --namespace skaha-system upgrade --install --values values.yaml skaha-release oci://images.opencadc.org/platform/charts/skaha
 ```
 
 ### LimitRange

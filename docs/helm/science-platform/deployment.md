@@ -93,11 +93,11 @@ kubectl get ingressclass traefik
 After [Traefik](#traefik-install), [Kueue](#kueue), namespaces, and storage are in place:
 
 ```bash
-helm upgrade --install --namespace skaha-system --create-namespace --values my-posix-mapper-local-values-file.yaml posix-mapper oci://images.opencadc.org/posix-mapper
-helm upgrade --install --namespace skaha-system --values my-cavern-local-values-file.yaml cavern oci://images.opencadc.org/cavern
-helm upgrade --install --namespace skaha-system --values my-skaha-local-values-file.yaml skaha oci://images.opencadc.org/skaha
-helm upgrade --install --namespace skaha-system --values my-science-portal-local-values-file.yaml science-portal oci://images.opencadc.org/science-portal
-helm upgrade --install --namespace skaha-system --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/storage-ui
+helm upgrade --install --namespace skaha-system --create-namespace --values my-posix-mapper-local-values-file.yaml posix-mapper oci://images.opencadc.org/platform/charts/posix-mapper
+helm upgrade --install --namespace skaha-system --values my-cavern-local-values-file.yaml cavern oci://images.opencadc.org/platform/charts/cavern
+helm upgrade --install --namespace skaha-system --values my-skaha-local-values-file.yaml skaha oci://images.opencadc.org/platform/charts/skaha
+helm upgrade --install --namespace skaha-system --values my-science-portal-local-values-file.yaml science-portal oci://images.opencadc.org/platform/charts/science-portal
+helm upgrade --install --namespace skaha-system --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/charts/storage-ui
 ```
 
 ## Persistent Volumes and Persistent Volume Claims
@@ -204,7 +204,7 @@ postgresql:
 ```
 
 ```bash
-helm --namespace skaha-system upgrade --install --values my-posix-mapper-local-values-file.yaml posix-mapper oci://images.opencadc.org/posix-mapper
+helm --namespace skaha-system upgrade --install --values my-posix-mapper-local-values-file.yaml posix-mapper oci://images.opencadc.org/platform/charts/posix-mapper
 
 NAME: posix-mapper
 LAST DEPLOYED: Thu Oct 28 07:28:45 2025
@@ -385,7 +385,7 @@ storage:
 ```
 
 ```bash
-helm --namespace skaha-system upgrade --install --values my-cavern-local-values-file.yaml cavern oci://images.opencadc.org/cavern
+helm --namespace skaha-system upgrade --install --values my-cavern-local-values-file.yaml cavern oci://images.opencadc.org/platform/charts/cavern
 ```
 
 ### Skaha install
@@ -394,7 +394,7 @@ Install Skaha **after** Traefik, Kueue, POSIX Mapper, and Cavern. The chart crea
 
 !!! note "Chart source"
 
-    The Skaha Helm chart lives alongside the service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) (`helm/`). Install from the published OCI chart `oci://images.opencadc.org/skaha`, or use that directory when developing the chart.
+    The Skaha Helm chart lives alongside the service in [`opencadc/science-platform`](https://github.com/opencadc/science-platform) (`helm/`). Install from the published OCI chart `oci://images.opencadc.org/platform/charts/skaha`, or use that directory when developing the chart.
 
 The Skaha service will manage User Sessions.  It relies on the POSIX Mapper being deployed, and available to be found
 via the IVOA Registry:
@@ -620,7 +620,7 @@ secrets:
 ```
 
 ```bash
-helm --namespace skaha-system upgrade --install --values my-skaha-local-values-file.yaml skaha oci://images.opencadc.org/skaha
+helm --namespace skaha-system upgrade --install --values my-skaha-local-values-file.yaml skaha oci://images.opencadc.org/platform/charts/skaha
 
 NAME: skaha
 LAST DEPLOYED: Thu Oct 31 02:01:10 2025
@@ -653,7 +653,7 @@ ivo://example.org/skaha = https://example.host.com/skaha/capabilities
 
 #### New stack vs legacy (plain language)
 
-| Topic | **science-portal** chart (`oci://images.opencadc.org/science-portal`) | **science-portal legacy** chart (`oci://images.opencadc.org/scienceportal`) |
+| Topic | **science-portal** chart (`oci://images.opencadc.org/platform/charts/science-portal`) | **science-portal legacy** chart (`oci://images.opencadc.org/platform/charts/scienceportal`) |
 |-------|----------------------------------------------------------------|----------------------------------------------------------------------|
 | What users see | A modern single-page style site: pages load quickly and update in place (React + Next.js). | A classic Java web application: each click often reloads a server-built page (JSP on Tomcat). |
 | How it runs in Kubernetes | A lightweight Node.js container (port 3000). | A Java/Tomcat container (port 8080) plus a bundled Redis chart for session storage. |
@@ -662,7 +662,7 @@ ivo://example.org/skaha = https://example.host.com/skaha/capabilities
 
 !!! note "Chart source"
 
-    The Science Portal Helm chart lives in [`opencadc/science-portal`](https://github.com/opencadc/science-portal) under [`helm/`](https://github.com/opencadc/science-portal/tree/main/helm). The chart is published as the OCI artifact **`oci://images.opencadc.org/science-portal`**. The older chart is published as **`oci://images.opencadc.org/scienceportal`** (no hyphen).
+    The Science Portal Helm chart lives in [`opencadc/science-portal`](https://github.com/opencadc/science-portal) under [`helm/`](https://github.com/opencadc/science-portal/tree/main/helm). The chart is published as the OCI artifact **`oci://images.opencadc.org/platform/charts/science-portal`**. The older chart is published as **`oci://images.opencadc.org/platform/charts/scienceportal`** (no hyphen).
 
 #### Before you install
 
@@ -754,7 +754,7 @@ app:
 ```bash
 helm upgrade --install --namespace skaha-system \
   --values my-science-portal-local-values-file.yaml \
-  science-portal oci://images.opencadc.org/science-portal
+  science-portal oci://images.opencadc.org/platform/charts/science-portal
 
 kubectl --namespace skaha-system get pods --selector app.kubernetes.io/name=science-portal
 kubectl --namespace skaha-system logs deploy/science-portal --tail=50
@@ -766,7 +766,7 @@ Further chart options: [Science Portal](science-portal.md) and [helm/README.md](
 
 ### Science Portal legacy (JSP / Tomcat)
 
-The legacy chart installs the 1.x Tomcat-based Science Portal (`oci://images.opencadc.org/scienceportal`). Configuration uses `deployment.hostname` and `deployment.sciencePortal` (not the `app` block).
+The legacy chart installs the 1.x Tomcat-based Science Portal (`oci://images.opencadc.org/platform/charts/scienceportal`). Configuration uses `deployment.hostname` and `deployment.sciencePortal` (not the `app` block).
 
 `/reg/resource-caps` — same Skaha registration requirement as above.
 
@@ -802,7 +802,7 @@ experimentalFeatures:
 ```bash
 helm upgrade --install --namespace skaha-system \
   --values my-science-portal-legacy-local-values-file.yaml \
-  science-portal-legacy oci://images.opencadc.org/scienceportal
+  science-portal-legacy oci://images.opencadc.org/platform/charts/scienceportal
 ```
 
 The legacy UI is served at `https://<hostname>/science-portal` via a Traefik Ingress created by the chart. Do not install **both** charts behind the same path unless you are deliberately migrating.
@@ -913,7 +913,7 @@ deployment:
 ```
 
 ```bash
-helm --namespace skaha-system upgrade --install --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/storage-ui
+helm --namespace skaha-system upgrade --install --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/charts/storage-ui
 ```
 
 ## Browser Authentication

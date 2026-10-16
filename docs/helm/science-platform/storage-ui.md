@@ -18,7 +18,7 @@ receiving the `code` as part of the authorization code flow, and obtaining a tok
 ### Run with configured values
 
 ```bash
-helm install --namespace skaha-system --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/storage-ui
+helm install --namespace skaha-system --values my-storage-ui-local-values-file.yaml storage-ui oci://images.opencadc.org/client/charts/storage-ui
 
 Release "storage-ui" has been installed. Happy Helming!
 NAME: storage-ui

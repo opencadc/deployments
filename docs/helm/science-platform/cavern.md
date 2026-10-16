@@ -10,7 +10,7 @@ provide the underlying storage for the Services and User Sessions.
 ### From the OCI registry
 
 ```sh
-$ helm install --namespace skaha-system --values my-values-local.yaml cavern oci://images.opencadc.org/cavern
+$ helm install --namespace skaha-system --values my-values-local.yaml cavern oci://images.opencadc.org/platform/charts/cavern
 ```
 
 ### From source

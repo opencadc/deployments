@@ -17,7 +17,7 @@ In plain terms: the **new** portal is a current-style website (fast page loads, 
 
 !!! note "Chart source"
 
-    The Helm chart source is in [`opencadc/science-portal`](https://github.com/opencadc/science-portal) under [`helm/`](https://github.com/opencadc/science-portal/tree/main/helm). Releases are consumed from the OCI chart `oci://images.opencadc.org/science-portal`.
+    The Helm chart source is in [`opencadc/science-portal`](https://github.com/opencadc/science-portal) under [`helm/`](https://github.com/opencadc/science-portal/tree/main/helm). Releases are consumed from the OCI chart `oci://images.opencadc.org/platform/charts/science-portal`.
 
 Step-by-step install instructions, a full example values file, and the legacy chart are documented in the [Deployment Guide](deployment.md#science-portal-nextjs).
 
@@ -33,7 +33,7 @@ Step-by-step install instructions, a full example values file, and the legacy ch
 ```bash
 helm upgrade --install --namespace skaha-system \
   --values my-science-portal-local-values-file.yaml \
-  science-portal oci://images.opencadc.org/science-portal
+  science-portal oci://images.opencadc.org/platform/charts/science-portal
 ```
 
 Use the [example values](deployment.md#example-values-file) in the deployment guide as a starting point.
@@ -58,4 +58,4 @@ The generated values table and chart options are maintained in the service repos
 
 ## Legacy chart
 
-To install the JSP/Tomcat chart (`oci://images.opencadc.org/scienceportal`), see [Science Portal legacy](deployment.md#science-portal-legacy-jsp--tomcat) in the deployment guide.
+To install the JSP/Tomcat chart (`oci://images.opencadc.org/platform/charts/scienceportal`), see [Science Portal legacy](deployment.md#science-portal-legacy-jsp--tomcat) in the deployment guide.

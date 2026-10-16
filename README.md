@@ -44,7 +44,7 @@ Charts are managed via [`.release-please-manifest.json`](.release-please-manifes
 
 Helm charts are signed using keyless signing with [Sigstore](https://www.sigstore.dev/) and [Cosign](https://github.com/sigstore/cosign) with [Rekor](https://github.com/sigstore/rekor) transparency logs and [GitHub Attestations](https://github.blog/2023-09-22-github-attestations/) for build provenance.
 
-To verify a chart, at `oci://images.opencadc.org/platform/skaha:1.2.3`, run:
+To verify a chart, at `oci://images.opencadc.org/platform/charts/skaha:1.2.3`, run:
 
 ```bash
 # Install Cosign
@@ -52,14 +52,14 @@ brew install cosign
 
 # Set experimental mode for keyless verification
 export COSIGN_EXPERIMENTAL=1
-cosign verify --certificate-identity-regexp="https://github.com/opencadc/deployments" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" images.opencadc.org/platform/skaha:1.2.3
+cosign verify --certificate-identity-regexp="https://github.com/opencadc/deployments" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" images.opencadc.org/platform/charts/skaha:1.2.3
 ```
 
 To verify the provenance of where the chart came from, e.g. the build pipeline, environment variables, etc., run:
 
 ```bash
 gh auth login
-gh attestation verify oci://images.opencadc.org/platform/skaha:1.2.3 --owner opencadc
+gh attestation verify oci://images.opencadc.org/platform/charts/skaha:1.2.3 --owner opencadc
 ```
 
 

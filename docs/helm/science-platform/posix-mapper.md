@@ -99,7 +99,7 @@ helm --namespace postgresql upgrade --install --create-namespace posix-mapper-po
 To deploy the POSIX Mapper application, install the published OCI chart:
 
 ```bash
-helm --namespace skaha-system --values <myvalues.yaml> install posix-mapper oci://images.opencadc.org/posix-mapper
+helm --namespace skaha-system --values <myvalues.yaml> install posix-mapper oci://images.opencadc.org/platform/charts/posix-mapper
 ```
 
 ## Configuration
@@ -110,7 +110,7 @@ To customize the installation:
 - **Create a `local-values.yaml` File**: Define your custom configurations in this file.
 - **Install the Chart with Custom Values**:
 ```bash
-helm --namespace skaha-system upgrade --install --values local-values.yaml posix-mapper oci://images.opencadc.org/posix-mapper
+helm --namespace skaha-system upgrade --install --values local-values.yaml posix-mapper oci://images.opencadc.org/platform/charts/posix-mapper
 ```
 
 ### Supported Configuration Options
