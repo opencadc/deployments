@@ -772,11 +772,11 @@
 </span></code></pre></div>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <p>After <a href="#traefik-install">Traefik</a>, <a href="#kueue">Kueue</a>, namespaces, and storage are in place:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--create-namespace<span class="w"> </span>--values<span class="w"> </span>my-posix-mapper-local-values-file.yaml<span class="w"> </span>posix-mapper<span class="w"> </span>oci://images.opencadc.org/posix-mapper
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-cavern-local-values-file.yaml<span class="w"> </span>cavern<span class="w"> </span>oci://images.opencadc.org/cavern
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-skaha-local-values-file.yaml<span class="w"> </span>skaha<span class="w"> </span>oci://images.opencadc.org/skaha
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span>science-portal<span class="w"> </span>oci://images.opencadc.org/science-portal
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-storage-ui-local-values-file.yaml<span class="w"> </span>storage-ui<span class="w"> </span>oci://images.opencadc.org/client/storage-ui
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--create-namespace<span class="w"> </span>--values<span class="w"> </span>my-posix-mapper-local-values-file.yaml<span class="w"> </span>posix-mapper<span class="w"> </span>oci://images.opencadc.org/platform/charts/posix-mapper
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-cavern-local-values-file.yaml<span class="w"> </span>cavern<span class="w"> </span>oci://images.opencadc.org/platform/charts/cavern
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-skaha-local-values-file.yaml<span class="w"> </span>skaha<span class="w"> </span>oci://images.opencadc.org/platform/charts/skaha
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span>science-portal<span class="w"> </span>oci://images.opencadc.org/platform/charts/science-portal
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>--values<span class="w"> </span>my-storage-ui-local-values-file.yaml<span class="w"> </span>storage-ui<span class="w"> </span>oci://images.opencadc.org/client/charts/storage-ui
 </span></code></pre></div>
 <h2 id="persistent-volumes-and-persistent-volume-claims">Persistent Volumes and Persistent Volume Claims<a class="headerlink" href="#persistent-volumes-and-persistent-volume-claims" title="Permanent link">&para;</a></h2>
 <p>There are two (2) Persistent Volume Claims that are used in the system, due to the fact that there are two (2) Namespaces (<code>skaha-system</code> and <code>skaha-workload</code>).  These PVCs, while
@@ -867,7 +867,7 @@ See this <a href="https://youtu.be/NSO0HioWLiI">short explanation</a> for more i
 </span><span id="__span-8-70"><a id="__codelineno-8-70" name="__codelineno-8-70" href="#__codelineno-8-70"></a><span class="c1">#     username: posixmapperuser</span>
 </span><span id="__span-8-71"><a id="__codelineno-8-71" name="__codelineno-8-71" href="#__codelineno-8-71"></a><span class="c1">#     password: posixmapperpwd</span>
 </span></code></pre></div></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-posix-mapper-local-values-file.yaml<span class="w"> </span>posix-mapper<span class="w"> </span>oci://images.opencadc.org/posix-mapper
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-posix-mapper-local-values-file.yaml<span class="w"> </span>posix-mapper<span class="w"> </span>oci://images.opencadc.org/platform/charts/posix-mapper
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>NAME:<span class="w"> </span>posix-mapper
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>LAST<span class="w"> </span>DEPLOYED:<span class="w"> </span>Thu<span class="w"> </span>Oct<span class="w"> </span><span class="m">28</span><span class="w"> </span><span class="m">07</span>:28:45<span class="w"> </span><span class="m">2025</span>
@@ -1039,13 +1039,13 @@ private access, or any writing.</p>
 </span><span id="__span-11-148"><a id="__codelineno-11-148" name="__codelineno-11-148" href="#__codelineno-11-148"></a><span class="w">      </span><span class="c1"># persistentVolumeClaim:</span>
 </span><span id="__span-11-149"><a id="__codelineno-11-149" name="__codelineno-11-149" href="#__codelineno-11-149"></a><span class="w">      </span><span class="c1">#   claimName: skaha-pvc</span>
 </span></code></pre></div></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-cavern-local-values-file.yaml<span class="w"> </span>cavern<span class="w"> </span>oci://images.opencadc.org/cavern
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-cavern-local-values-file.yaml<span class="w"> </span>cavern<span class="w"> </span>oci://images.opencadc.org/platform/charts/cavern
 </span></code></pre></div>
 <h3 id="skaha-install">Skaha install<a class="headerlink" href="#skaha-install" title="Permanent link">&para;</a></h3>
 <p>Install Skaha <strong>after</strong> Traefik, Kueue, POSIX Mapper, and Cavern. The chart creates the Skaha service account RBAC (Jobs, Pods, <code>IngressRoute</code>, <code>Middleware</code> in the workload namespace, and related permissions) when <code>rbac.create</code> is <code>true</code> (default). Kueue RBAC is configured under <code>deployment.skaha.sessions.kueue.rbac</code> or via the <a href="#kueue-rbac">Kueue RBAC</a> manifests above.</p>
 <div class="admonition note">
 <p class="admonition-title">Chart source</p>
-<p>The Skaha Helm chart lives alongside the service in <a href="https://github.com/opencadc/science-platform"><code>opencadc/science-platform</code></a> (<code>helm/</code>). Install from the published OCI chart <code>oci://images.opencadc.org/skaha</code>, or use that directory when developing the chart.</p>
+<p>The Skaha Helm chart lives alongside the service in <a href="https://github.com/opencadc/science-platform"><code>opencadc/science-platform</code></a> (<code>helm/</code>). Install from the published OCI chart <code>oci://images.opencadc.org/platform/charts/skaha</code>, or use that directory when developing the chart.</p>
 </div>
 <p>The Skaha service will manage User Sessions.  It relies on the POSIX Mapper being deployed, and available to be found
 via the IVOA Registry:</p>
@@ -1264,7 +1264,7 @@ via the IVOA Registry:</p>
 </span><span id="__span-14-205"><a id="__codelineno-14-205" name="__codelineno-14-205" href="#__codelineno-14-205"></a><span class="c1">#   skaha-cacert-secret:</span>
 </span><span id="__span-14-206"><a id="__codelineno-14-206" name="__codelineno-14-206" href="#__codelineno-14-206"></a><span class="c1">#     ca.crt: &lt;base64 encoded ca crt&gt;</span>
 </span></code></pre></div></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-skaha-local-values-file.yaml<span class="w"> </span>skaha<span class="w"> </span>oci://images.opencadc.org/skaha
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-skaha-local-values-file.yaml<span class="w"> </span>skaha<span class="w"> </span>oci://images.opencadc.org/platform/charts/skaha
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>NAME:<span class="w"> </span>skaha
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>LAST<span class="w"> </span>DEPLOYED:<span class="w"> </span>Thu<span class="w"> </span>Oct<span class="w"> </span><span class="m">31</span><span class="w"> </span><span class="m">02</span>:01:10<span class="w"> </span><span class="m">2025</span>
@@ -1293,8 +1293,8 @@ via the IVOA Registry:</p>
 <thead>
 <tr>
 <th>Topic</th>
-<th><strong>science-portal</strong> chart (<code>oci://images.opencadc.org/science-portal</code>)</th>
-<th><strong>science-portal legacy</strong> chart (<code>oci://images.opencadc.org/scienceportal</code>)</th>
+<th><strong>science-portal</strong> chart (<code>oci://images.opencadc.org/platform/charts/science-portal</code>)</th>
+<th><strong>science-portal legacy</strong> chart (<code>oci://images.opencadc.org/platform/charts/scienceportal</code>)</th>
 </tr>
 </thead>
 <tbody>
@@ -1322,7 +1322,7 @@ via the IVOA Registry:</p>
 </table>
 <div class="admonition note">
 <p class="admonition-title">Chart source</p>
-<p>The Science Portal Helm chart lives in <a href="https://github.com/opencadc/science-portal"><code>opencadc/science-portal</code></a> under <a href="https://github.com/opencadc/science-portal/tree/main/helm"><code>helm/</code></a>. The chart is published as the OCI artifact <strong><code>oci://images.opencadc.org/science-portal</code></strong>. The older chart is published as <strong><code>oci://images.opencadc.org/scienceportal</code></strong> (no hyphen).</p>
+<p>The Science Portal Helm chart lives in <a href="https://github.com/opencadc/science-portal"><code>opencadc/science-portal</code></a> under <a href="https://github.com/opencadc/science-portal/tree/main/helm"><code>helm/</code></a>. The chart is published as the OCI artifact <strong><code>oci://images.opencadc.org/platform/charts/science-portal</code></strong>. The older chart is published as <strong><code>oci://images.opencadc.org/platform/charts/scienceportal</code></strong> (no hyphen).</p>
 </div>
 <h4 id="before-you-install">Before you install<a class="headerlink" href="#before-you-install" title="Permanent link">&para;</a></h4>
 <ol>
@@ -1405,7 +1405,7 @@ via the IVOA Registry:</p>
 <h4 id="install-and-verify">Install and verify<a class="headerlink" href="#install-and-verify" title="Permanent link">&para;</a></h4>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>science-portal<span class="w"> </span>oci://images.opencadc.org/science-portal
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>science-portal<span class="w"> </span>oci://images.opencadc.org/platform/charts/science-portal
 </span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>
 </span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>--selector<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>science-portal
 </span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>logs<span class="w"> </span>deploy/science-portal<span class="w"> </span>--tail<span class="o">=</span><span class="m">50</span>
@@ -1413,7 +1413,7 @@ via the IVOA Registry:</p>
 <p>Open <code>https://example.host.com/science-portal</code> (substitute your host). Sign in with OIDC, then confirm that starting a test session reaches Skaha.</p>
 <p>Further chart options: <a href="../science-portal/">Science Portal</a> and <a href="https://github.com/opencadc/science-portal/blob/main/helm/README.md">helm/README.md</a>.</p>
 <h3 id="science-portal-legacy-jsp-tomcat">Science Portal legacy (JSP / Tomcat)<a class="headerlink" href="#science-portal-legacy-jsp-tomcat" title="Permanent link">&para;</a></h3>
-<p>The legacy chart installs the 1.x Tomcat-based Science Portal (<code>oci://images.opencadc.org/scienceportal</code>). Configuration uses <code>deployment.hostname</code> and <code>deployment.sciencePortal</code> (not the <code>app</code> block).</p>
+<p>The legacy chart installs the 1.x Tomcat-based Science Portal (<code>oci://images.opencadc.org/platform/charts/scienceportal</code>). Configuration uses <code>deployment.hostname</code> and <code>deployment.sciencePortal</code> (not the <code>app</code> block).</p>
 <p><code>/reg/resource-caps</code> — same Skaha registration requirement as above.</p>
 <p>Create <code>my-science-portal-legacy-local-values-file.yaml</code> from the <a href="https://github.com/opencadc/deployments/tree/main/helm/applications/archived/science-portal/values.yaml">archived template <code>values.yaml</code></a>.</p>
 <p><code>my-science-portal-legacy-local-values-file.yaml</code>
@@ -1443,7 +1443,7 @@ via the IVOA Registry:</p>
 </span></code></pre></div></p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">  </span>--values<span class="w"> </span>my-science-portal-legacy-local-values-file.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">  </span>science-portal-legacy<span class="w"> </span>oci://images.opencadc.org/scienceportal
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">  </span>science-portal-legacy<span class="w"> </span>oci://images.opencadc.org/platform/charts/scienceportal
 </span></code></pre></div>
 <p>The legacy UI is served at <code>https://&lt;hostname&gt;/science-portal</code> via a Traefik Ingress created by the chart. Do not install <strong>both</strong> charts behind the same path unless you are deliberately migrating.</p>
 <h3 id="user-storage-ui-installation">User Storage UI installation<a class="headerlink" href="#user-storage-ui-installation" title="Permanent link">&para;</a></h3>
@@ -1547,7 +1547,7 @@ via the IVOA Registry:</p>
 </span><span id="__span-23-96"><a id="__codelineno-23-96" name="__codelineno-23-96" href="#__codelineno-23-96"></a><span class="w">  </span><span class="c1"># storage-ui-cacert-secret:</span>
 </span><span id="__span-23-97"><a id="__codelineno-23-97" name="__codelineno-23-97" href="#__codelineno-23-97"></a><span class="w">    </span><span class="c1"># ca.crt: &lt;base64 encoded ca.crt blob&gt;</span>
 </span></code></pre></div></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-storage-ui-local-values-file.yaml<span class="w"> </span>storage-ui<span class="w"> </span>oci://images.opencadc.org/client/storage-ui
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>helm<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--values<span class="w"> </span>my-storage-ui-local-values-file.yaml<span class="w"> </span>storage-ui<span class="w"> </span>oci://images.opencadc.org/client/charts/storage-ui
 </span></code></pre></div>
 <h2 id="browser-authentication">Browser Authentication<a class="headerlink" href="#browser-authentication" title="Permanent link">&para;</a></h2>
 <p>Encrypted cookies are used to gain access to a Bearer Token for API access.  These cookies are managed by the browser based applications (Storage UI and Science Portal).  See the <a href="../browser-authentication/">Browser Authentication</a> documentation for details.</p>
@@ -1580,7 +1580,7 @@ via the IVOA Registry:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 15, 2026 15:07:50 PDT"><span class="timeago" datetime="2026-10-15T15:07:50-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 15, 2026 15:07:50 PDT">2026-10-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 16, 2026 11:35:20 PDT"><span class="timeago" datetime="2026-10-16T11:35:20-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 16, 2026 11:35:20 PDT">2026-10-16</span>
   </span>
 
     

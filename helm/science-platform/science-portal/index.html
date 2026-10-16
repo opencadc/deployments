@@ -648,7 +648,7 @@
 <p>In plain terms: the <strong>new</strong> portal is a current-style website (fast page loads, React UI, Next.js server). The <strong>legacy</strong> portal is the older Java/Tomcat stack that builds each page on the server with JSP—still supported for existing deployments, but new installs should use <code>science-portal</code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Chart source</p>
-<p>The Helm chart source is in <a href="https://github.com/opencadc/science-portal"><code>opencadc/science-portal</code></a> under <a href="https://github.com/opencadc/science-portal/tree/main/helm"><code>helm/</code></a>. Releases are consumed from the OCI chart <code>oci://images.opencadc.org/science-portal</code>.</p>
+<p>The Helm chart source is in <a href="https://github.com/opencadc/science-portal"><code>opencadc/science-portal</code></a> under <a href="https://github.com/opencadc/science-portal/tree/main/helm"><code>helm/</code></a>. Releases are consumed from the OCI chart <code>oci://images.opencadc.org/platform/charts/science-portal</code>.</p>
 </div>
 <p>Step-by-step install instructions, a full example values file, and the legacy chart are documented in the <a href="../deployment/#science-portal-nextjs">Deployment Guide</a>.</p>
 <h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h2>
@@ -661,7 +661,7 @@
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--namespace<span class="w"> </span>skaha-system<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--values<span class="w"> </span>my-science-portal-local-values-file.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>science-portal<span class="w"> </span>oci://images.opencadc.org/science-portal
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>science-portal<span class="w"> </span>oci://images.opencadc.org/platform/charts/science-portal
 </span></code></pre></div>
 <p>Use the <a href="../deployment/#example-values-file">example values</a> in the deployment guide as a starting point.</p>
 <h2 id="endpoints">Endpoints<a class="headerlink" href="#endpoints" title="Permanent link">&para;</a></h2>
@@ -677,7 +677,7 @@
 <li><a href="https://github.com/opencadc/science-portal/tree/main/helm">Helm chart directory</a> — templates and deployment guides (<code>DEPLOYMENT-MODES.md</code>, and others)</li>
 </ul>
 <h2 id="legacy-chart">Legacy chart<a class="headerlink" href="#legacy-chart" title="Permanent link">&para;</a></h2>
-<p>To install the JSP/Tomcat chart (<code>oci://images.opencadc.org/scienceportal</code>), see <a href="../deployment/#science-portal-legacy-jsp--tomcat">Science Portal legacy</a> in the deployment guide.</p>
+<p>To install the JSP/Tomcat chart (<code>oci://images.opencadc.org/platform/charts/scienceportal</code>), see <a href="../deployment/#science-portal-legacy-jsp--tomcat">Science Portal legacy</a> in the deployment guide.</p>
 
 
 
@@ -700,7 +700,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 15, 2026 15:00:09 PDT"><span class="timeago" datetime="2026-10-15T15:00:09-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 15, 2026 15:00:09 PDT">2026-10-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 16, 2026 11:35:20 PDT"><span class="timeago" datetime="2026-10-16T11:35:20-07:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 16, 2026 11:35:20 PDT">2026-10-16</span>
   </span>
 
     
