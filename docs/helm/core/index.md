@@ -1,6 +1,6 @@
 # CADC/CANFAR Core Helm Charts
 
-A compilation of common services and components that are shared across the CADC and CANFAR platforms. These Helm charts provide the foundational infrastructure and services required for deploying and managing the various applications within the platform.
+Core web and discovery services used across CADC and CANFAR. Charts such as **ac**, **cred**, and **reg** are unrelated products but may share a deployment domain; install each as its own release and apply [environment overlays](../../adr/0003-deployment-domains-via-environment-overlays.md) for hostnames, identity, and registry configuration.
 
 ## Explore the Core Services
 

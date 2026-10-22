@@ -6,7 +6,7 @@ This repository contains Helm charts and CI/CD automation for deploying services
 
 The repository implements a fully automated release and deployment pipeline:
 
-- **Helm Charts** - Kubernetes deployments for platform services (`helm/applications/`) and shared libraries (`helm/common/`)
+- **Helm Charts** - Kubernetes deployments for platform services; layout is defined in [`helm/SPECIFICATION.md`](helm/SPECIFICATION.md) (charts currently under `helm/applications/` while migrating)
 - **Automated Releases** - Release-Please manages semantic versioning and changelogs for each chart independently
 - **Secure Publishing** - Helm charts are published to OCI registries with keyless signing (Sigstore/Cosign) and build attestations
 - **Dependency Management** - Renovate automatically updates dependencies, container images, and chart `appVersion` fields
@@ -65,12 +65,12 @@ gh attestation verify oci://images.opencadc.org/platform/charts/skaha:1.2.3 --ow
 
 ## Adding a New Chart
 
-To add a new Helm chart to the repository:
+To add a new Helm chart to the repository, follow the layout in [`helm/SPECIFICATION.md`](helm/SPECIFICATION.md). Until the repository migration is complete, Release Please and CI may still expect paths under `helm/applications/`—use the path that matches current automation, or update manifest and workflows when placing charts under `helm/charts/`.
 
 ### 1. Create Chart Structure
 
 ```bash
-# Create chart directory
+# Create chart directory (see SPECIFICATION.md for target paths)
 mkdir -p helm/applications/<chart-name>
 cd helm/applications/<chart-name>
 

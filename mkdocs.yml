@@ -136,6 +136,11 @@ nav:
     - Home: helm/index.md
     - Science Platform: helm/science-platform/index.md
     - Core Services: helm/core/index.md
+  - Architecture:
+    - ADRs: adr/README.md
+    - "0001 — Repository layout": adr/0001-helm-repository-directory-layout.md
+    - "0002 — Umbrella charts": adr/0002-umbrella-charts-for-related-systems-only.md
+    - "0003 — Deployment domains": adr/0003-deployment-domains-via-environment-overlays.md
   - Home: index.md
   - Operations:
     - Home: operations/index.md
