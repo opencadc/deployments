@@ -1,4 +1,9 @@
-charts/
+# Helm dependency build/update output (subcharts vendored next to Chart.yaml).
+# Do not use a bare `charts/` rule — it also ignores helm/charts/, the application chart source tree.
+helm/applications/**/charts/
+helm/library/**/charts/
+helm/stacks/**/charts/
+helm/charts/**/charts/
 .uv-cache/
 .venv/
 **/__pycache__/
