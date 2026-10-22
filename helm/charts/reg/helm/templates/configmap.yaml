@@ -1,0 +1,61 @@
+{{- if empty .Values.application.serviceEntries }}
+{{- fail "Service entries must be provided in reg application values." }}
+{{- end }}
+{{- $connYaml := include "reg.tomcatConnector" . -}}
+{{- $rk := .Values.application.rsaSignaturePublicKey | default dict }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "reg.fullname" . }}-config
+  labels:
+    {{- include "reg.labels" . | nindent 4 }}
+{{- if and (not $rk.existingSecret) ($rk.value | trim) }}
+binaryData:
+  "RsaSignaturePub.key": {{ $rk.value | trim | b64enc | quote }}
+{{- end }}
+data:
+  catalina.properties: |-
+{{- if $connYaml }}
+{{- $conn := $connYaml | fromYaml }}
+    tomcat.connector.scheme={{ $conn.scheme }}
+    tomcat.connector.proxyName={{ $conn.proxyName }}
+    tomcat.connector.proxyPort={{ $conn.proxyPort }}
+    tomcat.connector.secure={{ $conn.secure }}
+{{- end }}
+    ca.nrc.cadc.util.Log4jInit.messageOnly=true
+{{- with .Values.application.identityManagerClass }}
+    ca.nrc.cadc.auth.IdentityManager={{ . }}
+{{- end }}
+
+  reg-resource-caps.properties:
+{{ with .Values.application.serviceEntries }}
+{{ range $index, $element := . }}
+    {{ $element.id }} = {{ $element.url }}
+{{ end }}
+{{ end }}
+
+{{ with .Values.application.applicationEntries }}
+  reg-applications.properties:
+  {{ range $index, $element := . }}
+    {{ $element.id }} = {{ $element.url }}
+  {{ end }}
+{{ end }}
+
+{{- with .Values.application.logging }}
+  cadc-log.properties:
+{{ with .userDistinguishedNames }}
+    {{- range $index, $element := . }}
+    user = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .usernames }}
+    {{- range $index, $element := . }}
+    username = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ with .groups }}
+    {{- range $index, $element := . }}
+    group = {{ $element }}
+    {{- end }}
+{{ end }}
+{{ end }}
