@@ -1,0 +1,72 @@
+{{ $releaseName := .Release.Name }}
+{{- with required "UWS Database configuration is required." .Values.application.uws.db }}
+{{- if .install }}
+{{- $auth := .auth | default dict }}
+{{- $sk := $auth.secretKeys | default dict }}
+{{- $userKey := $sk.username | default "username" }}
+{{- $passKey := $sk.password | default "password" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $releaseName }}-uws-postgres
+  namespace: {{ $.Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $releaseName }}-uws-postgres
+  template:
+    metadata:
+      labels:
+        app: {{ $releaseName }}-uws-postgres
+    spec:
+      securityContext:
+        runAsUser: {{ .runUID | required ".runUID is required for PostgreSQL" }}
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: postgres
+          image: {{ .image | default "postgres:15.12" }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432  # Exposes container port
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $releaseName }}-uws-postgres-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cavern.uwsDbAuthSecretName" $ }}
+                  key: {{ $userKey }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cavern.uwsDbAuthSecretName" $ }}
+                  key: {{ $passKey }}
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d
+              name: postgresinit
+            {{- if .storage }}
+            - mountPath: /var/lib/postgresql/data
+              name: postgresdb
+            {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+      # Maintain the same tolerations as the "parent" Cavern API.
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- if .storage }}
+        - name: postgresdb
+          {{- toYaml .storage.spec | nindent 10 }}
+        {{- end }}
+        - name: postgresinit
+          configMap:
+            name: {{ $releaseName }}-uws-postgres-init
+{{- end }}
+{{- end }}

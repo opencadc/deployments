@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: storage-ui-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    spec.ingressClassName: traefik
+spec:
+  rules:
+  - host: {{ (index .Values.ingress.hosts 0).host }}
+    http:
+      paths:
+      - path: /{{ .Values.applicationName | default "storage" }}
+        pathType: Prefix
+        backend:
+          service:
+            name: storage-ui-tomcat-svc
+            port:
+              number: 8080

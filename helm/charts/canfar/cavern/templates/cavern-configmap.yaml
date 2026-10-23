@@ -1,0 +1,9 @@
+{{- include "cavern.validateUwsDatabaseSecret" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+{{ tpl (.Files.Glob "config/*").AsConfig . | indent 2 }}
+{{- include "common.extraConfig" (dict "extraConfigData" .Values.application.extraConfigData) -}}

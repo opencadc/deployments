@@ -1,0 +1,13 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+| Chart | AppVersion | Type |
+|:-----:|:----------:|:----:|
+|{{ template "chart.version" . }}<!-- x-release-please-version --> | {{ template "chart.appVersion" . }} | {{ template "chart.type" . }} |
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}

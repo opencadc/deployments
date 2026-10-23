@@ -1,0 +1,71 @@
+{{- $_ := include "skaha.metrics.assertRequired" . }}
+{{- $mb := .Values.metrics | default dict }}
+{{- $img := $mb.image | default dict }}
+{{- $_ := include "skaha.metrics.clusterQueues" . }}
+{{- $_ := include "skaha.metrics.clusterName" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "skaha.metrics.deploymentName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "skaha.metrics.labels" . | nindent 4 }}
+spec:
+  replicas: {{ $mb.replicaCount | default 1 }}
+  revisionHistoryLimit: {{ $mb.revisionHistoryLimit | default 3 }}
+  selector:
+    matchLabels:
+      {{- include "skaha.metrics.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "skaha.metrics.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "skaha.serviceAccountName" . }}
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        fsGroup: 65532
+      containers:
+        - name: metrics-api
+          image: "{{ $img.repository }}:{{ $img.tag | default "v0.1.7" }}"
+          imagePullPolicy: {{ $img.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            {{- include "skaha.metrics.env" . | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            failureThreshold: 40
+            periodSeconds: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 20
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 3
+          {{- with $mb.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

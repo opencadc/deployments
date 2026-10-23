@@ -1,0 +1,23 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+## Configuration
+
+This chart treats [canfar/science-portal `.env.example`](https://github.com/canfar/science-portal/blob/main/.env.example) as **application configuration**: semantic fields under **`app`** (API URLs, auth mode, OIDC, NextAuth) are mapped to the container **`env`** names the Node process reads. **Environment variables are the transport**, not the source of truth in your values file.
+
+- **`app`**: structured settings (including **`app.oidc`** for OIDC pairs). Empty or unset fields emit nothing so image defaults apply where appropriate.
+- **`env`**: append native Kubernetes `env` entries; merged **after** chart-generated entries. If a name appears in **`env`**, the chart **does not** emit that name from `app` (so you can override or supply secrets with `valueFrom`).
+- **`envFrom`**: optional Secret/ConfigMap injection unchanged.
+
+Many **`NEXT_PUBLIC_*`** values are fixed at **image build**; runtime env from Helm mainly affects server-side behavior unless your image is built to honor overrides.
+
+| Chart | AppVersion | Type |
+|:-----:|:----------:|:----:|
+|{{ template "chart.version" . }}<!-- x-release-please-version --> | {{ template "chart.appVersion" . }} | {{ template "chart.type" . }} |
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}

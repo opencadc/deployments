@@ -1,0 +1,2249 @@
+{
+  "uid": "canfar-platform-health",
+  "title": "CANFAR \u00b7 Platform Health",
+  "description": "Operational health of the platform: load with trends, reliability, node-level OOM kills, and which users and session flavours those OOM kills affected. Carries no workload breakdown beyond that \u2014 for what is running see Platform Overview.",
+  "tags": [
+    "canfar",
+    "platform",
+    "operations"
+  ],
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "5m",
+  "timezone": "browser",
+  "fiscalYearStartMonth": 0,
+  "preload": false,
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data source",
+        "query": "prometheus",
+        "pluginId": "prometheus",
+        "refresh": 1,
+        "current": {
+          "text": "__CANFAR_DS_NAME__",
+          "value": "__CANFAR_DS_UID__"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "options": [],
+        "regex": "",
+        "skipUrlSync": false,
+        "description": "Metrics backend the panels query. Seeded at install time from grafanaDashboards.datasourceName; any other Prometheus-type datasource stays selectable here."
+      },
+      {
+        "name": "namespace",
+        "type": "query",
+        "label": "Namespace",
+        "description": "Namespace holding CANFAR session workloads. Set at install time from the chart's resolved workload namespace.",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(kube_pod_info, namespace)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kube_pod_info, namespace)",
+          "refId": "namespace-variable-query"
+        },
+        "refresh": 2,
+        "regex": "/^__CANFAR_WORKLOAD_NS__$/",
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": "__CANFAR_WORKLOAD_NS__",
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      },
+      {
+        "name": "user",
+        "type": "query",
+        "label": "User",
+        "description": "CANFAR `canfar-net-userid` pod label.",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\"}, label_canfar_net_username)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\"}, label_canfar_net_username)",
+          "refId": "user-variable-query"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      },
+      {
+        "name": "kind",
+        "type": "query",
+        "label": "Session kind",
+        "description": "CANFAR `canfar-net-sessionType` pod label.",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_kind!=\"\"}, label_canfar_net_kind)",
+        "query": {
+          "qryType": 1,
+          "query": "label_values(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_kind!=\"\"}, label_canfar_net_kind)",
+          "refId": "kind-variable-query"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false,
+        "allowCustomValue": false
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "links": [
+    {
+      "type": "dashboards",
+      "title": "CANFAR",
+      "tags": [
+        "canfar"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false,
+      "icon": "external link",
+      "tooltip": "Other CANFAR Science Platform dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "type": "row",
+      "title": "Load",
+      "collapsed": false,
+      "panels": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "id": 1
+    },
+    {
+      "type": "stat",
+      "title": "Active sessions",
+      "description": "Running CANFAR sessions right now.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(\n  kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n  and on (namespace, pod) (kube_pod_status_phase{phase=\"Running\"} == 1)\n)",
+          "legendFormat": "__auto",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 6,
+        "h": 6
+      },
+      "id": 2
+    },
+    {
+      "type": "timeseries",
+      "title": "Active sessions",
+      "description": "How the session count got to where it is. A number without its trend cannot tell you whether the platform is filling up or draining.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(\n  kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n  and on (namespace, pod) (kube_pod_status_phase{phase=\"Running\"} == 1)\n)",
+          "legendFormat": "sessions",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "pointSize": 5,
+            "spanNulls": false,
+            "insertNulls": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 1,
+        "w": 18,
+        "h": 6
+      },
+      "id": 3
+    },
+    {
+      "type": "stat",
+      "title": "Queue backlog",
+      "description": "Workloads Kueue is holding before admission.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(kueue_pending_workloads)",
+          "legendFormat": "__auto",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 6,
+        "h": 6
+      },
+      "id": 4
+    },
+    {
+      "type": "timeseries",
+      "title": "Queue backlog",
+      "description": "Backlog over time per ClusterQueue. Flat and high alongside a flat admission rate means the scheduler is stalled, not busy.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (cluster_queue) (kueue_pending_workloads)",
+          "legendFormat": "{{cluster_queue}}",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "pointSize": 5,
+            "spanNulls": false,
+            "insertNulls": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 13,
+        "w": 18,
+        "h": 6
+      },
+      "id": 5
+    },
+    {
+      "type": "stat",
+      "title": "Pending sessions",
+      "description": "Sessions accepted but not yet running: unscheduled, queued, or pulling an image.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(\n  kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n  and on (namespace, pod) (kube_pod_status_phase{phase=\"Pending\"} == 1)\n)\nor vector(0)",
+          "legendFormat": "__auto",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 6,
+        "h": 6
+      },
+      "id": 6
+    },
+    {
+      "type": "row",
+      "title": "Reliability",
+      "collapsed": false,
+      "panels": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 24,
+        "h": 1
+      },
+      "id": 10
+    },
+    {
+      "type": "timeseries",
+      "title": "Session container terminations by reason",
+      "description": "OOMKilled means the user under-requested memory and lost work. Error means the payload failed. Completed is the healthy exit. Stacked: each band adds to the one below, so the top edge is the total.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(\n  sum by (namespace, pod) (\n    kube_pod_container_status_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}\n  )\n  and on (namespace, pod) kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n)",
+          "legendFormat": "OOMKilled",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "refId": "B",
+          "expr": "sum(\n  sum by (namespace, pod) (\n    kube_pod_container_status_terminated_reason{namespace=~\"$namespace\", reason=\"Error\"}\n  )\n  and on (namespace, pod) kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n)",
+          "legendFormat": "Error",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "refId": "C",
+          "expr": "sum(\n  sum by (namespace, pod) (\n    kube_pod_container_status_terminated_reason{namespace=~\"$namespace\", reason=\"Completed\"}\n  )\n  and on (namespace, pod) kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n)",
+          "legendFormat": "Completed",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 45,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "pointSize": 5,
+            "spanNulls": false,
+            "insertNulls": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "OOMKilled"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Error"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Completed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 8
+      },
+      "id": 11
+    },
+    {
+      "type": "timeseries",
+      "title": "Session container restarts",
+      "description": "Restarts inside session containers, by kind.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (label_canfar_net_kind) (\n  (\n    sum by (namespace, pod) (\n      increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\"}[$__rate_interval])\n    )\n  )\n  * on (namespace, pod) group_left (label_canfar_net_kind)\n  kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n)",
+          "legendFormat": "{{label_canfar_net_kind}}",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "pointSize": 5,
+            "spanNulls": false,
+            "insertNulls": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 8
+      },
+      "id": 12
+    },
+    {
+      "type": "row",
+      "title": "Kernel OOM kills \u2014 node pressure",
+      "collapsed": false,
+      "panels": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 24,
+        "h": 1
+      },
+      "id": 13,
+      "description": "Where the kernel is reaping processes. Answers which node is under memory pressure, not who caused it; for that see the attribution row below. `node_vmstat_oom_kill` counts **processes** the kernel OOM killer terminated, not containers. One container hitting its memory limit can have many child processes reaped, and a worker killed inside a container whose main process survives never marks that container OOMKilled at all \u2014 so this number is legitimately far larger than Sessions OOM-killed below, and the two are not meant to reconcile."
+    },
+    {
+      "type": "stat",
+      "title": "Nodes with OOM kills",
+      "description": "How many distinct nodes killed at least one process in the range. Counts nodes, not sessions \u2014 a node can report hundreds of process kills from a single misbehaving session.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(increase(node_vmstat_oom_kill[$__range]) > 0)\nor vector(0)",
+          "legendFormat": "__auto",
+          "editorMode": "code",
+          "range": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 6,
+        "h": 5
+      },
+      "id": 14
+    },
+    {
+      "type": "stat",
+      "title": "Cluster nodes reporting",
+      "description": "Nodes exporting the kernel OOM counter, for context against the count on the left.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(node_vmstat_oom_kill)",
+          "legendFormat": "__auto",
+          "editorMode": "code",
+          "range": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 37,
+        "w": 6,
+        "h": 5
+      },
+      "id": 15
+    },
+    {
+      "type": "stat",
+      "title": "Worst node",
+      "description": "The node killing the most in the range, named with its count.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(1,\n    sum by (nodename) (\n      increase(node_vmstat_oom_kill[$__range])\n      * on (instance) group_left (nodename) node_uname_info\n    )\n  )",
+          "legendFormat": "{{nodename}}",
+          "editorMode": "code",
+          "range": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 30
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 37,
+        "w": 6,
+        "h": 5
+      },
+      "id": 16
+    },
+    {
+      "type": "stat",
+      "title": "Processes OOM-killed (all nodes)",
+      "description": "Total kernel OOM-kill events over the range, summed across nodes. `node_vmstat_oom_kill` counts **processes** the kernel OOM killer terminated, not containers. One container hitting its memory limit can have many child processes reaped, and a worker killed inside a container whose main process survives never marks that container OOMKilled at all \u2014 so this number is legitimately far larger than Sessions OOM-killed below, and the two are not meant to reconcile. Measured on one deployment: 750 processes against 13 affected sessions in the same 24 hours, concentrated on three nodes that were not the busiest session hosts.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(node_vmstat_oom_kill[$__range]))\nor vector(0)",
+          "legendFormat": "__auto",
+          "editorMode": "code",
+          "range": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 25
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 37,
+        "w": 6,
+        "h": 5
+      },
+      "id": 17
+    },
+    {
+      "type": "status-history",
+      "title": "Processes OOM-killed per hour by node",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "One cell per node per hour, coloured green through yellow to red by kill count. The scale is pinned from 0 to 10 so a colour means the same thing on every refresh: green is a clean hour, yellow around 5, red at 10 or more. Hover for the exact count \u2014 hours above 10 stay full red rather than rescaling the panel. Read it for shape: colour scattered across several hours means a node is looping and wants draining or a memory-limit review, a single coloured cell was one bad hour. Rows are alphabetical and the prefix carries the role: c compute, g GPU, s services, k control plane. Nodes with no node-exporter do not appear. `node_vmstat_oom_kill` counts **processes** the kernel OOM killer terminated, not containers. One container hitting its memory limit can have many child processes reaped, and a worker killed inside a container whose main process survives never marks that container OOMKilled at all \u2014 so this number is legitimately far larger than Sessions OOM-killed below, and the two are not meant to reconcile.",
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "legendFormat": "{{nodename}}",
+          "expr": "sum by (nodename) (\n    increase(node_vmstat_oom_kill[1h])\n    * on (instance) group_left (nodename) node_uname_info\n  )",
+          "interval": "1h"
+        }
+      ],
+      "options": {
+        "showValue": "never",
+        "rowHeight": 0.9,
+        "colWidth": 0.9,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none",
+          "hideZeros": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "min": 0,
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "fillOpacity": 100,
+            "lineWidth": 0,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "max": 10
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 24,
+        "h": 14
+      },
+      "id": 18
+    },
+    {
+      "id": 19,
+      "type": "row",
+      "collapsed": false,
+      "title": "OOM attribution \u2014 who was affected, and which flavour",
+      "gridPos": {
+        "x": 0,
+        "y": 56,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [],
+      "description": "The panels above answer whether a node is in an OOM loop; these answer who was hit. Attribution comes from kube-state-metrics rather than the kernel counter, because the kernel counter carries only the node. Honours the user and kind pickers, and follows the dashboard time range."
+    },
+    {
+      "id": 20,
+      "type": "stat",
+      "title": "Sessions OOM-killed",
+      "gridPos": {
+        "x": 0,
+        "y": 57,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Distinct session containers whose last termination was OOMKilled in the selected range. Counts containers whose last termination was OOMKilled, deduplicated over the range, so it is sessions affected rather than kill events \u2014 it will not reconcile with Total OOM kills above, which counts kernel events including non-session processes and repeat kills of one container.",
+      "targets": [
+        {
+          "expr": "count((max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[$__range]) == 1)\n  and on (namespace, pod) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}[$__range])) or vector(0)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "Users affected",
+      "gridPos": {
+        "x": 6,
+        "y": 57,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "How many distinct users saw at least one session OOM-killed. A small number against a large kill count points at one user to help; a large number points at the platform. Counts containers whose last termination was OOMKilled, deduplicated over the range, so it is sessions affected rather than kill events \u2014 it will not reconcile with Total OOM kills above, which counts kernel events including non-session processes and repeat kills of one container.",
+      "targets": [
+        {
+          "expr": "count(\n  count by (label_canfar_net_username) (\n  (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[$__range]) == 1)\n  * on (namespace, pod) group_left (label_canfar_net_username) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}[$__range])\n)\n) or vector(0)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "Fixed sessions killed",
+      "gridPos": {
+        "x": 12,
+        "y": 57,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Sessions with `canfar.net/flavor=fixed` \u2014 memory request equals limit \u2014 that were OOM-killed. A fixed session dying means the user asked for too little, not that the platform overcommitted. Counts containers whose last termination was OOMKilled, deduplicated over the range, so it is sessions affected rather than kill events \u2014 it will not reconcile with Total OOM kills above, which counts kernel events including non-session processes and repeat kills of one container.",
+      "targets": [
+        {
+          "expr": "count(\n  (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[$__range]) == 1)\n  and on (namespace, pod) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\", label_canfar_net_flavor=\"fixed\"}[$__range])\n) or vector(0)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "Flexible sessions killed",
+      "gridPos": {
+        "x": 18,
+        "y": 57,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Sessions with `canfar.net/flavor=flexible` \u2014 limit above request \u2014 that were OOM-killed. Flexible sessions can be killed for exceeding a limit they were allowed to grow into, so these are the ones worth comparing against fixed. Counts containers whose last termination was OOMKilled, deduplicated over the range, so it is sessions affected rather than kill events \u2014 it will not reconcile with Total OOM kills above, which counts kernel events including non-session processes and repeat kills of one container.",
+      "targets": [
+        {
+          "expr": "count(\n  (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[$__range]) == 1)\n  and on (namespace, pod) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\", label_canfar_net_flavor=\"flexible\"}[$__range])\n) or vector(0)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 24,
+      "type": "barchart",
+      "title": "OOM-killed sessions by user",
+      "gridPos": {
+        "x": 0,
+        "y": 61,
+        "w": 8,
+        "h": 9
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Which users are hitting OOM, largest first, from `canfar.net/username`. Counts containers whose last termination was OOMKilled, deduplicated over the range, so it is sessions affected rather than kill events \u2014 it will not reconcile with Total OOM kills above, which counts kernel events including non-session processes and repeat kills of one container.",
+      "targets": [
+        {
+          "expr": "count by (label_canfar_net_username) (\n  (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[$__range]) == 1)\n  * on (namespace, pod) group_left (label_canfar_net_username) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}[$__range])\n)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "label_canfar_net_username": "Name",
+              "Value": "Sessions"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Sessions",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "min": 0,
+          "color": {
+            "mode": "continuous-YlRd"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "gradientMode": "hue",
+            "lineWidth": 0,
+            "axisSoftMin": 0
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0,
+        "showValue": "auto",
+        "stacking": "none",
+        "groupWidth": 0.7,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 25,
+      "type": "barchart",
+      "title": "OOM-killed sessions by flavour",
+      "gridPos": {
+        "x": 8,
+        "y": 61,
+        "w": 8,
+        "h": 9
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "`canfar.net/flavor`: fixed means memory request equals limit, flexible means the limit sits above the request. Comparing the two says whether OOM is under-requesting or over-growing. Counts containers whose last termination was OOMKilled, deduplicated over the range, so it is sessions affected rather than kill events \u2014 it will not reconcile with Total OOM kills above, which counts kernel events including non-session processes and repeat kills of one container.",
+      "targets": [
+        {
+          "expr": "count by (label_canfar_net_flavor) (\n  (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[$__range]) == 1)\n  * on (namespace, pod) group_left (label_canfar_net_flavor) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}[$__range])\n)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "label_canfar_net_flavor": "Name",
+              "Value": "Sessions"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Sessions",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "min": 0,
+          "color": {
+            "mode": "continuous-YlRd"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "gradientMode": "hue",
+            "lineWidth": 0,
+            "axisSoftMin": 0
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0,
+        "showValue": "auto",
+        "stacking": "none",
+        "groupWidth": 0.7,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 26,
+      "type": "barchart",
+      "title": "OOM-killed sessions by kind",
+      "gridPos": {
+        "x": 16,
+        "y": 61,
+        "w": 8,
+        "h": 9
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "`canfar.net/kind` \u2014 notebook, desktop, headless and so on. Usually the quickest explanation for a change in the other two. Counts containers whose last termination was OOMKilled, deduplicated over the range, so it is sessions affected rather than kill events \u2014 it will not reconcile with Total OOM kills above, which counts kernel events including non-session processes and repeat kills of one container.",
+      "targets": [
+        {
+          "expr": "count by (label_canfar_net_kind) (\n  (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[$__range]) == 1)\n  * on (namespace, pod) group_left (label_canfar_net_kind) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}[$__range])\n)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "label_canfar_net_kind": "Name",
+              "Value": "Sessions"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Sessions",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "min": 0,
+          "color": {
+            "mode": "continuous-YlRd"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "gradientMode": "hue",
+            "lineWidth": 0,
+            "axisSoftMin": 0
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0,
+        "showValue": "auto",
+        "stacking": "none",
+        "groupWidth": 0.7,
+        "barWidth": 0.8,
+        "fullHighlight": false,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 27,
+      "type": "table",
+      "title": "OOM-killed sessions by user, flavour and kind",
+      "gridPos": {
+        "x": 0,
+        "y": 70,
+        "w": 24,
+        "h": 9
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "The three breakdowns crossed, so a pattern that only shows up in combination \u2014 one user's notebooks on a fixed flavour, say \u2014 is visible. Sortable by any column. Counts containers whose last termination was OOMKilled, deduplicated over the range, so it is sessions affected rather than kill events \u2014 it will not reconcile with Total OOM kills above, which counts kernel events including non-session processes and repeat kills of one container.",
+      "targets": [
+        {
+          "expr": "count by (label_canfar_net_username, label_canfar_net_flavor, label_canfar_net_kind) (\n  ((max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[$__range]) == 1)\n  and on (namespace, pod) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}[$__range]))\n  * on (namespace, pod) group_left (label_canfar_net_username, label_canfar_net_flavor, label_canfar_net_kind) max_over_time(kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}[$__range])\n)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "label_canfar_net_username": "User",
+              "label_canfar_net_flavor": "Flavour",
+              "label_canfar_net_kind": "Kind",
+              "Value": "Sessions"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Sessions",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sessions"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "Sessions"
+          ]
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Pending sessions",
+      "description": "Sessions accepted but not yet Running, over time. A brief spike is normal scheduling latency; a level that stays above zero means sessions cannot be placed \u2014 compare with the queue backlog below and node readiness.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(\n  kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n  and on (namespace, pod) (kube_pod_status_phase{phase=\"Pending\"} == 1)\n)\nor vector(0)",
+          "legendFormat": "__auto",
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "pointSize": 5,
+            "spanNulls": false,
+            "insertNulls": false,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 7,
+        "w": 18,
+        "h": 6
+      },
+      "id": 28
+    },
+    {
+      "type": "piechart",
+      "title": "Sessions by kind",
+      "description": "Share of running sessions by type. Filtered by the namespace, user and kind pickers only; this dashboard carries no community, project, flavor or accelerator picker, so those dimensions are shown whole rather than filtered.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count by (label_canfar_net_kind) (\n  kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n  and on (namespace, pod) (kube_pod_status_phase{phase=\"Running\"} == 1)\n)",
+          "legendFormat": "{{label_canfar_net_kind}}",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "pieType": "donut",
+        "displayLabels": [
+          "percent"
+        ],
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value"
+          ]
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 8,
+        "h": 8
+      },
+      "id": 29
+    },
+    {
+      "type": "piechart",
+      "title": "Sessions by flavor",
+      "description": "Fixed sessions pin the memory request to the limit; flexible sessions may burst. Read from the pod-level canfar.net/flavor label. Filtered by the namespace, user and kind pickers only; this dashboard carries no community, project, flavor or accelerator picker, so those dimensions are shown whole rather than filtered.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "legendFormat": "{{label_canfar_net_flavor}}",
+          "expr": "count by (label_canfar_net_flavor) (\n  kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n  and on (namespace, pod) (kube_pod_status_phase{phase=\"Running\"} == 1)\n)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "pieType": "donut",
+        "displayLabels": [
+          "percent"
+        ],
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value"
+          ]
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 19,
+        "w": 8,
+        "h": 8
+      },
+      "id": 30
+    },
+    {
+      "type": "piechart",
+      "title": "Sessions by accelerator",
+      "description": "GPU-attached versus CPU-only sessions. This is the canfar.net/accelerator label, which is gpu or none; for the number of GPUs held see the GPU columns and the Platform Overview GPU row, which come from the nvidia.com/gpu resource request. Filtered by the namespace, user and kind pickers only; this dashboard carries no community, project, flavor or accelerator picker, so those dimensions are shown whole rather than filtered.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "range": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "legendFormat": "{{label_canfar_net_accelerator}}",
+          "expr": "count by (label_canfar_net_accelerator) (\n  kube_pod_labels{namespace=~\"$namespace\", label_canfar_net_username!=\"\", label_canfar_net_username=~\"$user\", label_canfar_net_kind=~\"$kind\"}\n  and on (namespace, pod) (kube_pod_status_phase{phase=\"Running\"} == 1)\n)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "pieType": "donut",
+        "displayLabels": [
+          "percent"
+        ],
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value"
+          ]
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 19,
+        "w": 8,
+        "h": 8
+      },
+      "id": 31
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+# Storage UI-specific defaults. Shared keys from library/common (import-values) and environment overlays.
+
+image:
+  repository: images.opencadc.org/client/storageui
+  pullPolicy: Always
+  tag: "1.4.4"
+
+imagePullSecrets:
+  - name: regcred
+
+resources:
+  requests:
+    memory: "500Mi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "750m"
+
+applicationName: storage
+
+application:
+  gmsID: ""
+  identityManagerClass: org.opencadc.auth.StandardIdentityManager
+  cookieSignaturePublicKey:
+    existingSecret:
+      name: ""
+      path: ""
+  theme: {}
+  themeName: ""
+
+ingress:
+  hosts:
+    - host: example.host.com
+      paths:
+        - path: /storage
+          pathType: Prefix
+
+redis:
+  image:
+    repository: redis
+    tag: 8.2.2-bookworm
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false

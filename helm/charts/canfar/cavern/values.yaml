@@ -1,0 +1,89 @@
+# Cavern-specific defaults. Shared keys from library/common (import-values) and environment overlays.
+
+image:
+  repository: images.opencadc.org/platform/cavern
+  pullPolicy: IfNotPresent
+  tag: "0.10.4"
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+serviceAccount:
+  create: false
+  automount: true
+  name: ""
+
+application:
+  resourceID: "ivo://example.org/cavern"
+  cookieSignaturePublicKey:
+    existingSecret:
+      name: ""
+      path: ""
+  allocations:
+    defaultSizeGB: 10
+    parentFolders:
+      - "/home"
+      - "/projects"
+    authorization:
+      groupURIs: []
+      permissionsAPI: {}
+  filesystem:
+    dataDir: ""
+    subPath: ""
+    rootOwner:
+      adminUsername: ""
+  identityManagerClass: org.opencadc.auth.StandardIdentityManager
+  uws:
+    db:
+      install: true
+      image: postgres:15.17
+      runUID: 999
+      database: uws
+      schema: uws
+      maxActive: 2
+      auth:
+        existingSecret: ""
+        secretKeys:
+          username: username
+          password: password
+  applicationName: cavern
+  endpoint: /cavern
+
+volumeInit:
+  image: busybox:1.36
+  imagePullPolicy: IfNotPresent
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 8675309
+    capabilities:
+      drop:
+        - ALL
+
+ingress:
+  hosts:
+    - host: example.org
+      paths:
+        - path: /cavern
+          pathType: Prefix
+
+livenessProbe: {}
+readinessProbe: {}
+
+secrets: {}
+
+service:
+  port: 8080
+
+# Required at deploy time: PVC or other volume source for cavern data (see chart README).
+storage:
+  service:
+    spec: {}

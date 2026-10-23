@@ -1,0 +1,102 @@
+# Science Portal-specific defaults. Shared keys from library/common (import-values) and environment overlays.
+
+image:
+  repository: images.opencadc.org/platform/science-portal
+  pullPolicy: Always
+  tag: "2.3.0"
+
+serviceAccount:
+  create: false
+  automount: false
+
+app:
+  basePath: ""
+  api:
+    storage: ""
+    login: ""
+    skaha: ""
+    srcSkaha: ""
+    srcCavern: ""
+    timeoutMs: ""
+  public:
+    api:
+      login: ""
+      skaha: ""
+      srcSkaha: ""
+      srcCavern: ""
+      timeoutMs: ""
+    services:
+      storageManagement: ""
+      groupManagement: ""
+      dataPublication: ""
+      sciencePortal: ""
+      cadcSearch: ""
+      openstackCloud: ""
+    srcnetLogoUrl: ""
+    certificateUrl: ""
+  oidc:
+    enabled: false
+    uri: ""
+    clientId: ""
+    callbackUri: ""
+    redirectUri: ""
+    scope: ""
+    clockToleranceSeconds: ""
+    clientSecret:
+      existingSecret: ""
+      secretKey: ""
+  auth:
+    nextauthUrl: ""
+    authSecret:
+      existingSecret: ""
+      secretKey: ""
+
+service:
+  port: 3000
+
+ingress:
+  hosts:
+    - host: science-portal.example.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+httpRoute:
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+
+livenessProbe:
+  httpGet:
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+startupProbe:
+  httpGet:
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 30
+
+networkPolicy:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+env: []
+envFrom: []

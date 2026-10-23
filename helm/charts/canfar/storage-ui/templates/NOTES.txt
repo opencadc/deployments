@@ -1,0 +1,21 @@
+{{- /*
+Post-install notes for Storage UI.
+*/ -}}
+
+Storage UI release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+{{- if .Values.application.themeName }}
+################################################################################
+#                                                                              #
+#  THEME — deprecation notice                                                  #
+#                                                                              #
+#  application.themeName is deprecated and will be removed.                    #
+#  Prefer application.theme (see values.yaml).                                 #
+#                                                                              #
+################################################################################
+
+{{- end }}
+
+Quick checks:
+  - kubectl get deployment storage-ui-tomcat -n {{ .Release.Namespace }}
