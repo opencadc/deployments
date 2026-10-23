@@ -65,31 +65,29 @@ spec:
       {{- $signingCert := .Values.application.signingCert | default dict }}
       {{- $cadcproxy := .Values.application.cadcproxy | default dict }}
       {{- $cookieKey := .Values.application.cookieSignaturePublicKey | default dict }}
+      {{- $configMapName := printf "%s-config" (include "cred.fullname" .) }}
+      {{- $secretMounts := list (dict
+          "existingSecret" (required "application.signingCert.existingSecret is required" $signingCert.existingSecret)
+          "items" (list (dict "key" ($signingCert.key | default "signcert.pem") "path" "signcert.pem"))
+        ) -}}
+      {{- if $cadcproxy.existingSecret }}
+      {{- $secretMounts = append $secretMounts (dict
+          "existingSecret" $cadcproxy.existingSecret
+          "items" (list (dict "key" ($cadcproxy.key | default "cadcproxy.pem") "path" "cadcproxy.pem"))
+        ) -}}
+      {{- end }}
+      {{- if $cookieKey.existingSecret }}
+      {{- $secretMounts = append $secretMounts (dict
+          "existingSecret" $cookieKey.existingSecret
+          "items" (list (dict "key" ($cookieKey.key | default "RsaSignaturePub.key") "path" "RsaSignaturePub.key"))
+        ) -}}
+      {{- end }}
       volumes:
-        - name: config
-          projected:
-            sources:
-              - configMap:
-                  name: {{ include "cred.fullname" . }}-config
-              - secret:
-                  name: {{ required "application.signingCert.existingSecret is required" $signingCert.existingSecret }}
-                  items:
-                    - key: {{ $signingCert.key | default "signcert.pem" | quote }}
-                      path: signcert.pem
-              {{- with $cadcproxy.existingSecret }}
-              - secret:
-                  name: {{ . }}
-                  items:
-                    - key: {{ $cadcproxy.key | default "cadcproxy.pem" | quote }}
-                      path: cadcproxy.pem
-              {{- end }}
-              {{- with $cookieKey.existingSecret }}
-              - secret:
-                  name: {{ . }}
-                  items:
-                    - key: {{ $cookieKey.key | default "RsaSignaturePub.key" | quote }}
-                      path: RsaSignaturePub.key
-              {{- end }}
+        {{- include "common.volumes.projectedConfig" (dict
+          "volumeName" "config"
+          "configMapName" $configMapName
+          "secrets" $secretMounts
+        ) | nindent 8 }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

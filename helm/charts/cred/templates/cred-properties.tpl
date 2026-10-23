@@ -1,4 +1,6 @@
+{{- define "cred.properties" -}}
 {{- range .Values.application.superUsers }}
 org.opencadc.cred.superUser = {{ . }}
 {{- end }}
 org.opencadc.cred.maxDaysValid = {{ .Values.application.maxDaysValid }}
+{{- end -}}

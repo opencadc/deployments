@@ -47,14 +47,7 @@
       "monorepo-tags": true,
       "extra-files": ["README.md"]
     },
-    "helm/applications/utils": {
-      "package-name": "utils",
-      "release-type": "helm",
-      "changelog-path": "CHANGELOG.md",
-      "monorepo-tags": true,
-      "extra-files": ["README.md"]
-    },
-    "helm/common": {
+    "helm/library/common": {
       "package-name": "common",
       "release-type": "helm",
       "changelog-path": "CHANGELOG.md",

@@ -13,7 +13,7 @@ Helm charts for many different systems lived in multiple service repositories an
 - Supports umbrella stacks where appropriate.
 - Stays compatible with independent Release Please versioning and OCI publication per chart.
 
-The root README referenced `helm/common/` while the library chart lived at `helm/applications/utils`, which caused confusion.
+The root README referenced `helm/common/` while the library chart lived at `helm/applications/utils` (now consolidated as `helm/library/common`), which caused confusion.
 
 ## Decision
 
@@ -34,7 +34,7 @@ Existing `helm/applications/` paths remain until migrated incrementally; new cha
 
 - Clear separation between deployable charts, composition (stacks), shared templates (library), and environment-specific values.
 - Imported service-repo charts map to a predictable path (`charts/<name>/` or `charts/<system>/<name>/`).
-- Library chart has a single home (`library/utils`), aligned with documentation.
+- Library chart has a single home (`library/common`), aligned with documentation.
 
 **Negative**
 

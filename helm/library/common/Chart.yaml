@@ -1,0 +1,16 @@
+apiVersion: v2
+name: common
+description: Shared default values for OpenCADC Tomcat application charts
+
+type: library
+version: 0.2.0
+appVersion: "1.0.0"
+
+maintainers:
+  - name: Shiny Brar
+    email: shiny.brar@nrc-cnrc.gc.ca
+  - name: Dustin Jenkins
+    email: djenkins.cadc@gmail.com
+
+annotations:
+  opencadc.org/import-values-key: standard

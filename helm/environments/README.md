@@ -1,15 +1,24 @@
-# Environment overlays
+# Environment value overlays
 
-Domain- or cluster-specific Helm values (no chart templates). See [SPECIFICATION.md](../SPECIFICATION.md) and [ADR 0003](../../docs/adr/0003-deployment-domains-via-environment-overlays.md).
+Deploy-time YAML merged with application chart values. Not part of the OCI chart package.
 
-Add one directory per deployment target, for example:
+## Layout
 
 ```text
-environments/<domain-or-env>/
-├── _common.yaml      # shared ingress, global.baseDomain, gateway refs
-├── ac.yaml
-├── cred.yaml
-└── reg.yaml
+environments/<site-or-env>/
+  _common.yaml    # ingress, registry, tomcat connector, shared application.* 
+  cred.yaml       # optional cred-only overrides
+  reg.yaml
 ```
 
-Do not commit secrets; reference existing Kubernetes Secrets in value files.
+## Example install
+
+```bash
+helm dependency build helm/charts/cred
+helm upgrade --install cred helm/charts/cred \
+  -f helm/environments/example-org/_common.yaml \
+  -f helm/environments/example-org/cred.yaml \
+  --namespace cred --create-namespace
+```
+
+Common keys are **top-level** (`ingress`, `application`, `tomcat`, …), matching `library/common`.

@@ -1,25 +1,14 @@
-# Science Platform Helm Utility library (0.1.0)
+# Science Platform Helm library (`common`)
 
-A small [Helm Library Chart](https://helm.sh/docs/topics/library_charts/) to provide common utility functions to other Charts.
+The shared library chart lives at [`helm/library/common`](../../../helm/library/common/). It replaces the former `helm/applications/utils` chart.
 
-## Install
-
-Add to your Chart dependencies from within the `helm` folder:
+See [common README](../../../helm/library/common/README.md) for dependencies and template helpers (`common.*`, `getSecretKeyValue`).
 
 ```yaml
-  - name: "utils"
-    version: "^0.1.0"
-    repository: "file://../utils"
+dependencies:
+  - name: common
+    version: "0.2.0"
+    repository: "file://../../library/common"
 ```
 
-## Functions
-
-### getSecretKeyValue
-
-The `getSecretKeyValue` function in the [_get-secret-key-value.yaml](./templates/_get-secret-key-value.yaml) file contains a function to read a Kubernetes Secret, and extract a value for the given `key`.
-
-#### Example
-
-```yaml
-{{- $clientSecret := include "getSecretKeyValue" (list $existingSecretName "clientSecret" $namespace) -}}
-```
+Legacy science-platform charts may omit `import-values` if they only use `common.extraConfig` or `common.image`.

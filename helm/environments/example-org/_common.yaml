@@ -1,0 +1,18 @@
+# Site-wide defaults for OpenCADC Tomcat charts (example).
+application:
+  registryURL: https://example.org/reg
+  gmsID: ivo://example.org/gms
+  oidcURI: https://example.org/oidc
+
+ingress:
+  enabled: false
+  className: nginx
+
+httpRoute:
+  enabled: false
+
+tomcat:
+  connector:
+    proxyName: ""
+    scheme: https
+    proxyPort: 443

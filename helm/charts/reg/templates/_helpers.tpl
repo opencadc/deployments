@@ -60,7 +60,6 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
-
 {{/*
 Resolve tomcat.connector settings for catalina.properties.
 Returns YAML with scheme, proxyName, and proxyPort when proxyName can be resolved; empty otherwise.
@@ -107,3 +106,4 @@ scheme: {{ $scheme | quote }}
 proxyPort: {{ $proxyPort }}
 {{- end -}}
 {{- end -}}
+

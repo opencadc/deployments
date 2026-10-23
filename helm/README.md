@@ -9,7 +9,7 @@ Kubernetes deployment charts for CADC and CANFAR services, published as versione
 ## Quick reference
 
 ```text
-helm/library/       # shared library charts (e.g. utils)
+helm/library/       # shared library charts (common)
 helm/charts/        # application charts
 helm/stacks/        # umbrella charts for intentional multi-chart releases
 helm/environments/  # optional domain/cluster value overlays

@@ -25,7 +25,8 @@ helm/
 ├── SPECIFICATION.md          # this document
 ├── README.md                 # entry point for chart authors
 ├── library/                  # library charts (type: library), never installed alone
-│   └── utils/
+│   ├── common/               # shared default values (import-values)
+│   └── common/               # shared values + templates
 ├── charts/                   # application charts (type: application)
 │   ├── <chart-name>/         # independent services (flat)
 │   ├── <system>/             # related services grouped by system
@@ -99,16 +100,18 @@ Stack `values.yaml` should contain:
 
 ## Library chart
 
-- Location: `helm/library/utils/` (successor to `helm/applications/utils/`).
+- Location: `helm/library/common/` (values + templates; successor to `helm/applications/utils` and former `library/utils`).
 - `type: library` in `Chart.yaml`.
-- Application charts add a dependency when shared templates reduce duplication (ingress, configmap patterns, labels).
+- Application charts add a dependency for shared defaults (`import-values: standard`) and template helpers (`common.*`).
 
 ```yaml
 dependencies:
-  - name: utils
+  - name: common
     version: "0.x.x"
-    repository: "file://../../library/utils"   # monorepo dev
-    # repository: oci://images.opencadc.org/platform/charts/utils   # published
+    repository: "file://../../library/common"   # monorepo dev
+    import-values:
+      - standard
+    # repository: oci://images.opencadc.org/platform/charts/common   # published
 ```
 
 Library charts are versioned and published like application charts but are not installable with `helm install`.
@@ -197,11 +200,11 @@ Chart authors maintain **technical** `README.md` inside the chart (values table,
 
 ## Migration from `helm/applications/`
 
-Current repository layout uses `helm/applications/` (including `sandbox/`, `archived/`, and library `utils`). Target layout:
+Current repository layout uses `helm/applications/` (including `sandbox/`, `archived/`). Target layout:
 
 | Current | Target |
 | --- | --- |
-| `helm/applications/utils` | `helm/library/utils` |
+| `helm/applications/utils` | `helm/library/common` (merged) |
 | `helm/applications/<service>` | `helm/charts/<service>` or `helm/charts/science-platform/<service>` |
 | `helm/applications/sandbox/*` | `helm/charts/sandbox/*` |
 | `helm/applications/sandbox/stack` | `helm/stacks/sandbox/stack` |

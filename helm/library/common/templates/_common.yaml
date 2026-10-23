@@ -1,0 +1,68 @@
+{{- /*
+common.util.merge will merge two YAML templates and output the result.
+This takes an array of three values:
+- the top context
+- the template name of the overrides (destination)
+- the template name of the base (source)
+*/}}
+{{- define "common.util.merge" -}}
+{{- $top := first . -}}
+{{- $overrides := fromYaml (include (index . 1) $top) | default (dict ) -}}
+{{- $tpl := fromYaml (include (index . 2) $top) | default (dict ) -}}
+{{- toYaml (merge $overrides $tpl) -}}
+{{- end -}}
+
+{{- /*
+common.extraConfig will pull any extra config data from the
+.extraConfigData input YAML object.
+
+The .extraConfigData is expected to contain a valid dict with
+key: data-value pairings.
+
+Any keys that end in ".key" are treated as base64 encoded data
+and decoded.
+
+Example:
+values.yaml:
+...
+system:
+  extraConfigData:
+    myfile.txt: somedata
+    mysecret.key: L03DJSLKJLKSFD=
+...
+
+{{- include "common.extraConfig" (dict "extraConfigData" .Values.system.extraConfigData) -}}
+*/}}
+{{- define "common.extraConfig" -}}
+{{- range $configFileName, $configFileValue := .extraConfigData }}
+{{- if $configFileName | hasSuffix ".key" }}
+  {{ $configFileName }}: {{ $configFileValue | b64dec | quote }}
+{{- else }}
+  {{ $configFileName }}: {{ $configFileValue }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Assemble the image name with the registry, repository, tag and digest.
+{{ include "common.image" ( dict "imageObject" .Values.path.to.the.imag ) }}
+*/}}
+{{- define "common.image" -}}
+{{- $registryName := .imageObject.registry | required "image.registry is required." -}}
+{{- $repositoryName := .imageObject.repository | required "image.repository path is required" -}}
+{{- $separator := ":" -}}
+{{- $termination := .imageObject.tag | toString -}}
+
+{{- if not .imageObject.tag }}
+  {{- $termination = "SNAPSHOT" -}}
+{{- end -}}
+{{- if .imageObject.digest }}
+    {{- $separator = "@" -}}
+    {{- $termination = .imageObject.digest | toString -}}
+{{- end -}}
+{{- if $registryName }}
+    {{- printf "%s/%s%s%s" $registryName $repositoryName $separator $termination -}}
+{{- else -}}
+    {{- printf "%s%s%s"  $repositoryName $separator $termination -}}
+{{- end -}}
+{{- end -}}
