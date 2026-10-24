@@ -221,6 +221,8 @@ exports:
 
       # PrincipalExtractor flags (catalina.properties).
       enableClientCertHeader: true
+
+      # Allow basic authentication for authorization (AuthorizationTokenPrincipal).
       allowBasicAtp: false
 
       # Deployed WAR context name; when different from the chart WAR basename,
