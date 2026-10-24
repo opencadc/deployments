@@ -1,0 +1,7 @@
+{{- include "common.ingress" (dict
+  "context" .
+  "name" (include "argus.fullname" .)
+  "labels" (include "argus.labels" .)
+  "serviceName" (include "argus.fullname" .)
+  "servicePort" .Values.service.port
+) -}}

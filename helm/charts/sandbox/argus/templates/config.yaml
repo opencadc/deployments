@@ -1,0 +1,11 @@
+{{- include "common.tomcat.configmap" (dict
+  "context" .
+  "name" (printf "%s-config" (include "argus.fullname" .))
+  "labels" (include "argus.labels" .)
+  "warBaseName" "argus"
+  "catalina" (dict "extra" (include "argus.catalina.properties" .))
+  "extraData" (dict
+    "argus.properties" (include "argus.app.properties" .)
+    "cadc-tap-tmp.properties" (include "argus.tapTmp.properties" .)
+  )
+) -}}

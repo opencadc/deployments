@@ -1,0 +1,57 @@
+# Argus-specific defaults. Shared keys from library/common (import-values) and environment overlays.
+
+image:
+  repository: images.opencadc.org/caom2/argus
+  pullPolicy: Always
+  tag: "1.0.23"
+
+application:
+  gmsId: ""
+  cdpResourceId: ""
+  registryUrls:
+    - https://cadc-west-01.cadc.nrc.ca/reg
+  # Optional registry lines not covered by gmsId/cdpResourceId (e.g. POSIX mapper resource IDs):
+  # localAuthorities:
+  #   - standardId: http://www.opencadc.org/std/posix#group-mapping-0.1
+  #     authority: ivo://example.org/posix-mapper
+  #   - standardId: http://www.opencadc.org/std/posix#user-mapping-0.1
+  #     authority: ivo://example.org/posix-mapper
+  localAuthorities: []
+  identityManagerClass: ca.nrc.cadc.ac.ACIdentityManager
+  cookieSignaturePublicKey:
+    existingSecret: ""
+    key: RsaSignaturePub.key
+  logging:
+    groups: []
+
+  # See https://github.com/opencadc/caom2/tree/main/argus#catalinaproperties for database connection pools.
+  uws: {}
+  tapadm: {}
+  query: {}
+
+  # See https://github.com/opencadc/caom2/tree/main/argus#argusproperties.
+  materializedViews:
+    enabled: false
+
+ingress:
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /argus
+          pathType: Prefix
+
+httpRoute:
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /argus
+
+livenessProbe:
+  httpGet:
+    path: /argus
+    port: http
+readinessProbe:
+  httpGet:
+    path: /argus/availability
+    port: http

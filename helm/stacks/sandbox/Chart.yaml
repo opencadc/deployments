@@ -26,16 +26,16 @@ appVersion: "0.1.0"
 dependencies:
   - name: bifrost
     version: "0.1.0"
-    repository: "file://../bifrost"
+    repository: "file://../../charts/sandbox/bifrost"
   - name: sc2meta
     version: "0.1.0"
-    repository: "file://../sc2meta"
+    repository: "file://../../charts/sandbox/sc2meta"
   - name: torkeep
     version: "0.1.0"
-    repository: "file://../torkeep"
+    repository: "file://../../charts/sandbox/torkeep"
   - name: search
     version: "0.1.0"
-    repository: "file://../search"
+    repository: "file://../../charts/sandbox/search"
   - name: argus
     version: "0.1.0"
-    repository: "file://../argus"
+    repository: "file://../../charts/sandbox/argus"
