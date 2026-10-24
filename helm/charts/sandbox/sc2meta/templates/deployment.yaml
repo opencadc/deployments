@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "sc2meta.fullname" . }}
-  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "sc2meta.labels" . | nindent 4 }}
 spec:
@@ -58,15 +57,33 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: meta-config
+            - name: config
               mountPath: /config
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      {{- $cookieKey := .Values.application.cookieSignaturePublicKey | default dict }}
+      {{- $configMapName := printf "%s-config" (include "sc2meta.fullname" .) }}
+      {{- $secretMounts := list -}}
+      {{- if $cookieKey.existingSecret }}
+      {{- $secretMounts = append $secretMounts (dict
+          "existingSecret" $cookieKey.existingSecret
+          "items" (list (dict "key" ($cookieKey.key | default "RsaSignaturePub.key") "path" ($cookieKey.key | default "RsaSignaturePub.key")))
+        ) -}}
+      {{- end }}
       volumes:
-        - name: meta-config
-          configMap:
-            name: {{ .Release.Name }}-config
+        {{- if $secretMounts }}
+        {{- include "common.volumes.projectedConfig" (dict
+          "volumeName" "config"
+          "configMapName" $configMapName
+          "secrets" $secretMounts
+        ) | nindent 8 }}
+        {{- else }}
+        {{- include "common.volumes.configMap" (dict
+          "volumeName" "config"
+          "configMapName" $configMapName
+        ) | nindent 8 }}
+        {{- end }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

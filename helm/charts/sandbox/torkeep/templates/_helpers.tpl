@@ -1,62 +1,23 @@
-{{/*
-Expand the name of the chart.
-*/}}
-{{- define "repo.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- define "torkeep.name" -}}
+{{- include "common.name" . -}}
 {{- end }}
 
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "repo.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
+{{- define "torkeep.fullname" -}}
+{{- include "common.fullname" . -}}
 {{- end }}
 
-{{/*
-Create chart name and version as used by the chart label.
-*/}}
-{{- define "repo.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- define "torkeep.chart" -}}
+{{- include "common.chart" . -}}
 {{- end }}
 
-{{/*
-Common labels
-*/}}
-{{- define "repo.labels" -}}
-helm.sh/chart: {{ include "repo.chart" . }}
-{{ include "repo.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- define "torkeep.selectorLabels" -}}
+{{- include "common.selectorLabels" . -}}
 {{- end }}
 
-{{/*
-Selector labels
-*/}}
-{{- define "repo.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "repo.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+{{- define "torkeep.labels" -}}
+{{- include "common.labels" . -}}
 {{- end }}
 
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "repo.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "repo.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
+{{- define "torkeep.serviceAccountName" -}}
+{{- include "common.serviceAccountName" . -}}
 {{- end }}

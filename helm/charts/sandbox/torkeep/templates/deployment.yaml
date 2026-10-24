@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "repo.fullname" . }}
+  name: {{ include "torkeep.fullname" . }}
   labels:
-    {{- include "repo.labels" . | nindent 4 }}
+    {{- include "torkeep.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "repo.selectorLabels" . | nindent 6 }}
+      {{- include "torkeep.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "repo.labels" . | nindent 8 }}
+        {{- include "torkeep.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -27,7 +27,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "repo.serviceAccountName" . }}
+      serviceAccountName: {{ include "torkeep.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -57,15 +57,33 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - mountPath: /config
-              name: config-volume
+            - name: config
+              mountPath: /config
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      {{- $cookieKey := .Values.application.cookieSignaturePublicKey | default dict }}
+      {{- $configMapName := printf "%s-config" (include "torkeep.fullname" .) }}
+      {{- $secretMounts := list -}}
+      {{- if $cookieKey.existingSecret }}
+      {{- $secretMounts = append $secretMounts (dict
+          "existingSecret" $cookieKey.existingSecret
+          "items" (list (dict "key" ($cookieKey.key | default "RsaSignaturePub.key") "path" ($cookieKey.key | default "RsaSignaturePub.key")))
+        ) -}}
+      {{- end }}
       volumes:
-        - name: config-volume
-          configMap:
-            name: {{ .Release.Name }}-config
+        {{- if $secretMounts }}
+        {{- include "common.volumes.projectedConfig" (dict
+          "volumeName" "config"
+          "configMapName" $configMapName
+          "secrets" $secretMounts
+        ) | nindent 8 }}
+        {{- else }}
+        {{- include "common.volumes.configMap" (dict
+          "volumeName" "config"
+          "configMapName" $configMapName
+        ) | nindent 8 }}
+        {{- end }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

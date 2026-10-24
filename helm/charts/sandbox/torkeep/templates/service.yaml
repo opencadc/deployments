@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "repo.fullname" . }}
+  name: {{ include "torkeep.fullname" . }}
   labels:
-    {{- include "repo.labels" . | nindent 4 }}
+    {{- include "torkeep.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "repo.selectorLabels" . | nindent 4 }}
+    {{- include "torkeep.selectorLabels" . | nindent 4 }}
