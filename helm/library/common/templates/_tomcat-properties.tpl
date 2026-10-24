@@ -1,7 +1,7 @@
 {{/*
 OpenCADC CADC-Tomcat configuration file bodies.
-Values: application.* (incl. catalinaProperties), tomcat.*, ingress, httpRoute.
-Include args for common.tomcat.catalina.properties: properties (map overrides/extends application.catalinaProperties), extra (deprecated raw string).
+Values: application.*, tomcat.catalina.* (incl. extraProperties), ingress, httpRoute.
+Include args for common.tomcat.catalina.properties: extraProperties (map overrides/extends tomcat.catalina.extraProperties), extra (deprecated raw string).
 */}}
 
 {{- define "common.tomcat.cadcRegistry.properties" -}}
@@ -72,7 +72,8 @@ mv {{ $warBase }}.war {{ $deployName }}.war
 {{- define "common.tomcat.catalina.properties" -}}
 {{- $ctx := .context | default . -}}
 {{- $app := $ctx.Values.application | default dict -}}
-{{- $cat := index ($ctx.Values.tomcat | default dict) "catalina" | default dict -}}
+{{- $tomcat := $ctx.Values.tomcat | default dict -}}
+{{- $cat := index $tomcat "catalina" | default dict -}}
 {{- $includeTimeouts := true -}}
 {{- if hasKey . "includeConnectionDefaults" -}}
 {{- $includeTimeouts = .includeConnectionDefaults -}}
@@ -109,16 +110,16 @@ ca.nrc.cadc.auth.PrincipalExtractor.allowBasicATP={{ $app.allowBasicAtp }}
 ca.nrc.cadc.util.Log4jInit.messageOnly=true
 {{- end -}}
 {{- $catalinaProps := dict -}}
-{{- range $k, $v := ($app.catalinaProperties | default dict) -}}
+{{- range $k, $v := ($cat.extraProperties | default dict) -}}
 {{- $_ := set $catalinaProps $k $v -}}
 {{- end -}}
-{{- range $k, $v := (.properties | default dict) -}}
+{{- range $k, $v := (.extraProperties | default dict) -}}
 {{- $_ := set $catalinaProps $k $v -}}
 {{- end -}}
 {{- range $key := (keys $catalinaProps | sortAlpha) }}
 {{ $key }}={{ index $catalinaProps $key | toString }}
 {{- end }}
-{{- $extra := .extra | default $app.catalinaExtra | default "" | trim -}}
+{{- $extra := .extra | default ($cat.extra | default "") | trim -}}
 {{- if $extra }}
 {{ $extra }}
 {{- end -}}

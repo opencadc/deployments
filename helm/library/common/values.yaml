@@ -54,7 +54,22 @@ exports:
     podAnnotations: {}
     podLabels: {}
 
+    # Security context for the pod.
+    # Example:
+    # podSecurityContext:
+    #   runAsUser: 1000
+    #   runAsGroup: 1000
+    #   fsGroup: 1000
     podSecurityContext: {}
+
+    # Security context for the container.
+    # Example:
+    # securityContext:
+    #   allowPrivilegeEscalation: false
+    #   readOnlyRootFilesystem: true
+    #   capabilities:
+    #   drop:
+    #     - ALL    
     securityContext: {}
 
     # -------------------------------------------------------------------------
@@ -163,6 +178,11 @@ exports:
         connectionTimeout: 180000
         keepAliveTimeout: 180000
 
+        # Extra Java properties appended to catalina.properties (deep-merged across overlays).
+        # extraProperties:
+        #   org.opencadc.example.setting: value
+        extraProperties: {}
+
     # -------------------------------------------------------------------------
     # OpenCADC application configuration (ConfigMap / properties templates)
     # -------------------------------------------------------------------------
@@ -206,13 +226,6 @@ exports:
       # Deployed WAR context name; when different from the chart WAR basename,
       # common.tomcat.warRename.conf renames the WAR at container start.
       applicationName: ""
-
-      # Extra Java properties appended to catalina.properties (deep-merged across overlays).
-      # catalinaProperties:
-      #   org.opencadc.example.setting: value
-      catalinaProperties: {}
-      # Deprecated: multiline string; prefer catalinaProperties. Still rendered after the map.
-      # catalinaExtra: ""
 
       # cadc-log.properties: principals allowed to read application logs.
       logging:

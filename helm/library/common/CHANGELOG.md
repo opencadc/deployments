@@ -6,7 +6,7 @@
 - Rename `application.registryURL` to `application.registryUrls` (array of RegistryClient base URLs).
 - Rename `localAuthorities[].standardID` to `standardId` (camelCase).
 - Rename `application.gmsID`, `oidcURI`, `resourceID`, `cdpResourceID`, `allowBasicATP` to `gmsId`, `oidcUri`, `resourceId`, `cdpResourceId`, `allowBasicAtp` (Helm values only; Java property names unchanged).
-- Add `application.catalinaProperties` (map of property name → value) for extra `catalina.properties` entries; `application.catalinaExtra` and include arg `extra` remain as deprecated raw multiline strings.
+- Add `tomcat.catalina.extraProperties` (map of property name → value) for extra `catalina.properties` entries; `tomcat.catalina.extra` and include arg `extra` remain as deprecated raw multiline strings.
 - Deduplicate and de-skaha `values.yaml` exports.standard defaults.
 - Merge `library/utils` templates into `common` (`common.*` defines).
 - Drop unused `configmap.filesAsConfig` / `publicHostname` helpers.
