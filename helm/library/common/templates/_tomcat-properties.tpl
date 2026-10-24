@@ -1,6 +1,7 @@
 {{/*
 OpenCADC CADC-Tomcat configuration file bodies.
-Values: application.*, tomcat.*, ingress, httpRoute (from chart + library/common + env overlays).
+Values: application.* (incl. catalinaProperties), tomcat.*, ingress, httpRoute.
+Include args for common.tomcat.catalina.properties: properties (map overrides/extends application.catalinaProperties), extra (deprecated raw string).
 */}}
 
 {{- define "common.tomcat.cadcRegistry.properties" -}}
@@ -107,6 +108,16 @@ ca.nrc.cadc.auth.PrincipalExtractor.allowBasicATP={{ $app.allowBasicAtp }}
 {{- if $includeLog4j }}
 ca.nrc.cadc.util.Log4jInit.messageOnly=true
 {{- end -}}
+{{- $catalinaProps := dict -}}
+{{- range $k, $v := ($app.catalinaProperties | default dict) -}}
+{{- $_ := set $catalinaProps $k $v -}}
+{{- end -}}
+{{- range $k, $v := (.properties | default dict) -}}
+{{- $_ := set $catalinaProps $k $v -}}
+{{- end -}}
+{{- range $key := (keys $catalinaProps | sortAlpha) }}
+{{ $key }}={{ index $catalinaProps $key | toString }}
+{{- end }}
 {{- $extra := .extra | default $app.catalinaExtra | default "" | trim -}}
 {{- if $extra }}
 {{ $extra }}

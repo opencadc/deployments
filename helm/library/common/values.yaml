@@ -1,31 +1,74 @@
-# Imported into application charts via Chart.yaml import-values (key: standard).
-# Site-specific settings belong in helm/environments/<env>/_common.yaml at deploy time.
+# Shared defaults for OpenCADC Tomcat application charts (library/common).
+#
+# Child charts import these keys at the chart root via Chart.yaml:
+#
+#   dependencies:
+#     - name: common
+#       version: "0.x.x"
+#       repository: "file://../../library/common"
+#       import-values:
+#         - child: standard
+#           parent: exports.standard
+#
+# After import, values appear as .Values.replicaCount, .Values.application.gmsId, etc.
+# Site-wide overrides belong in helm/environments/<org>/_common.yaml (merged at deploy time).
+#
+# This file documents keys provided by library/common only. Each application chart also
+# defines its own values (image, probes, chart-specific application.* fields, and so on).
+# See helm/docs/ for extended reference (when published).
+
 exports:
   standard:
+    # -------------------------------------------------------------------------
+    # Cluster / naming
+    # -------------------------------------------------------------------------
+
+    # Kubernetes cluster DNS suffix (typically cluster.local). Used in templates
+    # that build in-cluster service FQDNs, e.g. name.namespace.svc.<domain>:port.
     kubernetesClusterDomain: cluster.local
 
+    # Deployment replica count when the chart does not enable autoscaling.
     replicaCount: 1
 
+    # imagePullSecrets:
+    #   - name: regcred
     imagePullSecrets: []
+
+    # Override chart name segments used in resource names and labels.
     nameOverride: ""
     fullnameOverride: ""
 
+    # -------------------------------------------------------------------------
+    # Pod identity and security
+    # -------------------------------------------------------------------------
+
     serviceAccount:
+      # Create a dedicated ServiceAccount for the workload.
       create: true
+      # Mount the ServiceAccount token into pods (set false if not needed).
       automount: true
       annotations: {}
+      # Explicit account name; default is the chart fullname when create is true.
       name: ""
 
     podAnnotations: {}
     podLabels: {}
 
     podSecurityContext: {}
-
     securityContext: {}
+
+    # -------------------------------------------------------------------------
+    # Service (Tomcat HTTP)
+    # -------------------------------------------------------------------------
 
     service:
       type: ClusterIP
+      # Container port name "http" in most charts; matches Tomcat connector.
       port: 8080
+
+    # -------------------------------------------------------------------------
+    # Ingress (networking.k8s.io/v1) — rendered by common.ingress when enabled
+    # -------------------------------------------------------------------------
 
     ingress:
       enabled: false
@@ -37,6 +80,16 @@ exports:
             - path: /
               pathType: Prefix
       tls: []
+      # tls:
+      #   - secretName: chart-example-tls
+      #     hosts:
+      #       - chart-example.local
+
+    # -------------------------------------------------------------------------
+    # HTTPRoute (Gateway API) — rendered by common.httpRoute when enabled
+    # -------------------------------------------------------------------------
+    # Prefer one of ingress or httpRoute per deployment, not both, unless you
+    # intentionally expose the service two ways.
 
     httpRoute:
       enabled: false
@@ -52,7 +105,18 @@ exports:
                 type: PathPrefix
                 value: /
 
+    # -------------------------------------------------------------------------
+    # Resources and scaling (conventional; parent chart templates may use these)
+    # -------------------------------------------------------------------------
+
     resources: {}
+    # resources:
+    #   limits:
+    #     cpu: 500m
+    #     memory: 512Mi
+    #   requests:
+    #     cpu: 100m
+    #     memory: 256Mi
 
     autoscaling:
       enabled: false
@@ -60,6 +124,11 @@ exports:
       maxReplicas: 100
       targetCPUUtilizationPercentage: 80
 
+    # -------------------------------------------------------------------------
+    # Storage and scheduling
+    # -------------------------------------------------------------------------
+
+    # Extra pod volumes and mounts (Kubernetes volume / volumeMount schema).
     volumes: []
     volumeMounts: []
 
@@ -67,7 +136,21 @@ exports:
     tolerations: []
     affinity: {}
 
+    # Optional static /etc/hosts entries for pods (charts that mount hostAliases).
+    # extraHosts:
+    #   - ip: 10.0.0.1
+    #     hostnames:
+    #       - internal.example.org
     extraHosts: []
+
+    # -------------------------------------------------------------------------
+    # Tomcat reverse proxy and connector (catalina.properties)
+    # -------------------------------------------------------------------------
+    # common.tomcatConnector derives proxyName, scheme, proxyPort, and secure when
+    # tomcat.connector fields are empty:
+    #   1. httpRoute.hostnames[0] if httpRoute.enabled
+    #   2. else ingress.hosts[0].host if ingress.enabled
+    # Set connector.proxyName (and scheme/port) explicitly to override.
 
     tomcat:
       connector:
@@ -76,23 +159,66 @@ exports:
         proxyPort: ""
         secure: ""
       catalina:
+        # Milliseconds; written to catalina.properties when using common templates.
         connectionTimeout: 180000
         keepAliveTimeout: 180000
 
+    # -------------------------------------------------------------------------
+    # OpenCADC application configuration (ConfigMap / properties templates)
+    # -------------------------------------------------------------------------
+    # Keys here feed common.tomcat.cadcRegistry.properties, common.tomcat.cadcLog.properties,
+    # and common.tomcat.catalina.properties. Charts may add more application.* keys locally.
+
     application:
+      # IVOA registry base URLs (cadc-registry.properties: RegistryClient.baseURL).
+      # URLs are checked in order, and the first one that returns a 200 in time is used.
       registryUrls: []
+
+      # Local authority mappings (standard IVOA ID → authority string), one line each.
+      # Used to add custom authorities to the cadc-registry.properties file.
+      # localAuthorities:
+      #   - standardId: ivo://example.org/users
+      #     authority: example.org
       localAuthorities: []
+
+      # GMS / UMS service resource ID (ivo://…). Drives multiple registry standard IDs.
       gmsId: ""
+
+      # OIDC issuer or resource URI for ivoa.net/sso#OAuth and #OpenID. When set,
+      # overrides using gmsId for those two entries.
       oidcUri: ""
+
+      # This service's IVOA resource ID. Used for CDP delegate/proxy registry lines
+      # when cdpResourceId is not set alone.
       resourceId: ""
+
+      # Alternate resource ID for CDP delegate/proxy only (when resourceId is empty).
+      # This is a CADC-only property, and won't apply outside that context.
       cdpResourceId: ""
+
+      # Java class for ca.nrc.cadc.auth.IdentityManager (catalina.properties).
       identityManagerClass: ""
+
+      # PrincipalExtractor flags (catalina.properties).
       enableClientCertHeader: true
       allowBasicAtp: false
+
+      # Deployed WAR context name; when different from the chart WAR basename,
+      # common.tomcat.warRename.conf renames the WAR at container start.
       applicationName: ""
-      catalinaExtra: ""
+
+      # Extra Java properties appended to catalina.properties (deep-merged across overlays).
+      # catalinaProperties:
+      #   org.opencadc.example.setting: value
+      catalinaProperties: {}
+      # Deprecated: multiline string; prefer catalinaProperties. Still rendered after the map.
+      # catalinaExtra: ""
+
+      # cadc-log.properties: principals allowed to read application logs.
       logging:
+        # Full user DNs (also accepts legacy key userDistinguishedNames in templates).
         users: []
         usernames: []
         groups: []
+        # Shared secret for log access configuration when required by the app.
         secret: ""
