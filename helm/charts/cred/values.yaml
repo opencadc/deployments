@@ -9,7 +9,7 @@ application:
   applicationName: cred
   availabilityPath: /cred/availability
   identityManagerClass: ca.nrc.cadc.ac.ACIdentityManager
-  allowBasicATP: true
+  allowBasicAtp: true
   maxDaysValid: "30.0"
   signingCert:
     existingSecret: cred-signcert

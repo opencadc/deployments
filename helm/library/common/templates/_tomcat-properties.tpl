@@ -6,10 +6,10 @@ Values: application.*, tomcat.*, ingress, httpRoute (from chart + library/common
 {{- define "common.tomcat.cadcRegistry.properties" -}}
 {{- $ctx := .context | default . -}}
 {{- $app := $ctx.Values.application | default dict -}}
-{{- range $app.registryEntries | default list }}
-{{ required "registryEntries[].standardID" .standardID }} = {{ required "registryEntries[].authority" .authority }}
+{{- range $app.localAuthorities | default list }}
+{{ required "localAuthorities[].standardId" .standardId }} = {{ required "localAuthorities[].authority" .authority }}
 {{- end }}
-{{- with $app.gmsID }}
+{{- with $app.gmsId }}
 ivo://ivoa.net/std/GMS#search-1.0 = {{ . }}
 ivo://ivoa.net/std/GMS#search-0.1 = {{ . }}
 ivo://ivoa.net/std/UMS#users-0.1 = {{ . }}
@@ -20,33 +20,24 @@ ivo://ivoa.net/std/UMS#whoami-0.1 = {{ . }}
 ivo://ivoa.net/std/GMS#groups-0.1 = {{ . }}
 ivo://ivoa.net/std/GMS#groups-1.0 = {{ . }}
 ivo://ivoa.net/sso#tls-with-password = {{ . }}
-{{- if not $app.oidcURI }}
+{{- if not $app.oidcUri }}
 ivo://ivoa.net/sso#OAuth = {{ . }}
 ivo://ivoa.net/sso#OpenID = {{ . }}
 {{- end }}
 {{- end }}
-{{- with $app.oidcURI }}
+{{- with $app.oidcUri }}
 ivo://ivoa.net/sso#OAuth = {{ . }}
 ivo://ivoa.net/sso#OpenID = {{ . }}
 {{- end }}
-{{- if $app.resourceID }}
-ivo://ivoa.net/std/CDP#delegate-1.0 = {{ $app.resourceID }}
-ivo://ivoa.net/std/CDP#proxy-1.0 = {{ $app.resourceID }}
-{{- else if $app.cdpResourceID }}
-ivo://ivoa.net/std/CDP#delegate-1.0 = {{ $app.cdpResourceID }}
-ivo://ivoa.net/std/CDP#proxy-1.0 = {{ $app.cdpResourceID }}
+{{- if $app.resourceId }}
+ivo://ivoa.net/std/CDP#delegate-1.0 = {{ $app.resourceId }}
+ivo://ivoa.net/std/CDP#proxy-1.0 = {{ $app.resourceId }}
+{{- else if $app.cdpResourceId }}
+ivo://ivoa.net/std/CDP#delegate-1.0 = {{ $app.cdpResourceId }}
+ivo://ivoa.net/std/CDP#proxy-1.0 = {{ $app.cdpResourceId }}
 {{- end }}
-{{- $raw := $app.registryURL -}}
-{{- if kindIs "string" $raw }}
-{{- if $raw }}
-ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ $raw }}
-{{- end }}
-{{- else }}
-{{- range $raw | default list }}
-{{- if . }}
+{{- range $app.registryUrls | default list }}
 ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ . }}
-{{- end }}
-{{- end }}
 {{- end }}
 {{- end -}}
 
@@ -109,8 +100,8 @@ tomcat.connector.keepAliveTimeout={{ $cat.keepAliveTimeout | default 180000 }}
 {{- if hasKey $app "enableClientCertHeader" }}
 ca.nrc.cadc.auth.PrincipalExtractor.enableClientCertHeader={{ $app.enableClientCertHeader }}
 {{- end }}
-{{- if hasKey $app "allowBasicATP" }}
-ca.nrc.cadc.auth.PrincipalExtractor.allowBasicATP={{ $app.allowBasicATP }}
+{{- if hasKey $app "allowBasicAtp" }}
+ca.nrc.cadc.auth.PrincipalExtractor.allowBasicATP={{ $app.allowBasicAtp }}
 {{- end }}
 {{- end -}}
 {{- if $includeLog4j }}

@@ -167,7 +167,7 @@ spec:
         {{- end }}
         {{- end }}
         - name: skaha.posixmapper.resourceid
-          value: "{{ .Values.application.posixMapperResourceID }}"
+          value: "{{ .Values.application.posixMapperResourceId }}"
         - name: REDIS_HOST
           value: "{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesClusterDomain }}"
         - name: REDIS_PORT

@@ -19,7 +19,7 @@ resources:
 applicationName: storage
 
 application:
-  gmsID: ""
+  gmsId: ""
   identityManagerClass: org.opencadc.auth.StandardIdentityManager
   cookieSignaturePublicKey:
     existingSecret:

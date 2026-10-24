@@ -19,7 +19,7 @@ serviceAccount:
   name: ""
 
 application:
-  resourceID: "ivo://example.org/cavern"
+  resourceId: "ivo://example.org/cavern"
   cookieSignaturePublicKey:
     existingSecret:
       name: ""

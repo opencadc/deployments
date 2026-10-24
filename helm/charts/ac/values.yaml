@@ -20,8 +20,9 @@ serviceAccount:
 application:
   endpoint: /ac
   availabilityPath: /ac/availability
-  resourceID: ivo://example.org/gms
-  registryURL: https://example.org/reg
+  resourceId: ivo://example.org/gms
+  registryUrls:
+    - https://example.org/reg
   readUsers: []
   domains: []
   groupNameRules: {}

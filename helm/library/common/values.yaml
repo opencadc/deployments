@@ -2,48 +2,9 @@
 # Site-specific settings belong in helm/environments/<env>/_common.yaml at deploy time.
 exports:
   standard:
-    # -- Kubernetes DNS domain used when building internal service hostnames.
     kubernetesClusterDomain: cluster.local
 
-    # Default values for skaha.
-    # This is a YAML-formatted file.
-    # Declare variables to be passed into your templates.
-
-    # -- Number of skaha-tomcat replicas when autoscaling is disabled.
     replicaCount: 1
-
-    # @deprecated Prefer application.sessions.namespace. When that key is omitted, skahaWorkload.namespace is still honored (see template skaha.workloadNamespace).
-    # skahaWorkload:
-    #   namespace: skaha-workload
-
-    autoscaling:
-      # -- Enable HorizontalPodAutoscaler for skaha-tomcat.
-      # Target and scaling behavior are intentionally chart-managed (CPU 65%).
-      enabled: false
-      # -- Minimum number of skaha-tomcat replicas.
-      minReplicas: 1
-      # -- Maximum number of skaha-tomcat replicas.
-      maxReplicas: 1
-
-    # @param securityContext - Optional security context for the container.  This is a security feature to restrict system calls.
-    # securityContext: {}
-    #
-    # Example:
-    # securityContext:
-    #   seccompProfile:
-    #     type: RuntimeDefault
-    # -- Optional Pod-level security context for the Skaha API Deployment.
-    securityContext: {}
-
-    # @param podSecurityContext - Optional pod security context for the deployment.
-    # podSecurityContext: {}
-    #
-    # Example:
-    # podSecurityContext:
-    #   fsGroup: 1000
-    #   seccompProfile:
-    #     type: RuntimeDefault
-    podSecurityContext: {}
 
     imagePullSecrets: []
     nameOverride: ""
@@ -103,21 +64,9 @@ exports:
     volumeMounts: []
 
     nodeSelector: {}
-
-    # This is a list of tolerations that will be added to the Pod spec.
-    # @see https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-    # @see ./README.md#notes-on-tolerations-and-nodeaffinity
-    #
-    # Example:
-    # tolerations:
-    # - key: "key1"
-    #   operator: "Equal"
-    #   value: "value1"
-    #   effect: "NoSchedule"
     tolerations: []
     affinity: {}
 
-    # Optional Pod /etc/hosts entries: list of { ip, hostname }.
     extraHosts: []
 
     tomcat:
@@ -131,20 +80,19 @@ exports:
         keepAliveTimeout: 180000
 
     application:
-      registryURL: ""
-      registryEntries: []
-      gmsID: ""
-      oidcURI: ""
-      resourceID: ""
-      cdpResourceID: ""
+      registryUrls: []
+      localAuthorities: []
+      gmsId: ""
+      oidcUri: ""
+      resourceId: ""
+      cdpResourceId: ""
       identityManagerClass: ""
       enableClientCertHeader: true
-      allowBasicATP: false
+      allowBasicAtp: false
       applicationName: ""
       catalinaExtra: ""
       logging:
         users: []
         usernames: []
-        # GMS group URIs allowed to change log level (cadc-log.properties `group =` lines).
         groups: []
         secret: ""

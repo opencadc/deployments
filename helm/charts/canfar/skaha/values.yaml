@@ -61,7 +61,7 @@ application:
   # headlessPriorityGroup: "ivo://example.org/gms?skaha-priority-headless-users"
 
   # The Resource ID (URI) of the Service that contains the Posix Mapping information
-  # posixMapperResourceID: "ivo://example.org/posix-mapper"
+  # posixMapperResourceId: "ivo://example.org/posix-mapper"
 
   # Settings for User Sessions.  Sensible defaults supplied, but can be overridden.
   # For units of storage, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory.
@@ -427,7 +427,7 @@ application:
 
 # From library/common (import-values): serviceAccount.*, extraHosts, volumes, volumeMounts,
 # affinity (Skaha API pod scheduling; use affinity.nodeAffinity, not application.sessions.nodeAffinity),
-# application.gmsID, application.registryURL, application.oidcURI, application.logging (groups = former loggingGroups).
+# application.gmsId, application.registryUrls, application.oidcUri, application.logging (groups = former loggingGroups).
 
 rbac:
   # Whether to create RBAC roles and bindings for Skaha.  Defaults to true.

@@ -1,8 +1,9 @@
 # Site-wide defaults for OpenCADC Tomcat charts (example).
 application:
-  registryURL: https://example.org/reg
-  gmsID: ivo://example.org/gms
-  oidcURI: https://example.org/oidc
+  registryUrls:
+    - https://example.org/reg
+  gmsId: ivo://example.org/gms
+  oidcUri: https://example.org/oidc
 
 ingress:
   enabled: false
