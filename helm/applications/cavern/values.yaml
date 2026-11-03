@@ -232,7 +232,16 @@ volumeInit:
       drop:
         - ALL
 
-# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# This is to setup the startup, liveness, and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# Example:
+#   startupProbe:
+#     httpGet:
+#       path: /cavern/availability
+#       port: 8080
+#     failureThreshold: 30
+#     periodSeconds: 10
+startupProbe: {}
+
 # Example:
 #   livenessProbe:
 #     httpGet:

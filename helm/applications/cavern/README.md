@@ -50,6 +50,7 @@ A Helm chart to install the VOSpace User Storage API (Cavern)
 | livenessProbe | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
 | readinessProbe | object | `{}` |  |
+| startupProbe | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | secrets | string | `nil` |  |
 | securityContext | object | `{}` |  |
