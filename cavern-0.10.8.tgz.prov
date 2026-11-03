@@ -1,0 +1,35 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+apiVersion: v2
+appVersion: 0.10.4
+dependencies:
+- - name: utils
+  repository: file://../utils
+  version: ^0.1.0
+description: A Helm chart to install the VOSpace User Storage API (Cavern)
+maintainers:
+- - email: djenkins.cadc@gmail.com
+  name: Dustin Jenkins
+name: cavern
+type: application
+version: 0.10.8
+
+...
+files:
+  cavern-0.10.8.tgz: sha256:5512a1a8416555f2312e4221835ba49d74ae198d15f4c5fb3b0ffb3220c0aebb
+
+-----BEGIN PGP SIGNATURE-----
+
+wsE5BAEBCgBtBYJq6jHzCRBq0sqFWPBBQkUUAAAAAAAcACBzYWx0QG5vdGF0aW9u
+cy5vcGVucGdwanMub3JnoW4Sl8/3SCeq5aLaOKF57NVzLNrDR7WxcAIBtUKfA9UW
+IQRnCt//ciqIdJ17VAJq0sqFWPBBQgAAvgUL/RyPqwioQmWSKOh76E+N7stnv6E9
+V/pXRnmT77PoB55XOpZ39kLsSEHBMKKZxnHkiB9z0SzHoaq4QOG4+BeXfUtHqkB6
+Og8grjSVTX5gba7gurRoWSP5qbKA+ToY6mcKbykXvCXyw1KlMeJtpJPCWvlIuPgU
+cme48+QToKofnw+kdauWITN02WsScERP6dG6GKPfZOQB6e+HxPRh/OyuaODIbG/4
+vF4dLLs4+3bArIM1/FVyPK+b0Wb/FD9hRKBR9/Bdv3SGdOm2hjGsVi5bc3yj+ApL
+eRzBLMQR9DnnIkQYem5xe6cjmt5vnMovsBvN8bvtbK2XEoSOf37XbP+yyCgXeq4N
+z2MvFdPEHdqz0mx1Hw1i9PofmMfpvIpgKfZvF+VwrJBdDX88Qg+3Pe+PnbTZc93s
+G+zTRoE9S6D8OIWbNJJBfqv+DPMRAktccyFLK/pN8+qUwTHq2U6RgpCVmx/zv+Kb
+C/XP9JYKIHpzK99S6oyI32hBUP6L2mUyxAzF5g==
+-----END PGP SIGNATURE-----
