@@ -25,7 +25,6 @@ This section is automatically generated. Do not edit manually.
 | [canfar-web-root](helm/applications/canfar-web-root) | A Helm chart for Kubernetes |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
 | [posix-mapper](helm/applications/posix-mapper) | A Helm chart to install the UID/GID POSIX Mapper |
-| [reg](helm/applications/reg) | IVOA Registry Service Helm Chart |
 | [argus](helm/applications/sandbox/argus) | An IVAO TAP Helm chart |
 | [bifrost](helm/applications/sandbox/bifrost) | A Helm chart for Kubernetes |
 | [sc2meta](helm/applications/sandbox/sc2meta) | A Helm chart for Kubernetes |
@@ -34,7 +33,6 @@ This section is automatically generated. Do not edit manually.
 | [torkeep](helm/applications/sandbox/torkeep) | A CAOM-2 Metadata Repository Helm Chart |
 | [sshd](helm/applications/sshd) | An SSHD service with SSSD to get users from LDAP |
 | [sshfs](helm/applications/sshfs) | A Helm chart for allowing SSHFS access to the cluster's storage volume. |
-| [storageui](helm/applications/storage-ui) | A Helm chart to install the User Storage UI |
 | [utils](helm/applications/utils) | A library Helm chart for common tasks |
 <!-- CHART-INVENTORY:END -->
 
