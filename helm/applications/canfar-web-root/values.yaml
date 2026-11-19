@@ -159,3 +159,16 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+env: []
+  # - name: APP_ENV
+  #   value: "production"
+  # - name: LOG_LEVEL
+  #   value: "info"
+
+# Optional: load variables from existing ConfigMaps or Secrets
+envFrom: []
+# - configMapRef:
+#     name: my-configmap
+# - secretRef:
+#     name: my-secret
