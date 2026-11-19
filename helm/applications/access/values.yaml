@@ -28,6 +28,17 @@ rsaSignaturePublicKey:
   existingSecret: ""
   value: ""
 
+env: []
+  # - name: JAVA_TOOL_OPTIONS
+  #   value: "-XX:-UseBASE64Intrinsics"
+
+# Optional: load variables from existing ConfigMaps or Secrets
+envFrom: []
+# - configMapRef:
+#     name: my-configmap
+# - secretRef:
+#     name: my-secret
+
 # Logging configuration.
 logging:
   # List of distinguished names that should have enhanced logging.
