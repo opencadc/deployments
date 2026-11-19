@@ -24,6 +24,7 @@ This section is automatically generated. Do not edit manually.
 | [skaha](helm/applications/archived/skaha) | A Helm chart to install the Skaha web service of the CANFAR Science Platform |
 | [canfar-web-root](helm/applications/canfar-web-root) | A Helm chart for Kubernetes |
 | [cavern](helm/applications/cavern) | A Helm chart to install the VOSpace User Storage API (Cavern) |
+| [cred](helm/applications/cred) | A Helm chart to deploy the Credential service to manage X509 client certificates. |
 | [posix-mapper](helm/applications/posix-mapper) | A Helm chart to install the UID/GID POSIX Mapper |
 | [argus](helm/applications/sandbox/argus) | An IVAO TAP Helm chart |
 | [bifrost](helm/applications/sandbox/bifrost) | A Helm chart for Kubernetes |
